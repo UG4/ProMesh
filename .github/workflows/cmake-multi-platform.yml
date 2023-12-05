@@ -52,10 +52,10 @@ jobs:
       uses: jurplel/install-qt-action@v3
 
     - name: (2b) Install UG4
-      shell: bash
-        run: |
-          git clone https://github.com/UG4/ugcore.git
-    
+      uses: actions/checkout@v4
+      with:
+        repository: UG4/ugcore.git
+        path: ugcore
 
     - name: (3) Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
