@@ -52,21 +52,21 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: UG4/ugcore.git
-        path: ../ug4-git/ugcore
+        path: ug4-git/ugcore
         ref: master
         
     - name: (2b) Install UG4 - plugin_ProMesh
       uses: actions/checkout@v4
       with:
         repository: UG4/plugin_ProMesh.git
-        path: ../ug4-git/plugins/ProMesh
+        path: ug4-git/plugins/ProMesh
         ref: master
 
     - name: (2b) Install UG4 - external_BoostForUG4
       uses: actions/checkout@v4
       with:
         repository: UG4/external_BoostForUG4.git
-        path: ../ug4-git/externals/BoostForUG4
+        path: ug4-git/externals/BoostForUG4
         ref: master
 
 
@@ -90,7 +90,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -DUG_ROOT_PATH=/home/runner/work/ProMesh/ProMesh
+        -DUG_ROOT_PATH=/home/runner/work/ProMesh/ProMesh/ug4-git
         -S ${{ github.workspace }}
 
     - name: (5) Build
