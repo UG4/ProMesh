@@ -84,13 +84,7 @@ jobs:
         ref: master
 
    - name: (2b) Build UG4/tool_tetgen.git
-      uses: actions/checkout@v4
-      with:
-        repository: UG4/tool_tetgen.git
-        path: ug4-git/tools/tetgen
-        ref: master
-      run: >
-        cmake -B "ug4-git/bin" -S "ug4-git/tools/tetgen"
+     run: cmake -B ug4-git/bin -S ug4-git/tools/tetgen
         
 
     - name: (2b) Install Qt
