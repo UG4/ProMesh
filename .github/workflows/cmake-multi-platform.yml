@@ -48,12 +48,28 @@ jobs:
     - name: (1) Checkout
       uses: actions/checkout@v3
 
-    - name: (2b) Install UG4
+    - name: (2b) Install UG4 - ugcore
       uses: actions/checkout@v4
       with:
         repository: UG4/ugcore.git
-        path: ugcore
+        path: ../ug4-git/ugcore
         ref: master
+        
+    - name: (2b) Install UG4 - plugin_ProMesh
+      uses: actions/checkout@v4
+      with:
+        repository: UG4/plugin_ProMesh.git
+        path: ../ug4-git/plugins/ProMesh
+        ref: master
+
+    - name: (2b) Install UG4 - external_BoostForUG4
+      uses: actions/checkout@v4
+      with:
+        repository: UG4/external_BoostForUG4.git
+        path: ../ug4-git/externals/BoostForUG4
+        ref: master
+
+
 
     - name: (2b) Install Qt
       uses: jurplel/install-qt-action@v3
