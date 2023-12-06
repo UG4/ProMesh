@@ -82,7 +82,7 @@ jobs:
 
     - name: (2b) Install GL develop
       if: startsWith(matrix.os, 'ubuntu') == true
-      run: sudo apt-get install -y libgl-dev
+      run: sudo apt-get install -y libgl-dev freeglut3-dev
 
 
     - name: (3) Set reusable strings
