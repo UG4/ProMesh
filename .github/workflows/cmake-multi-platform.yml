@@ -81,7 +81,7 @@ jobs:
 
 
     - name: (2b) Install GL develop
-      if: if: startsWith(matrix.os, 'ubuntu') == true
+      if: startsWith(matrix.os, 'ubuntu') == true
       run: sudo apt-get install -y libgl-dev
 
 
