@@ -76,10 +76,13 @@ jobs:
         path: ug4-git/externals/BoostForUG4
         ref: master
 
-
-
     - name: (2b) Install Qt
       uses: jurplel/install-qt-action@v3
+
+
+    - name: (2b) Install GL develop
+      if: if: startsWith(matrix.os, 'ubuntu') == true
+      run: sudo apt-get install -y libgl-dev
 
 
     - name: (3) Set reusable strings
