@@ -61,6 +61,13 @@ jobs:
         repository: UG4/plugin_ProMesh.git
         path: ug4-git/plugins/ProMesh
         ref: master
+        
+    - name: (2b) Install UG4 - plugin_LuaShell
+      uses: actions/checkout@v4
+      with:
+        repository: UG4/plugin_LuaShell.git
+        path: ug4-git/plugins/LuaShell
+        ref: master
 
     - name: (2b) Install UG4 - external_BoostForUG4
       uses: actions/checkout@v4
