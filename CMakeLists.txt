@@ -168,8 +168,8 @@ endif(QT_CMAKE_PATH)
 
 
 FIND_PACKAGE(OpenGL REQUIRED)
-message(STATUS "INFO: OpenGL include dir: ${OPENGL_INCLUDE_DIRS} ")
-include_directories(${OPENGL_INCLUDE_DIRS}) 
+message(STATUS "INFO: OpenGL include dir: ${OPENGL_INCLUDE_DIR} ")
+include_directories(${OPENGL_INCLUDE_DIR}) 
 
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
