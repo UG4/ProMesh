@@ -67,6 +67,44 @@ public:
 	}
 };
 
+////////////////////////////////////////////////////////////////////
+
+
+class ToolExpandLayers2dArte : public ITool
+{
+public:
+	void execute(LGObject* obj, QWidget* widget){
+		using namespace ug;
+
+		FracToLayerWidget* dlg = dynamic_cast<FracToLayerWidget*>(widget);
+
+		if(dlg->numEntries() == 0){
+			UG_LOG("No entries selected. Aborting 'Expand Layers 2d'.\n");
+			return;
+		}
+
+		Grid& grid = obj->grid();
+		SubsetHandler& sh = obj->subset_handler();
+
+		ExpandFractures2dArte(grid, sh, dlg->entries(), dlg->degenerated_fractures(),
+						  dlg->expand_outer_boundaries());
+
+	//	done
+		obj->geometry_changed();
+	}
+
+	const char* get_name()		{return "Expand Layers 2d Arte";}
+	const char* get_tooltip()	{return TOOLTIP_EXPAND_LAYERS_2D_ARTE;}
+	const char* get_group()		{return "Remeshing | Layers";}
+
+	QWidget* get_dialog(QWidget* parent){
+		return new FracToLayerWidget(get_name(), parent, this);
+	}
+};
+
+
+////////////////////////////////////////////////////////////////////
+
 class ToolExpandLayers3d : public ITool
 {
 public:
@@ -245,6 +283,7 @@ void RegisterFracToLayerTools(ToolManager* toolMgr)
 {
     //toolMgr->register_tool(new ToolFracToLayer);
     toolMgr->register_tool(new ToolExpandLayers2d);
+    toolMgr->register_tool(new ToolExpandLayers2dArte);
     toolMgr->register_tool(new ToolExpandLayers3d);
 }
 
