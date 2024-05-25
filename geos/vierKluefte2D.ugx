@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grid name="defGrid">
+	<vertices coords="3">-0.5 0.5 0 -0.5 -0.5 0 0.5 -0.5 0 0.5 0.5 0 -0.5 0 0 0 -0.5 0 0.5 0 0 0 0.5 0 0 0 0</vertices>
+	<edges>0 4 4 1 1 5 5 2 2 6 6 3 3 7 7 0 0 8 8 2 3 8 8 1 7 8 8 5 4 8 8 6</edges>
+	<triangles>8 0 4 8 7 0 8 3 7 6 3 8 1 8 4 5 8 1 2 8 5 2 6 8</triangles>
+	<subset_handler name="defSH">
+		<subset name="rand" color="0.588235 0.588235 1 1" state="393216">
+			<vertices>0 1 2 3 4 5 6 7 8</vertices>
+			<edges>0 1 2 3 4 5 6 7</edges>
+		</subset>
+		<subset name="eins" color="1 0 0 1" state="393216">
+			<edges>8 9</edges>
+		</subset>
+		<subset name="zwei" color="0 1 0 1" state="393216">
+			<edges>10 11</edges>
+		</subset>
+		<subset name="drei" color="0 0 1 1" state="393216">
+			<edges>12 13</edges>
+		</subset>
+		<subset name="vier" color="1 0 1 1" state="393216">
+			<edges>14 15</edges>
+		</subset>
+		<subset name="flaeche" color="1 1 0 1" state="393216">
+			<faces>0 1 2 3 4 5 6 7</faces>
+		</subset>
+	</subset_handler>
+	<subset_handler name="markSH">
+		<subset name="crease" color="1 1 1 1" state="0"/>
+		<subset name="fixed" color="1 1 1 1" state="0"/>
+	</subset_handler>
+	<selector name="defSel"/>
+	<projection_handler name="defPH" subset_handler="0">
+		<default type="default">0 0</default>
+	</projection_handler>
+</grid>
+

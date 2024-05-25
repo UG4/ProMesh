@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grid name="defGrid">
+	<vertices coords="3">-0.5 0.5 0 -0.5 -0.5 0 0.5 -0.5 0 0.5 0.5 0 -0.5 0 0 0 -0.5 0 0.5 0 0 0 0.5 0 -0.5 0.25 0 -0.5 -0.25 0 -0.25 -0.5 0 0.25 -0.5 0 0.5 -0.25 0 0.5 0.25 0 0.25 0.5 0 -0.25 0.5 0 0 0 0</vertices>
+	<edges>0 8 8 4 4 9 9 1 1 10 10 5 5 11 11 2 2 12 12 6 6 13 13 3 3 14 14 7 7 15 15 0 14 16 16 10 15 16 16 11 8 15 4 16 9 16 8 16 9 10 7 16 14 13 16 13 16 6 16 12 11 12 5 16</edges>
+	<triangles>8 15 0 9 16 4 8 4 16 15 8 16 9 1 10 16 9 10 16 14 7 16 7 15 13 3 14 16 13 14 6 13 16 12 6 16 11 12 16 2 12 11 5 16 10 11 16 5</triangles>
+	<subset_handler name="defSH">
+		<subset name="rand" color="0.588235 0.588235 1 1" state="393216">
+			<vertices>0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15</vertices>
+			<edges>0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15</edges>
+		</subset>
+		<subset name="kluftEins" color="1 0 0 1" state="393216">
+			<vertices>16</vertices>
+			<edges>16 17</edges>
+		</subset>
+		<subset name="kluftZwei" color="0 1 0 1" state="393216">
+			<edges>18 19</edges>
+		</subset>
+		<subset name="flaeche" color="0 0 1 1" state="393216">
+			<edges>20 22 21 23 24 25 26 27 28 29 30 31</edges>
+			<faces>0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15</faces>
+		</subset>
+	</subset_handler>
+	<subset_handler name="markSH">
+		<subset name="crease" color="1 1 1 1" state="0"/>
+		<subset name="fixed" color="1 1 1 1" state="0"/>
+	</subset_handler>
+	<selector name="defSel"/>
+	<projection_handler name="defPH" subset_handler="0">
+		<default type="default">0 0</default>
+	</projection_handler>
+</grid>
+
