@@ -33,6 +33,7 @@
 #include "app.h"
 #include "standard_tools.h"
 #include "lib_grid/algorithms/extrusion/expand_layers.h"
+#include "lib_grid/algorithms/extrusion/expand_layers_arte.h"
 
 class FracToLayerWidget : public QWidget
 {
