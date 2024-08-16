@@ -3,11 +3,7 @@
 name: CMake on multiple platforms
 
 on: workflow_dispatch
-  #push:
-  #  branches: [ "master" ]
-  #pull_request:
-  #  branches: [ "master" ]
-  
+
 jobs:
   build:
     name: Build on ${{ matrix.os }}
