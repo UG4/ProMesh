@@ -43,42 +43,49 @@ jobs:
     - name: (1) Checkout
       uses: actions/checkout@v3
 
-    - name: (2b) Install UG4 - ugcore
+    - name: (2.1) Install UG4 - ugcore
       uses: actions/checkout@v4
       with:
         repository: UG4/ugcore.git
         path: ug4-git/ugcore
         ref: master
         
-    - name: (2b) Install UG4 - plugin_ProMesh
+    - name: (2.2) Install UG4 - plugin_ProMesh
       uses: actions/checkout@v4
       with:
         repository: UG4/plugin_ProMesh.git
         path: ug4-git/plugins/ProMesh
         ref: master
         
-    - name: (2b) Install UG4 - plugin_LuaShell
+    - name: (2.3) Install UG4 - plugin_LuaShell
       uses: actions/checkout@v4
       with:
         repository: UG4/plugin_LuaShell.git
         path: ug4-git/plugins/LuaShell
         ref: master
 
-    - name: (2b) Install UG4 - external_BoostForUG4
+    - name: (2.4) Install UG4 - external_BoostForUG4
       uses: actions/checkout@v4
       with:
         repository: UG4/external_BoostForUG4.git
         path: ug4-git/externals/BoostForUG4
         ref: master
 
-    - name: (2b) Install UG4/tool_tetgen.git
+    - name: (2.5) Install UG4 - external_EigenForUG4
+      uses: actions/checkout@v4
+      with:
+        repository: UG4/external_EigenForUG4.git
+        path: ug4-git/externals/EigenForUG4
+        ref: master
+        
+    - name: (2.6) Install UG4/tool_tetgen.git
       uses: actions/checkout@v4
       with:
         repository: UG4/tool_tetgen.git
         path: ug4-git/tools/tetgen
         ref: master
         
-    - name: (2b) Build UG4
+    - name: (3) Build UG4
       run: |
         cmake -B ug4-git/build -S ug4-git/ugcore -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON 
         cmake --build ug4-git/build
