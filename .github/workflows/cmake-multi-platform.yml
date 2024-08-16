@@ -97,11 +97,16 @@ jobs:
     #    cmake -B ug4-git/tools/tetgen/build -S ug4-git/tools/tetgen
     #    cmake --build ug4-git/tools/tetgen/build --target tetgen --config Release
     
-    - name: (3) Print content 
+    - name: (3) Move content 
       if: startsWith(matrix.os, 'windows') == true
-      run: | 
+      run: |
+        dir ug4-git
+        dir ug4-git\ugcore
+        move ug4-git\ugcore\bin ug4-git
+        move ug4-git\ugcore\lib ug4-git
         dir ug4-git
         dir ug4-git\bin
+        dir ug4-git\lib
     #    mkdir ug4-git\bin
     #    copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
          
