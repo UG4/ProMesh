@@ -85,8 +85,8 @@ jobs:
 
     - name: (2b) Build UG4/tool_tetgen.git
       run: |
-        cmake -B ug4-git/bin -S ug4-git/tools/tetgen
-        cmake --build . --target tetgen 
+        cmake -B ug4-git/tools/tetgen/build -S ug4-git/tools/tetgen
+        cmake --build ug4-git/tools/tetgen/build --target tetgen 
         
     - name: (2b) Install Qt
       uses: jurplel/install-qt-action@v3
