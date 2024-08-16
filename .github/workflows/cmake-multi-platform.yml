@@ -6,6 +6,7 @@ on: workflow_dispatch
 # on: [push, pull_request]
 
 jobs:
+
   cmake-multi-build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
@@ -80,8 +81,8 @@ jobs:
         path: ug4-git/tools/tetgen
         ref: master
 
-   - name: (2b) Build UG4/tool_tetgen.git
-     run: cmake -B ug4-git/bin -S ug4-git/tools/tetgen
+    - name: (2b) Build UG4/tool_tetgen.git
+      run: cmake -B ug4-git/bin -S ug4-git/tools/tetgen
         
 
     - name: (2b) Install Qt
