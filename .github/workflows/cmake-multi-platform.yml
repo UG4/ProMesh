@@ -77,6 +77,13 @@ jobs:
         repository: UG4/tool_tetgen.git
         path: ug4-git/tools/tetgen
         ref: master
+        
+    - name: (2b) Build UG4
+      run: |
+        cmake -B ug4-git/build -S ug4-git -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON 
+        cmake --build ug4-git/build
+      
+      
 
     - name: (2b) Build UG4/tool_tetgen.git
       run: |
