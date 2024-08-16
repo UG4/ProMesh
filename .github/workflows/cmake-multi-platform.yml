@@ -1,13 +1,15 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-
 name: CMake on multiple platforms
 
-# on: [push, pull_request]
 on: workflow_dispatch
+# on: [push, pull_request]
 
 jobs:
-  my-multi-build:
+  ######################
+  # Job: Build wheel
+  ######################
+  cmake-multi-build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
