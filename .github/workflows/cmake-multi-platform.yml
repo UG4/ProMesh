@@ -87,6 +87,7 @@ jobs:
       run: | 
         mkdir ug4-git\bin
         copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
+        dir ug4-git\bin
         
     - name: (2b) Install Qt
       uses: jurplel/install-qt-action@v3
