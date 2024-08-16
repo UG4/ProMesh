@@ -23,7 +23,7 @@ jobs:
       matrix:
         # os: [ubuntu-latest, windows-latest]
         os: [windows-latest]
-        # build_type: [Release]
+        build_type: [Release]
         #c_compiler: [clang, cl]
         #include:
         #  - os: windows-latest
@@ -88,7 +88,7 @@ jobs:
     - name: (3) Build UG4 & tetgen
       run: |
         cmake -B ug4-git/build -S ug4-git/ugcore -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON -DDIM=3
-        cmake --build ug4-git/build
+        cmake --build ug4-git/build --config ${{ matrix.build_type }} 
       
       
 
