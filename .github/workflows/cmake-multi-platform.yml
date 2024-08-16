@@ -28,19 +28,21 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
+          #- os: ubuntu-latest
+          #  c_compiler: gcc
+          #  cpp_compiler: g++
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
         exclude:
           - os: windows-latest
             c_compiler: gcc
-          - os: windows-latest
-            c_compiler: clang
+          #- os: windows-latest
+          #  c_compiler: clang
           - os: ubuntu-latest
             c_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: gcc
 
     steps:
     - name: (1) Checkout
@@ -82,9 +84,10 @@ jobs:
         ref: master
 
     - name: (2b) Build UG4/tool_tetgen.git
-      run: cmake -B ug4-git/bin -S ug4-git/tools/tetgen
+      run: |
+        cmake -B ug4-git/bin -S ug4-git/tools/tetgen
+        cmake --build . --target tetgen 
         
-
     - name: (2b) Install Qt
       uses: jurplel/install-qt-action@v3
 
