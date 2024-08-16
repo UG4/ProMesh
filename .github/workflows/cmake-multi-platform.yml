@@ -6,8 +6,6 @@ on: workflow_dispatch
 # on: [push, pull_request]
 
 jobs:
-  ######################
-  # Job: Build wheel
   cmake-multi-build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
