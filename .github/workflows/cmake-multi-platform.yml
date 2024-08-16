@@ -7,7 +7,7 @@ name: CMake on multiple platforms
 on: workflow_dispatch
 
 jobs:
-	######################
+  ######################
   # Job: Build 
   ######################
   build:
