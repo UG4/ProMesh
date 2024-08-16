@@ -23,19 +23,19 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         build_type: [Release]
-        c_compiler: [clang, cl]
-        include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: clang
-            cpp_compiler: clang++
-        exclude:
-          - os: windows-latest
-            c_compiler: clang
-          - os: ubuntu-latest
-            c_compiler: cl
+        #c_compiler: [clang, cl]
+        #include:
+        #  - os: windows-latest
+        #    c_compiler: cl
+        #    cpp_compiler: cl
+        #  - os: ubuntu-latest
+        #    c_compiler: clang
+        #    cpp_compiler: clang++
+        #exclude:
+        #  - os: windows-latest
+        #    c_compiler: clang
+        #  - os: ubuntu-latest
+        #    c_compiler: cl
 
 
     steps:
@@ -80,7 +80,11 @@ jobs:
     - name: (2b) Build UG4/tool_tetgen.git
       run: |
         cmake -B ug4-git/tools/tetgen/build -S ug4-git/tools/tetgen
-        cmake --build ug4-git/tools/tetgen/build --target tetgen 
+        cmake --build ug4-git/tools/tetgen/build --target tetgen --config Release
+    
+    - name: (2b) Copy tetgen
+      if: startsWith(matrix.os, 'windows') == true
+      run: copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
         
     - name: (2b) Install Qt
       uses: jurplel/install-qt-action@v3
