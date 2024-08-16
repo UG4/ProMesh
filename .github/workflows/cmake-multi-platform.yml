@@ -85,42 +85,44 @@ jobs:
         path: ug4-git/tools/tetgen
         ref: master
         
-    - name: (3) Build UG4
+    - name: (3) Build UG4 & tetgen
       run: |
-        cmake -B ug4-git/build -S ug4-git/ugcore -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON 
+        cmake -B ug4-git/build -S ug4-git/ugcore -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON -DDIM=3
         cmake --build ug4-git/build
       
       
 
-    - name: (2b) Build UG4/tool_tetgen.git
-      run: |
-        cmake -B ug4-git/tools/tetgen/build -S ug4-git/tools/tetgen
-        cmake --build ug4-git/tools/tetgen/build --target tetgen --config Release
+    #- name: (2b) Build UG4/tool_tetgen.git
+    #  run: |
+    #    cmake -B ug4-git/tools/tetgen/build -S ug4-git/tools/tetgen
+    #    cmake --build ug4-git/tools/tetgen/build --target tetgen --config Release
     
-    - name: (2b) Copy tetgen
+    - name: (3) Print content 
       if: startsWith(matrix.os, 'windows') == true
       run: | 
-        mkdir ug4-git\bin
-        copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
+        dir ug4-git
         dir ug4-git\bin
+    #    mkdir ug4-git\bin
+    #    copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
+         
         
-    - name: (2b) Install Qt
+    - name: (4) Install Qt
       uses: jurplel/install-qt-action@v3
 
 
-    - name: (2b) Install GL develop
+    - name: (5) Install GL develop
       if: startsWith(matrix.os, 'ubuntu') == true
       run: sudo apt-get install -y libgl-dev freeglut3-dev
 
 
-    - name: (3) Set reusable strings
+    - name: (6) Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
       id: strings
       shell: bash
       run: |
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: (4) Configure CMake
+    - name: (7) Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
       run: >
