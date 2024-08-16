@@ -84,7 +84,9 @@ jobs:
     
     - name: (2b) Copy tetgen
       if: startsWith(matrix.os, 'windows') == true
-      run: copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
+      run: | 
+        mkdir ug4-git\bin
+        copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
         
     - name: (2b) Install Qt
       uses: jurplel/install-qt-action@v3
