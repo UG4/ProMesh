@@ -41,10 +41,17 @@ jobs:
 
     steps:
             
-    - name: (1) Install Qt
+    - name: (1.1) Install Qt
       uses: jurplel/install-qt-action@v3
       with:
         tools: 'tools_qtcreator,qt.tools.qtcreator'
+
+    - name: (1.2) Check content 
+      if: startsWith(matrix.os, 'windows') == true
+      run: |
+        dir Qt\5.15.2\msvc2019_64
+        dir Qt\5.15.2\msvc2019_64\bin
+        dir Qt\5.15.2\msvc2019_64\lib
       
       
     - name: (2.1) Install UG4 - ugcore
