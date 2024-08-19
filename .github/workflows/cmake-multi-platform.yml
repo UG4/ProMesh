@@ -52,7 +52,9 @@ jobs:
         dir ..\Qt\5.15.2\msvc2019_64
         dir ..\Qt\5.15.2\msvc2019_64\bin
         dir ..\Qt\5.15.2\msvc2019_64\lib
-      
+        
+    - name: (2.0) Checkout self.
+      uses: actions/checkout@v4  
       
     - name: (2.1) Install UG4 - ugcore
       uses: actions/checkout@v4
