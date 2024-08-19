@@ -40,9 +40,13 @@ jobs:
 
 
     steps:
-    - name: (1) Checkout
-      uses: actions/checkout@v3
-
+            
+    - name: (1) Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        tools: 'tools_qtcreator,qt.tools.qtcreator'
+      
+      
     - name: (2.1) Install UG4 - ugcore
       uses: actions/checkout@v4
       with:
@@ -110,9 +114,7 @@ jobs:
     #    mkdir ug4-git\bin
     #    copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
          
-        
-    - name: (4) Install Qt
-      uses: jurplel/install-qt-action@v3
+
 
 
     - name: (5) Install GL develop
