@@ -262,11 +262,11 @@ else(UNIX)
 	if(MINGW)
 		# resource compilation for MINGW
 		ADD_CUSTOM_COMMAND( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ProMeshIcon.o
-							COMMAND windres.exe -I${CMAKE_SOURCE_DIR}/deploy_data -i${CMAKE_SOURCE_DIR}/deploy_data/ProMeshIcon.rc 
+							COMMAND windres.exe -I${CMAKE_SOURCE_DIR}/deployment/data -i${CMAKE_SOURCE_DIR}/deployment/data/ProMeshIcon.rc 
                              -o ${CMAKE_CURRENT_BINARY_DIR}/ProMeshIcon.o )
 		ADD_EXECUTABLE(ProMesh4 WIN32 ${allSources} ProMeshIcon.o)
 	else(MINGW)
-		ADD_EXECUTABLE(ProMesh4 WIN32 ${allSources} ${CMAKE_SOURCE_DIR}/deploy_data/ProMeshIcon.rc)
+		ADD_EXECUTABLE(ProMesh4 WIN32 ${allSources} ${CMAKE_SOURCE_DIR}/deployment/data/ProMeshIcon.rc)
 	endif(MINGW)
 endif(UNIX)
 
