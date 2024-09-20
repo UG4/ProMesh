@@ -1,7 +1,7 @@
 # Copyright (c) 2008-2015:  G-CSC, Goethe University Frankfurt
 # Copyright (c) 2006-2008:  Steinbeis Forschungszentrum (STZ Ölbronn)
 # Copyright (c) 2006-2015:  Sebastian Reiter
-# Author: Sebastian Reiter
+# Author: Sebastian Reiter, modifications Markus Knodel
 #
 # This file is part of ProMesh.
 # 
@@ -64,6 +64,7 @@ set(ProMeshSRC	src/app.cpp
 				src/tools/tetgen_tools.cpp
 				src/tools/tool_dialog.cpp
 				src/tools/tool_frac_to_layer.cpp
+				src/tools/tool_frac_to_layer_arte.cpp
 				src/tools/tool_manager.cpp
 				src/util/file_util.cpp
 				src/util/qstring_util.cpp

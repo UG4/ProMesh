@@ -2,7 +2,7 @@
  * Copyright (c) 2008-2015:  G-CSC, Goethe University Frankfurt
  * Copyright (c) 2006-2008:  Steinbeis Forschungszentrum (STZ Ölbronn)
  * Copyright (c) 2006-2015:  Sebastian Reiter
- * Author: Sebastian Reiter
+ * Author: Sebastian Reiter, modified by Markus Knodel
  *
  * This file is part of ProMesh.
  * 
@@ -30,6 +30,7 @@
 #include "app.h"
 #include "standard_tools.h"
 #include "tool_frac_to_layer.h"
+#include "tool_frac_to_layer_arte.h"
 #include "tooltips.h"
 
 using namespace std;
@@ -73,10 +74,13 @@ public:
 class ToolExpandLayers2dArte : public ITool
 {
 public:
-	void execute(LGObject* obj, QWidget* widget){
+	void execute(LGObject* obj, QWidget* widget)
+	{
 		using namespace ug;
 
-		FracToLayerWidget* dlg = dynamic_cast<FracToLayerWidget*>(widget);
+//		UG_LOG("Test execute" << std::endl);
+
+		FracToLayerWidgetArte* dlg = dynamic_cast<FracToLayerWidgetArte*>(widget);
 
 		if(dlg->numEntries() == 0){
 			UG_LOG("No entries selected. Aborting 'Expand Layers 2d'.\n");
@@ -86,8 +90,10 @@ public:
 		Grid& grid = obj->grid();
 		SubsetHandler& sh = obj->subset_handler();
 
-		ExpandFractures2dArte(grid, sh, dlg->entries(), dlg->degenerated_fractures(),
-						  dlg->expand_outer_boundaries());
+//		UG_LOG("Expand" << std::endl);
+
+		ExpandFractures2dArte(grid, sh, dlg->entries(), dlg->diamondsUseTriangles(),
+						  dlg->establishDiamonds());
 
 	//	done
 		obj->geometry_changed();
@@ -97,8 +103,11 @@ public:
 	const char* get_tooltip()	{return TOOLTIP_EXPAND_LAYERS_2D_ARTE;}
 	const char* get_group()		{return "Remeshing | Layers";}
 
-	QWidget* get_dialog(QWidget* parent){
-		return new FracToLayerWidget(get_name(), parent, this);
+	QWidget* get_dialog(QWidget* parent)
+	{
+//		UG_LOG("Get dialog" << std::endl);
+		return new FracToLayerWidgetArte(get_name(), parent, this);
+//		return new FracToLayerWidget(get_name(), parent, this);
 	}
 };
 
