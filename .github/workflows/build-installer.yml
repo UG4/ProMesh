@@ -32,7 +32,8 @@ jobs:
         run-id: 10461346785
 
     - name: (2) Unzip
-      run: zip -r artifacts/my-artifacts.zip artifacts/extract
+      run:  Expand-Archive -Path artifacts/my-artifacts.zip -DestinationPath artifacts/extract
+      # run: zip -r artifacts/my-artifacts.zip artifacts/extract
     
     - name: (3) Create installer
       #if: ${{ matrix.os == "windows-latest}}
