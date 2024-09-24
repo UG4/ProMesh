@@ -34,7 +34,7 @@ jobs:
         run-id: 10461346785
     
     - name: (2) Move dir. 
-      run: Move-Item -Path artifacts/Release -Destination windows
+      run: Move-Item -Path artifacts/Release -Destination win64-artifacts
 
 
     - run: dir
@@ -46,6 +46,6 @@ jobs:
       #if: ${{ matrix.os == "windows-latest}}
       uses: joncloud/makensis-action@v4.1
       with:
-        script-file: "deployment/data/win64/promesh4-installer.nsi"
+        script-file: "deployment/win64/promesh4-installer.nsi"
         arguments: "/V3"
 
