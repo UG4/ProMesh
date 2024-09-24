@@ -27,6 +27,9 @@ jobs:
       with:
         name: my-artifacts
         path: artifacts
+        github-token: ${{ github.token }}
+        repository: ${{ github.repository }}
+        run-id: 10461346785
 
     - name: (2) Unzip
       run: zip -r artifacts/my-artifacts.zip artifacts/extract
