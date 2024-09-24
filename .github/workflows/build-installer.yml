@@ -56,6 +56,6 @@ jobs:
     - name: (9) Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: my-installer
-        path: ${{ github.workspace }}/deployment/win64 # or path/to/artifact
+        name: ProMesh4-Installer.exe
+        path: ${{ github.workspace }}/deployment/win64/ProMesh4-Installer.exe # or path/to/artifact
 
