@@ -30,15 +30,10 @@ jobs:
         github-token: ${{ github.token }}
         repository: ${{ github.repository }}
         run-id: 10461346785
-    - name: (2) Unzip
-      run: dir
     
-    - run: dir artifacts
-        
-    - name: (2) Unzip
-      run:  Expand-Archive -Path artifacts/my-artifacts.zip -DestinationPath artifacts/extract
-      # run: zip -r artifacts/my-artifacts.zip artifacts/extract
-    
+    - name: (2) Move dir. 
+      run: Move-Item -Path artifacts/Release -Destination windows
+
     - name: (3) Create installer
       #if: ${{ matrix.os == "windows-latest}}
       uses: joncloud/makensis-action@v4.1
