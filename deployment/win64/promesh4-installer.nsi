@@ -16,10 +16,10 @@ InstallDirRegKey HKLM "SOFTWARE\G-CSC\ProMesh4" "Install_Dir"
 ; Request application privileges for Windows Vista
 RequestExecutionLevel admin
 
-; Icon "..\..\ProMesh\deployment\data\ProMeshIcon.ico"
+Icon "deployment\data\ProMeshIcon.ico"
 
 LicenseBkColor /windows
-LicenseData "..\LICENSE"
+LicenseData "LICENSE"
 
 XPStyle on
 ManifestSupportedOS all
@@ -47,24 +47,24 @@ Section ProMesh4 (required)"
   SetOutPath $INSTDIR
   
   ; Put file there
-  File "data\ProMesh4.exe"
-  File "data\*.dll"
+  File "win64-artifacts\ProMesh4.exe"
+  File "win64-artifacts\\*.dll"
 
   SetOutPath $INSTDIR\platforms
-  File "data\platforms\*.dll"
+  File "win64-artifacts\platforms\*.dll"
 
   SetOutPath $INSTDIR\tools
-  File "data\tools\*.exe"
-  File "data\tools\*LICENSE"
+  File "win64-artifacts\tools\*.exe"
+  File "win64-artifacts\tools\*LICENSE"
 
   SetOutPath $INSTDIR\translations
-  File "data\translations\*"
+  File "win64-artifacts\translations\*"
 
   SetOutPath $INSTDIR\imageformats
-  File "data\imageformats\*"
+  File "win64-artifacts\imageformats\*"
 
   SetOutPath $INSTDIR\iconengines
-  File "data\iconengines\*"
+  File "win64-artifacts\iconengines\*"
 
   SetOutPath $INSTDIR
   
