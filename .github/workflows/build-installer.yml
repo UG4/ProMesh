@@ -32,6 +32,7 @@ jobs:
         run-id: 10461346785
     - name: (2) Unzip
       run: dir
+      run: dir artifacts
         
     - name: (2) Unzip
       run:  Expand-Archive -Path artifacts/my-artifacts.zip -DestinationPath artifacts/extract
