@@ -55,7 +55,7 @@ Section ProMesh4 (required)"
 
   SetOutPath $INSTDIR\tools
   File "..\..\win64-artifacts\tools\*.exe"
-  File "..\..\win64-artifacts\tools\*LICENSE"
+  ; File "..\..\win64-artifacts\tools\*LICENSE"
 
   SetOutPath $INSTDIR\translations
   File "..\..\win64-artifacts\translations\*"
