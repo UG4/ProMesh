@@ -1,5 +1,5 @@
 name: Build installer 
-on: workflow_dispatch
+on: [workflow_dispatch, push]
 jobs:
 
   installer-build:
@@ -36,3 +36,4 @@ jobs:
       uses: joncloud/makensis-action@v4.1
       with:
         arguments: "/V3"
+
