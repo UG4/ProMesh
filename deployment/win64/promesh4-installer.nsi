@@ -19,7 +19,7 @@ RequestExecutionLevel admin
 ; Icon "../deployment\data\ProMeshIcon.ico"
 
 LicenseBkColor /windows
-LicenseData "..\LICENSE"
+LicenseData "../../LICENSE"
 
 XPStyle on
 ManifestSupportedOS all
