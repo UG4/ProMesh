@@ -16,7 +16,7 @@ InstallDirRegKey HKLM "SOFTWARE\G-CSC\ProMesh4" "Install_Dir"
 ; Request application privileges for Windows Vista
 RequestExecutionLevel admin
 
-Icon "deployment\data\ProMeshIcon.ico"
+; Icon "deployment\data\ProMeshIcon.ico"
 
 LicenseBkColor /windows
 LicenseData "LICENSE"
