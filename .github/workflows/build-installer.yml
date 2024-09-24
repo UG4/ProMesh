@@ -1,11 +1,8 @@
 name: Build installer 
-
 on: workflow_dispatch
-# on: [push, pull_request]
-
 jobs:
 
-  cmake-multi-build:
+  installer-build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -23,7 +20,6 @@ jobs:
         os: [windows-latest]
         build_type: [Release]
     
-
     steps:
  
     - name: (1) Artifacts
