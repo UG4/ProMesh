@@ -39,7 +39,6 @@ jobs:
 
     - run: dir
     - run: dir windows
-    - run: dir Promesh
 
 
 
