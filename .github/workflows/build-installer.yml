@@ -30,7 +30,9 @@ jobs:
         github-token: ${{ github.token }}
         repository: ${{ github.repository }}
         run-id: 10461346785
-
+    - name: (2) Unzip
+      run: dir
+        
     - name: (2) Unzip
       run:  Expand-Archive -Path artifacts/my-artifacts.zip -DestinationPath artifacts/extract
       # run: zip -r artifacts/my-artifacts.zip artifacts/extract
