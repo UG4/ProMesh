@@ -49,3 +49,13 @@ jobs:
         script-file: "deployment/win64/promesh4-installer.nsi"
         arguments: "/V3"
 
+    - run: dir
+    - run: dir win64-artifacts
+    - run: dir deployment/win64
+    
+    - name: (9) Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: my-installer
+        path: ${{ github.workspace }}/deployment/win64 # or path/to/artifact
+
