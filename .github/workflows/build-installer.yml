@@ -25,148 +25,21 @@ jobs:
         # os: [ubuntu-latest, windows-latest]
         os: [windows-latest]
         build_type: [Release]
-        #c_compiler: [clang, cl]
-        #include:
-        #  - os: windows-latest
-        #    c_compiler: cl
-        #    cpp_compiler: cl
-        #  - os: ubuntu-latest
-        #    c_compiler: clang
-        #    cpp_compiler: clang++
-        #exclude:
-        #  - os: windows-latest
-        #    c_compiler: clang
-        #  - os: ubuntu-latest
-        #    c_compiler: cl
-
+    
 
     steps:
-            
-    - name: (1.1) Install Qt
-      uses: jurplel/install-qt-action@v3
-      with:
-        tools: 'tools_qtcreator,qt.tools.qtcreator'
-
-    - name: (1.2) Check content 
-      if: startsWith(matrix.os, 'windows') == true
-      run: |
-        dir ..\Qt\5.15.2\msvc2019_64
-        dir ..\Qt\5.15.2\msvc2019_64\bin
-        dir ..\Qt\5.15.2\msvc2019_64\lib
-        
-    - name: (2.0) Checkout self.
-      uses: actions/checkout@v4  
-      
-    - name: (2.1) Install UG4 - ugcore
-      uses: actions/checkout@v4
-      with:
-        repository: UG4/ugcore.git
-        path: ug4-git/ugcore
-        ref: master
-        
-    - name: (2.2) Install UG4 - plugin_ProMesh
-      uses: actions/checkout@v4
-      with:
-        repository: UG4/plugin_ProMesh.git
-        path: ug4-git/plugins/ProMesh
-        ref: master
-        
-    - name: (2.3) Install UG4 - plugin_LuaShell
-      uses: actions/checkout@v4
-      with:
-        repository: UG4/plugin_LuaShell.git
-        path: ug4-git/plugins/LuaShell
-        ref: master
-
-    - name: (2.4) Install UG4 - external_BoostForUG4
-      uses: actions/checkout@v4
-      with:
-        repository: UG4/external_BoostForUG4.git
-        path: ug4-git/externals/BoostForUG4
-        ref: master
-
-    - name: (2.5) Install UG4 - external_EigenForUG4
-      uses: actions/checkout@v4
-      with:
-        repository: UG4/external_EigenForUG4.git
-        path: ug4-git/externals/EigenForUG4
-        ref: master
-        
-    - name: (2.6) Install UG4/tool_tetgen.git
-      uses: actions/checkout@v4
-      with:
-        repository: UG4/tool_tetgen.git
-        path: ug4-git/tools/tetgen
-        ref: master
-        
-    - name: (3) Build UG4 & tetgen
-      run: |
-        cmake -B ug4-git/build -S ug4-git/ugcore -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON -DDIM=3
-        cmake --build ug4-git/build --config ${{ matrix.build_type }} 
-      
-
-    #- name: (2b) Build UG4/tool_tetgen.git
-    #  run: |
-    #    cmake -B ug4-git/tools/tetgen/build -S ug4-git/tools/tetgen
-    #    cmake --build ug4-git/tools/tetgen/build --target tetgen --config Release
-    
-    - name: (3) Move content 
-      if: startsWith(matrix.os, 'windows') == true
-      run: |
-        dir ug4-git
-        dir ug4-git\ugcore
-        move ug4-git\ugcore\bin ug4-git
-        move ug4-git\ugcore\lib ug4-git
-        dir ug4-git
-        dir ug4-git\bin
-        dir ug4-git\lib
-    #    mkdir ug4-git\bin
-    #    copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
-         
-
-    - name: (5) Install GL develop
-      if: startsWith(matrix.os, 'ubuntu') == true
-      run: sudo apt-get install -y libgl-dev freeglut3-dev
-
-
-    - name: (6) Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-    - name: (7) Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DUG_ROOT_PATH=${{ github.workspace }}/ug4-git
-        -S ${{ github.workspace }}
-
-# -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-# -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-# -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        
-   
-
-    - name: (8.1) Build
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} 
-
-    - name: (8.2) Fix content
-      run: | 
-        ..\Qt\5.15.2\msvc2019_64\bin\windeployqt.exe ${{ github.workspace }}\build\Release
-         
-
-    - name: (9) Artifacts
-      uses: actions/upload-artifact@v4
+ 
+    - name: (1) Artifacts
+      uses: actions/download-artifact@v4
       with:
         name: my-artifacts
-        path: ${{ github.workspace }}/build # or path/to/artifact
+        path: artifacts
 
-    - name: (10) Test
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest --build-config ${{ matrix.build_type }}
+    - name: (2) Unzip
+    - run: zip -r artifacts/my-artifacts.zip artifacts/extract
+    
+    - name: (3) Create installer
+      #if: ${{ matrix.os == "windows-latest}}
+      uses: joncloud/makensis-action@v4.1
+      with:
+        arguments: "/V3"
