@@ -21,6 +21,8 @@ jobs:
         build_type: [Release]
     
     steps:
+    - name: Checkout self.
+      uses: actions/checkout@v4  
  
     - name: (1) Artifacts
       uses: actions/download-artifact@v4
