@@ -49,16 +49,16 @@ jobs:
           https://api.github.com/repos/${{ github.repository }}/releases/latest)
           echo "::set-output name=upload_url::$(echo $latest_release | jq -r .upload_url | sed -e "s/{?name,label}//")"
       
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false 
+      # - name: Create Release
+      #  id: create_release
+      #  uses: actions/create-release@v1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  with:
+      #    tag_name: ${{ github.ref }}
+      #    release_name: Release ${{ github.ref }}
+      #    draft: false
+      #    prerelease: false 
       
       - name: Test
         run: echo "URL=${{ steps.get_release.outputs.upload_url }}"
@@ -69,8 +69,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          #upload_url: ${{ steps.get_release.outputs.upload_url }}
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
+          #upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./ProMesh4-Installer.exe
           asset_name: promesh_setup_win64.exe
           asset_content_type: application/octet-stream
