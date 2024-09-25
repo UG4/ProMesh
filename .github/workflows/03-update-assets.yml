@@ -37,8 +37,8 @@ jobs:
       - name: Download pre-packed artifact
         run: ls .
         
-      - name: Download pre-packed artifact
-        run: ls ./assets
+      #- name: Download pre-packed artifact
+      #  run: ls ./assets
 
       - name: Upload Release Asset
         id: upload-release-asset 
