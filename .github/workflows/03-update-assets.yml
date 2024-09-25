@@ -17,7 +17,8 @@ jobs:
       - name: Download pre-packed asset
         uses: actions/download-artifact@v4
         with:
-          name: ProMesh4-Installer-${{matrix.os}}
+          # name: ProMesh4-Installer-${{matrix.os}}
+          name: ProMesh4-Installer-windows-latest
           path: assets
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
