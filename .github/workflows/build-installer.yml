@@ -27,7 +27,7 @@ jobs:
     - name: (1) Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: my-artifacts
+        name: artifacts-${{matrix.os}}
         path: artifacts
         github-token: ${{ github.token }}
         repository: ${{ github.repository }}
@@ -35,7 +35,7 @@ jobs:
     
     - name: (2) Move dir. 
       if: startsWith( ${{ matrix.os }}, "windows-latest")
-      run: Move-Item -Path artifacts/Release -Destination win64-artifacts
+      run: Move-Item -Path artifacts/Release -Destination deployment/win64/artifacts
 
     - name: (3) Create installer
       if: startsWith( ${{ matrix.os }}, "windows-latest")
