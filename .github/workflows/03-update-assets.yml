@@ -48,7 +48,9 @@ jobs:
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           https://api.github.com/repos/${{ github.repository }}/releases/latest)
           echo "::set-output name=upload_url::$(echo $latest_release | jq -r .upload_url | sed -e "s/{?name,label}//")"
-
+      
+      - name: Test
+        run: echo "URL=${{ steps.get_release.outputs.upload_url }}"
   
       - name: Upload Release Binary
         id: upload-release-asset 
