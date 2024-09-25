@@ -51,20 +51,20 @@ Section ProMesh4 (required)"
   File "artifacts\\*.dll"
 
   SetOutPath $INSTDIR\platforms
-  File "..\..\win64-artifacts\platforms\*.dll"
+  File "artifacts\platforms\*.dll"
 
   SetOutPath $INSTDIR\tools
-  File "..\..\win64-artifacts\tools\*.exe"
-  ; File "..\..\win64-artifacts\tools\*LICENSE"
+  File "artifacts\tools\*.exe"
+  ; File "artifacts\tools\*LICENSE"
 
   SetOutPath $INSTDIR\translations
-  File "..\..\win64-artifacts\translations\*"
+  File "artifacts\translations\*"
 
   SetOutPath $INSTDIR\imageformats
-  File "..\..\win64-artifacts\imageformats\*"
+  File "artifacts\imageformats\*"
 
   SetOutPath $INSTDIR\iconengines
-  File "..\..\win64-artifacts\iconengines\*"
+  File "artifacts\iconengines\*"
 
   SetOutPath $INSTDIR
   
