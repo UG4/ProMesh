@@ -8,8 +8,18 @@ on:
 name: Upload Release Asset
 jobs:
   build:
-    name: Upload Release Asset
+    name: Upload Release Asset for ${{ matrix.os }}
+    
     runs-on: ubuntu-latest
+    
+   
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        build_type: [Release]
+    
     steps:
       - name: Checkout self
         uses: actions/checkout@v2
