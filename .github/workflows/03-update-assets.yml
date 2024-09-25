@@ -40,14 +40,20 @@ jobs:
       #- name: Download pre-packed artifact
       #  run: ls ./assets
 
-      - name: Upload Release Asset
+      - name: Get Release
+        id: get_release
+        uses: bruceadams/get-release@v0.0.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+          
+      - name: Upload Release Binary
         id: upload-release-asset 
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://api.github.com/repos/UG4/ProMesh/releases/1
-          # upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+          upload_url: ${{ steps.get_release.outputs.upload_url }}
           asset_path: ProMesh4-Installer.exe
           asset_name: ProMesh4-Installer-win64.exe
           asset_content_type: application/octet-stream
