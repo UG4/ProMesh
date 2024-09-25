@@ -35,7 +35,10 @@ jobs:
           run-id: 11026224064
 
       - name: Download pre-packed artifact
-        run: ls assets
+        run: ls .
+        
+      - name: Download pre-packed artifact
+        run: ls ./assets
 
       - name: Upload Release Asset
         id: upload-release-asset 
