@@ -63,14 +63,20 @@ jobs:
       - name: Test
         run: echo "URL=${{ steps.get_release.outputs.upload_url }}"
   
+      #- name: Upload Release Binary
+      #  id: upload-release-asset 
+      #  uses: actions/upload-release-asset@v1
+      #  env:
+      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #  with:
+      #    upload_url: ${{ steps.get_release.outputs.upload_url }}
+      #    #upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #    asset_path: ./ProMesh4-Installer.exe
+      #    asset_name: promesh_setup_win64.exe
+      #    asset_content_type: application/octet-stream
+          
       - name: Upload Release Binary
-        id: upload-release-asset 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: AButler/upload-release-assets@v3.0
         with:
-          upload_url: ${{ steps.get_release.outputs.upload_url }}
-          #upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./ProMesh4-Installer.exe
-          asset_name: promesh_setup_win64.exe
-          asset_content_type: application/octet-stream
+          files: "./ProMesh4-Installer.exe"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
