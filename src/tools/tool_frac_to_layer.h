@@ -33,6 +33,7 @@
 #include "app.h"
 #include "standard_tools.h"
 #include "lib_grid/algorithms/extrusion/expand_layers.h"
+//#include "lib_grid/algorithms/extrusion/expand_layers_arte.h"
 
 class FracToLayerWidget : public QWidget
 {
@@ -76,6 +77,9 @@ class FracToLayerWidget : public QWidget
 		QCheckBox*		m_cbExpandOuterBounds;
 		QSpinBox*		m_qNewSubset;
 		SubsetEntryVec	m_entries;
+
+		FracToLayerWidget(QWidget* parent ) : QWidget(parent) {};
+
 };
 
 #endif // TOOL_FRAC_TO_LAYER_H
