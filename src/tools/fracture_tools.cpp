@@ -33,6 +33,10 @@
 #include "tool_frac_to_layer_arte.h"
 #include "tooltips.h"
 
+#include "lib_grid/algorithms/extrusion/expand_layers_arte.h"
+#include "lib_grid/algorithms/extrusion/expand_layers_arte3D.h"
+
+
 using namespace std;
 using namespace ug;
 
@@ -111,6 +115,132 @@ public:
 	}
 };
 
+////////////////////////////////////////////////////////////////////
+
+class ToolExpandLayers3dArte : public ITool
+{
+public:
+	void execute(LGObject* obj, QWidget* widget)
+	{
+		using namespace ug;
+
+//		UG_LOG("Test execute" << std::endl);
+
+		FracToLayerWidgetArte* dlg = dynamic_cast<FracToLayerWidgetArte*>(widget);
+
+		if(dlg->numEntries() == 0){
+			UG_LOG("No entries selected. Aborting 'Expand Layers 2d'.\n");
+			return;
+		}
+
+		Grid& grid = obj->grid();
+		SubsetHandler& sh = obj->subset_handler();
+
+//		UG_LOG("Expand" << std::endl);
+
+		ExpandFractures3dArte(grid, sh, dlg->entries(), dlg->diamondsUseTriangles(),
+						  dlg->establishDiamonds());
+
+	//	done
+		obj->geometry_changed();
+	}
+
+	const char* get_name()		{return "Expand Layers 3d Arte";}
+	const char* get_tooltip()	{return TOOLTIP_EXPAND_LAYERS_3D_ARTE;}
+	const char* get_group()		{return "Remeshing | Layers";}
+
+	QWidget* get_dialog(QWidget* parent)
+	{
+//		UG_LOG("Get dialog" << std::endl);
+		return new FracToLayerWidgetArte(get_name(), parent, this);
+//		return new FracToLayerWidget(get_name(), parent, this);
+	}
+};
+
+
+#if 0
+template <int dim>
+class ToolExpandLayersArte : public ITool
+{
+private:
+
+	int D = dim;
+
+public:
+	ToolExpandLayersArte() {};
+
+	void execute(LGObject* obj, QWidget* widget)
+	{
+		using namespace ug;
+
+//		UG_LOG("Test execute" << std::endl);
+
+		FracToLayerWidgetArte* dlg = dynamic_cast<FracToLayerWidgetArte*>(widget);
+
+		if(dlg->numEntries() == 0){
+			UG_LOG("No entries selected. Aborting 'Expand Layers templ'.\n");
+			return;
+		}
+
+		Grid& grid = obj->grid();
+		SubsetHandler& sh = obj->subset_handler();
+
+//		UG_LOG("Expand" << std::endl);
+
+		if constexpr ( D == 2 )
+		{
+			ExpandFractures2dArte(grid, sh, dlg->entries(), dlg->diamondsUseTriangles(),
+							  dlg->establishDiamonds());
+		}
+		else if constexpr ( D == 3 )
+		{
+			ExpandFractures2dArte(grid, sh, dlg->entries(), dlg->diamondsUseTriangles(),
+							  dlg->establishDiamonds());
+
+		}
+		else
+		{
+			UG_THROW("wrong dimension for expand tool " << D << std::endl);
+		}
+
+
+	//	done
+		obj->geometry_changed();
+	}
+
+	const char* get_name()		{return "Expand Layers " + D + "d Arte";}
+
+	const char* get_tooltip()
+	{
+		if constexpr ( D == 2 )
+		{
+			return  TOOLTIP_EXPAND_LAYERS_2D_ARTE;
+		}
+		else if constexpr ( D == 3 )
+		{
+			return  TOOLTIP_EXPAND_LAYERS_3D_ARTE;
+		}
+		else
+		{
+			UG_THROW("wrong dimension for expand tool " << D << std::endl);
+
+			return false;
+		}
+
+		return {};
+	}
+
+	const char* get_group()		{return "Remeshing | Layers";}
+
+	QWidget* get_dialog(QWidget* parent)
+	{
+//		UG_LOG("Get dialog" << std::endl);
+		return new FracToLayerWidgetArte(get_name(), parent, this);
+//		return new FracToLayerWidget(get_name(), parent, this);
+	}
+
+};
+#endif
 
 ////////////////////////////////////////////////////////////////////
 
@@ -292,8 +422,13 @@ void RegisterFracToLayerTools(ToolManager* toolMgr)
 {
     //toolMgr->register_tool(new ToolFracToLayer);
     toolMgr->register_tool(new ToolExpandLayers2d);
-    toolMgr->register_tool(new ToolExpandLayers2dArte);
     toolMgr->register_tool(new ToolExpandLayers3d);
+    toolMgr->register_tool(new ToolExpandLayers2dArte);
+    toolMgr->register_tool(new ToolExpandLayers3dArte);
+
+//    toolMgr->register_tool(new ToolExpandLayersArte<2>);
+//    toolMgr->register_tool(new ToolExpandLayersArte<3>);
+
 }
 
 
