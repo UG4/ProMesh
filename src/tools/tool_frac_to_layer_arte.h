@@ -2,7 +2,7 @@
  * Copyright (c) 2008-2015:  G-CSC, Goethe University Frankfurt
  * Copyright (c) 2006-2008:  Steinbeis Forschungszentrum (STZ Ölbronn)
  * Copyright (c) 2006-2015:  Sebastian Reiter
- * Author: Sebastian Reiter
+ * Author: Markus Knodel
  *
  * This file is part of ProMesh.
  * 
@@ -25,61 +25,74 @@
  * GNU Lesser General Public License for more details.
  */
 
-#ifndef TOOL_FRAC_TO_LAYER_H
-#define TOOL_FRAC_TO_LAYER_H
+#ifndef TOOL_FRAC_TO_LAYER_ARTE_H
+#define TOOL_FRAC_TO_LAYER_ARTE_H
 
 #include <QtWidgets>
 #include <vector>
 #include "app.h"
 #include "standard_tools.h"
-#include "lib_grid/algorithms/extrusion/expand_layers.h"
+//#include "lib_grid/algorithms/extrusion/expand_layers.h"
+#include "tool_frac_to_layer.h"
 //#include "lib_grid/algorithms/extrusion/expand_layers_arte.h"
 
-class FracToLayerWidget : public QWidget
+class FracToLayerWidgetArte : public FracToLayerWidget
 {
 	Q_OBJECT
 
-	public:
-		typedef ug::FractureInfo SubsetEntry;
-		typedef std::vector<SubsetEntry>	SubsetEntryVec;
+//	public:
+//		typedef ug::FractureInfo SubsetEntry;
+//		typedef std::vector<SubsetEntry>	SubsetEntryVec;
 
 	public:
-		FracToLayerWidget(const QString& name, QWidget* parent, ITool* tool);
-		virtual ~FracToLayerWidget();
+		FracToLayerWidgetArte(const QString& name, QWidget* parent, ITool* tool);
+		virtual ~FracToLayerWidgetArte();
 
-		const SubsetEntryVec& entries()	const;
-		size_t numEntries() const;
-		const SubsetEntry& entry(size_t index) const;
+//		const SubsetEntryVec& entries()	const;
+//		size_t numEntries() const;
+//		const SubsetEntry& entry(size_t index) const;
 
 		bool degenerated_fractures() const;
 		bool expand_outer_boundaries() const;
 
-	protected slots:;
-		void addClicked();
+		bool diamondsUseTriangles() const;
+		bool establishDiamonds() const;
 
-		void applyClicked();
+		protected slots:;
+//			void addClicked();
 
-		void clearClicked();
+			void applyClicked();
 
-		void currentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
 
-		void widthChanged(double width);
-
-		void newSubsetIndexChanged(int newInd);
+//	protected slots:;
+//		void addClicked();
+//
+//		void applyClicked();
+//
+//		void clearClicked();
+//
+//		void currentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
+//
+//		void widthChanged(double width);
+//
+//		void newSubsetIndexChanged(int newInd);
+//
+//	protected:
+//		LGObject*		m_object;
+//		ITool*			m_tool;
+//		QListWidget*	m_listWidget;
+//		QSpinBox*		m_qSubsetIndex;
+//		QDoubleSpinBox* m_qWidth;
+//		QCheckBox*		m_cbCreateDegenerated;
+//		QCheckBox*		m_cbExpandOuterBounds;
+//		QSpinBox*		m_qNewSubset;
+//		SubsetEntryVec	m_entries;
 
 	protected:
-		LGObject*		m_object;
-		ITool*			m_tool;
-		QListWidget*	m_listWidget;
-		QSpinBox*		m_qSubsetIndex;
-		QDoubleSpinBox* m_qWidth;
-		QCheckBox*		m_cbCreateDegenerated;
-		QCheckBox*		m_cbExpandOuterBounds;
-		QSpinBox*		m_qNewSubset;
-		SubsetEntryVec	m_entries;
 
-		FracToLayerWidget(QWidget* parent ) : QWidget(parent) {};
+		QCheckBox*	m_useTrianglesInDiamons;
+		QCheckBox*	m_establishDiamonds;
 
 };
 
-#endif // TOOL_FRAC_TO_LAYER_H
+#endif // TOOL_FRAC_TO_LAYER_ARTE_H

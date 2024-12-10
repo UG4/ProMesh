@@ -35,6 +35,8 @@
 #include "tooltips.h"
 #include "../scene/csg_object.h"
 #include "script_tools.h"
+#include "lib_grid/file_io/file_io_vtu.h"
+
 
 //#include "lib_discretization/spatial_discretization/disc_util/finite_volume_output.h"
 
@@ -595,12 +597,48 @@ public:
  };
 */
 
+class IdentifierVtuROI : public ITool
+{
+	public:
+		void execute(LGObject* obj, QWidget* widget){
+			using namespace std;
+			using namespace ug;
+
+			ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+
+		//	get parameters
+			QString objName = "regions";
+
+			if(dlg){
+				objName = dlg->to_string(0);
+			}
+
+			ug::GridReaderVTU::setRegionOfInterestIdentifier(  objName.toLocal8Bit().constData() );
+		}
+
+		const char* get_name()		{return "Identify vtu ROI";}
+		const char* get_tooltip()	{return "identification of ROI name";}
+		const char* get_group()		{return "Grid Generation";}
+		bool accepts_null_object_ptr()	{return true;}
+
+		QWidget* get_dialog(QWidget* parent){
+			ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
+											IDB_APPLY | IDB_OK | IDB_CLOSE);
+		//	The name of the new mesh
+			dlg->addTextBox(tr("name:"), "regions");
+			return dlg;
+		}
+};
+
+
 void PreRegisterGridGenerationTools(ToolManager* toolMgr)
 {
 	toolMgr->register_tool(new ToolNewMesh);
 	// toolMgr->register_tool(new ToolNewCSGObject);
 	toolMgr->register_tool(new ToolNewMeshFromSelection);
 	toolMgr->register_tool(new ToolMergeMeshes);
+
+	toolMgr->register_tool(new IdentifierVtuROI);
 }
 
 void PostRegisterGridGenerationTools(ToolManager* toolMgr)
