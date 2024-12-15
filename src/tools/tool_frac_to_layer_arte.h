@@ -34,7 +34,7 @@
 #include "standard_tools.h"
 //#include "lib_grid/algorithms/extrusion/expand_layers.h"
 #include "tool_frac_to_layer.h"
-#include "lib_grid/algorithms/extrusion/expand_layers_arte.h"
+//#include "lib_grid/algorithms/extrusion/expand_layers_arte.h"
 
 class FracToLayerWidgetArte : public FracToLayerWidget
 {
