@@ -1,7 +1,7 @@
 # Copyright (c) 2008-2015:  G-CSC, Goethe University Frankfurt
 # Copyright (c) 2006-2008:  Steinbeis Forschungszentrum (STZ Ölbronn)
 # Copyright (c) 2006-2015:  Sebastian Reiter
-# Author: Sebastian Reiter
+# Author: Sebastian Reiter, small modifications Markus Knodel
 #
 # This file is part of ProMesh.
 # 
@@ -64,6 +64,7 @@ set(ProMeshSRC	src/app.cpp
 				src/tools/tetgen_tools.cpp
 				src/tools/tool_dialog.cpp
 				src/tools/tool_frac_to_layer.cpp
+				src/tools/tool_frac_to_layer_arte.cpp
 				src/tools/tool_manager.cpp
 				src/util/file_util.cpp
 				src/util/qstring_util.cpp
@@ -262,11 +263,11 @@ else(UNIX)
 	if(MINGW)
 		# resource compilation for MINGW
 		ADD_CUSTOM_COMMAND( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ProMeshIcon.o
-							COMMAND windres.exe -I${CMAKE_SOURCE_DIR}/deploy_data -i${CMAKE_SOURCE_DIR}/deploy_data/ProMeshIcon.rc 
+							COMMAND windres.exe -I${CMAKE_SOURCE_DIR}/deployment/data -i${CMAKE_SOURCE_DIR}/deployment/data/ProMeshIcon.rc 
                              -o ${CMAKE_CURRENT_BINARY_DIR}/ProMeshIcon.o )
 		ADD_EXECUTABLE(ProMesh4 WIN32 ${allSources} ProMeshIcon.o)
 	else(MINGW)
-		ADD_EXECUTABLE(ProMesh4 WIN32 ${allSources} ${CMAKE_SOURCE_DIR}/deploy_data/ProMeshIcon.rc)
+		ADD_EXECUTABLE(ProMesh4 WIN32 ${allSources} ${CMAKE_SOURCE_DIR}/deployment/data/ProMeshIcon.rc)
 	endif(MINGW)
 endif(UNIX)
 
