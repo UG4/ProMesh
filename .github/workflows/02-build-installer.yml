@@ -1,0 +1,60 @@
+name: Build installer 
+
+on:
+  workflow_dispatch:
+  push:
+    # Sequence of patterns matched against refs/tags
+   tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    
+jobs:
+
+  installer-build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      # Set up a matrix to run the following 3 configurations:
+      # 1. <Windows, Release, latest MSVC compiler toolchain on the default runner image, default generator>
+      # 2. <Linux, Release, latest GCC compiler toolchain on the default runner image, default generator>
+      # 3. <Linux, Release, latest Clang compiler toolchain on the default runner image, default generator>
+      #
+      # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
+      matrix:
+        # os: [ubuntu-latest, windows-latest]
+        os: [windows-latest]
+        build_type: [Release]
+    
+    steps:
+    - name: (0) Checkout self.
+      uses: actions/checkout@v4  
+ 
+    - name: (1) Artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: artifacts-${{matrix.os}}
+        path: artifacts
+        github-token: ${{ github.token }}
+        repository: ${{ github.repository }}
+        run-id: 12359566993
+    
+    - name: (2) Move dir. 
+      if: startsWith( ${{ matrix.os }}, "windows-latest")
+      run: Move-Item -Path artifacts/Release -Destination deployment/win64/artifacts
+
+    - name: (3) Create installer
+      if: startsWith( ${{ matrix.os }}, "windows-latest")
+      uses: joncloud/makensis-action@v4.1
+      with:
+        script-file: "deployment/win64/promesh4-installer.nsi"
+        arguments: "/V3"
+        
+    - name: (4) Artifacts
+      if: startsWith( ${{ matrix.os }}, "windows-latest")
+      uses: actions/upload-artifact@v4
+      with:
+        name: ProMesh4-Installer-${{ matrix.os }}
+        path: ${{ github.workspace }}/deployment/win64/ProMesh4-Installer.exe # or path/to/artifact
+

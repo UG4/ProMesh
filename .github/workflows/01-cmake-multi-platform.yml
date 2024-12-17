@@ -40,8 +40,21 @@ jobs:
 
 
     steps:
-    - name: (1) Checkout
-      uses: actions/checkout@v3
+            
+    - name: (1.1) Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        tools: 'tools_qtcreator,qt.tools.qtcreator'
+
+    - name: (1.2) Check content 
+      if: startsWith(matrix.os, 'windows') == true
+      run: |
+        dir ..\Qt\5.15.2\msvc2019_64
+        dir ..\Qt\5.15.2\msvc2019_64\bin
+        dir ..\Qt\5.15.2\msvc2019_64\lib
+        
+    - name: (2.0) Checkout self.
+      uses: actions/checkout@v4  
 
     - name: (2.1) Install UG4 - ugcore
       uses: actions/checkout@v4
@@ -90,8 +103,6 @@ jobs:
         cmake -B ug4-git/build -S ug4-git/ugcore -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON -DDIM=3
         cmake --build ug4-git/build --config ${{ matrix.build_type }} 
       
-      
-
     #- name: (2b) Build UG4/tool_tetgen.git
     #  run: |
     #    cmake -B ug4-git/tools/tetgen/build -S ug4-git/tools/tetgen
@@ -110,10 +121,6 @@ jobs:
     #    mkdir ug4-git\bin
     #    copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
          
-        
-    - name: (4) Install Qt
-      uses: jurplel/install-qt-action@v3
-
 
     - name: (5) Install GL develop
       if: startsWith(matrix.os, 'ubuntu') == true
@@ -141,15 +148,19 @@ jobs:
         
    
 
-    - name: (8) Build
+
+    - name: (8.1) Build
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} 
 
-
+    - name: (8.2) Fix content
+      run: | 
+        ..\Qt\5.15.2\msvc2019_64\bin\windeployqt.exe ${{ github.workspace }}\build\Release
+         
     - name: (9) Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: my-artifacts
+        name: artifacts-${{ matrix.os }}
         path: ${{ github.workspace }}/build # or path/to/artifact
 
     - name: (10) Test
