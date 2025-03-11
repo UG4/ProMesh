@@ -34,11 +34,11 @@ jobs:
     - name: (1) Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: artifacts-${{matrix.os}}
+        name: artifacts-${{matrix.os}}-${{github.sha}}
         path: artifacts
         github-token: ${{ github.token }}
         repository: ${{ github.repository }}
-        run-id: 12359566993
+        # run-id: 12359566993
     
     - name: (2) Move dir. 
       if: startsWith( ${{ matrix.os }}, "windows-latest")
@@ -55,6 +55,6 @@ jobs:
       if: startsWith( ${{ matrix.os }}, "windows-latest")
       uses: actions/upload-artifact@v4
       with:
-        name: ProMesh4-Installer-${{ matrix.os }}
+        name: ProMesh4-Installer-${{ matrix.os }}-${{github.sha}}
         path: ${{ github.workspace }}/deployment/win64/ProMesh4-Installer.exe # or path/to/artifact
 
