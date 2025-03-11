@@ -28,11 +28,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           # name: ProMesh4-Installer-${{matrix.os}}
-          name: ProMesh4-Installer-windows-latest
+          name: ProMesh4-Installer-windows-latest-${{github.sha}}
           # path: $GITHUB_WORKSPACE
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
-          run-id: 12355131211
+          # run-id: 12355131211
 
       - name: Download pre-packed artifact
         run: ls .
@@ -80,4 +80,4 @@ jobs:
         with:
           files: "./ProMesh4-Installer.exe"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: v0.0.2
+          release-tag: v4.4.0
