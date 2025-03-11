@@ -55,7 +55,7 @@ jobs:
         
     - name: (2.0) Checkout self.
       uses: actions/checkout@v4  
-
+      
     - name: (2.1) Install UG4 - ugcore
       uses: actions/checkout@v4
       with:
