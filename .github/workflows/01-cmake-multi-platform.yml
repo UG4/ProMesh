@@ -1,8 +1,15 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on multiple platforms
 
-on: workflow_dispatch
+# Compiles Promesh & produces an artifact.
+name: CMake build (on multiple platforms).
+
+
+# workflow_call: Reusable workflows (other workflows can trigger this)
+# workflow_dispatch: Allows to run this workflow manually from the Actions tab
+on:  [workflow_call, workflow_dispatch]
+
+
 # on: [push, pull_request]
 
 jobs:
@@ -145,8 +152,6 @@ jobs:
 # -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
 # -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
 # -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        
-   
 
 
     - name: (8.1) Build
