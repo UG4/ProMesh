@@ -1,17 +1,21 @@
 name: Build installer 
 
 on:
-  workflow_dispatch:
-  push:
+  [workflow_dispatch, workflow_call]
+  #push:
     # Sequence of patterns matched against refs/tags
-   tags:
-    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+   #tags:
+   # - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
     
 jobs:
+  compile:
+    # Reuse the compile workflow (produces an artifact)
+    uses: ./.github/workflows/01-cmake-multi-platform.yml
 
   installer-build:
     name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    needs: compile
     strategy:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: false
@@ -34,11 +38,11 @@ jobs:
     - name: (1) Artifacts
       uses: actions/download-artifact@v4
       with:
-        name: artifacts-${{matrix.os}}
+        name: artifacts-${{matrix.os}}-${{github.sha}}
         path: artifacts
         github-token: ${{ github.token }}
         repository: ${{ github.repository }}
-        run-id: 12359566993
+        # run-id: 12359566993
     
     - name: (2) Move dir. 
       if: startsWith( ${{ matrix.os }}, "windows-latest")
@@ -55,6 +59,6 @@ jobs:
       if: startsWith( ${{ matrix.os }}, "windows-latest")
       uses: actions/upload-artifact@v4
       with:
-        name: ProMesh4-Installer-${{ matrix.os }}
+        name: ProMesh4-Installer-${{ matrix.os }}-${{github.sha}}
         path: ${{ github.workspace }}/deployment/win64/ProMesh4-Installer.exe # or path/to/artifact
 
