@@ -1,7 +1,7 @@
 name: Build installer 
 
 on:
-  workflow_dispatch:
+  [workflow_dispatch, workflow_call]
   #push:
     # Sequence of patterns matched against refs/tags
    #tags:
