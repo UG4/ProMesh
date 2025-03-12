@@ -2,12 +2,15 @@ name: Build installer
 
 on:
   workflow_dispatch:
-  push:
+  #push:
     # Sequence of patterns matched against refs/tags
-   tags:
-    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+   #tags:
+   # - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
     
 jobs:
+  compile:
+    # Reuse the compile workflow (produces an artifact)
+    uses: ./.github/workflows/01-cmake-multi-platform.yml
 
   installer-build:
     name: Build on ${{ matrix.os }}
