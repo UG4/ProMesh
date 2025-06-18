@@ -56,4 +56,4 @@ jobs:
         with:
           files: "./ProMesh4-Installer.exe"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
-          release-tag: v4.5.0
+          release-tag: v4.6.0
