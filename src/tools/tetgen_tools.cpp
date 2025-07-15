@@ -75,6 +75,10 @@ static QString BuildTetgenArguments (
 		args.append("Y");	// if inner bnds shall be preserved "YY" has to be passed to tetgen
 
 	args.append("Q");
+
+	UG_LOG("The arguments constructed for tetgen are: " << args.toUtf8().constData()
+			<< " END " << std::endl);
+
 	return args;
 }
 
@@ -133,7 +137,12 @@ void TetrahedralizeEx (	Mesh* mesh,
 
 	QProcess proc;
 	proc.setProcessChannelMode(QProcess::MergedChannels);
+	UG_LOG("TETGEN CALLED WITH THE COMMAND " << std::endl );
+	UG_LOG("TETGEN CALL " << call.toUtf8().constData() << std::endl);
+	UG_LOG("TETGEN ARGS " << args.toLocal8Bit().constData()  << std::endl);
 	proc.start(call, args.split(' '));
+
+	UG_LOG("TETGEN CALL FINISHED" << std::endl);
 
 	if(!proc.waitForFinished(timeOut * 1000)){
 		if(proc.state() == QProcess::Running)
