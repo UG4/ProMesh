@@ -62,6 +62,7 @@ set(ProMeshSRC	src/app.cpp
 				src/tools/script_tools.cpp
 				src/tools/standard_tools.cpp
 				src/tools/tetgen_tools.cpp
+				src/tools/externalTetgenCommands.cpp
 				src/tools/tool_dialog.cpp
 				src/tools/tool_frac_to_layer.cpp
 				src/tools/tool_frac_to_layer_arte.cpp

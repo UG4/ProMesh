@@ -37,6 +37,8 @@
 #include "tools/file_io_tools.h"
 #include "lib_grid/file_io/file_io_tetgen.h"
 
+#include "externalTetgenCommands.h"
+
 using namespace ug;
 using namespace std;
 using namespace ug::promesh;
@@ -96,42 +98,67 @@ static void RemoveTetgenFiles (const QString& eleFileName)
 	QFile::remove(filename);
 }
 
+
 static
 void TetrahedralizeEx (	Mesh* mesh,
+//						number test,
                         number maxRadiusEdgeRatio,
                        	number minDihedralAngle,
 						bool preserveOuter,
 						bool preserveAll,
 						bool separateVolumes,
 						bool appendSubsetsAtEnd,
+						bool useExternalTetgenCommand,
 						int verbosity,
-						double timeOut)
+						double timeOut
+					)
 {
 
+
 	QString outFileName = TmpFileName("plc", ".smesh");
-	// UG_LOG("Saving to file: " << outFileName.toLocal8Bit().constData() << std::endl);
+	UG_LOG("Saving to file: " << outFileName.toLocal8Bit().constData() << std::endl);
 
 	if(!SaveMesh(mesh, outFileName.toLocal8Bit().constData())){
 		UG_THROW("SaveMesh failed with mesh '" << outFileName.toLocal8Bit().constData() << "' in Tetrahedral Fill\n");
 	}
 
+	QString call;
 	QString args;
-	args.append("-").append(BuildTetgenArguments(mesh->grid().num_faces() > 0,
-	                            false,
-	                            maxRadiusEdgeRatio,
-                                minDihedralAngle,
-                                preserveOuter,
-                                preserveAll,
-                                verbosity));
+
+	if( !useExternalTetgenCommand )
+	{
+
+		args.append("-").append(BuildTetgenArguments(mesh->grid().num_faces() > 0,
+									false,
+									maxRadiusEdgeRatio,
+									minDihedralAngle,
+									preserveOuter,
+									preserveAll,
+									verbosity));
+
+		call = AppDir().path()	.append(QDir::separator())
+										.append("tools")
+										.append(QDir::separator())
+										.append("tetgen");
+		// UG_LOG("Calling: '" << call.toLocal8Bit().constData() << "'\n");
+
+	}
+	else
+	{
+		QStringList callArgs = externalCommands::globVarTetgenCall.split(' ');
+
+		call = callArgs.at(0);
+
+		args.append(" ");
+
+		for( auto i = callArgs.begin()+1, end = callArgs.end(); i != end; i++ )
+		{
+			args.append(*i);
+		}
+	}
 
 	args.append(" ").append(outFileName);
 
-
-	QString call = AppDir().path()	.append(QDir::separator())
-									.append("tools")
-									.append(QDir::separator())
-									.append("tetgen");
-	// UG_LOG("Calling: '" << call.toLocal8Bit().constData() << "'\n");
 
 	UG_LOG("Calling 'tetgen' by Hang Si (www.tetgen.org)\n");
 
@@ -191,38 +218,69 @@ void RetetrahedralizeEx (Mesh* mesh,
                        	number minDihedralAngle,
 						bool preserveOuter,
 						bool preserveAll,
+						bool useExternalTetgenCommand,
 						int verbosity,
-						double timeOut)
+						double timeOut
+						)
 {
 
 	QString outFileName = TmpFileName("retet", ".ele");
-	// UG_LOG("Saving to file: " << outFileName.toLocal8Bit().constData() << std::endl);
+	UG_LOG("Saving to file: " << outFileName.toLocal8Bit().constData() << std::endl);
 
 	if(!SaveGridToELE(mesh->grid(), outFileName.toLocal8Bit().constData(),
 	                  &mesh->subset_handler(), mesh->position_attachment(),
 	                  &mesh->volume_constraint_attachment())){
 		UG_THROW("SaveMesh failed with mesh '" << outFileName.toLocal8Bit().constData() << "' in Tetrahedral Fill\n");
 	}
+
 	QString args;
-	args.append("-").append(BuildTetgenArguments(false, true,
-                                maxRadiusEdgeRatio,
-                                minDihedralAngle,
-                                preserveOuter,
-                                preserveAll,
-                                verbosity));
+
+	QString call;
+
+	if( !useExternalTetgenCommand )
+	{
+
+		args.append("-").append(BuildTetgenArguments(false, true,
+									maxRadiusEdgeRatio,
+									minDihedralAngle,
+									preserveOuter,
+									preserveAll,
+									verbosity));
+//		args.append(" ").append(outFileName);
+
+
+		call = AppDir().path()	.append(QDir::separator())
+										.append("tools")
+										.append(QDir::separator())
+										.append("tetgen");
+	}
+	else
+	{
+		QStringList callArgs = externalCommands::globVarTetgenCall.split(' ');
+
+		call = callArgs.at(0);
+
+		args.append(" ");
+
+		for( auto i = callArgs.begin()+1, end = callArgs.end(); i != end; i++ )
+		{
+			args.append(*i);
+		}
+	}
+
 	args.append(" ").append(outFileName);
 
-
-	QString call = AppDir().path()	.append(QDir::separator())
-									.append("tools")
-									.append(QDir::separator())
-									.append("tetgen");
-	// UG_LOG("Calling: '" << call.toLocal8Bit().constData() << "'\n");
+	UG_LOG("Calling: '" << call.toLocal8Bit().constData() << "'\n");
 
 	UG_LOG("Calling 'tetgen' by Hang Si (www.tetgen.org)\n");
 
 	QProcess proc;
 	proc.setProcessChannelMode(QProcess::MergedChannels);
+
+	UG_LOG("TETGEN CALLED WITH THE COMMAND " << std::endl );
+	UG_LOG("TETGEN CALL " << call.toUtf8().constData() << std::endl);
+	UG_LOG("TETGEN ARGS " << args.toLocal8Bit().constData()  << std::endl);
+
 	proc.start(call, args.split(' '));
 
 	if(!proc.waitForFinished(timeOut * 1000)){
@@ -265,6 +323,7 @@ void RegisterTetgenTools ()
 				"preserve all #"
 				"separate volumes || value=true #"
 				"append subsets at end || value=true#"
+				"use external tetgen|| value=false#"
 				"verbosity || min=0; value=0; max=3; step=1#"
 				"time out (s) || min= -1; value=10; step=1",
 				"Fills a closed surface with tetrahedra using TetGen. "
@@ -276,8 +335,9 @@ void RegisterTetgenTools ()
 				"min dihedral angle || value=5; min=0; max=18; step=1 #"
 				"preserve outer #"
 				"preserve all #"
+				"use external tetgen|| value=false#"
 				"verbosity || min=0; value=0; max=3; step=1#"
-				"time out (s) || min= -1; value=10; step=1",
+				"time out (s) || min= -1; value=10; step=1"
 				"Given a tetrahedralization and volume constraints, "
 					"this method adapts the tetrahedra using TetGen. "
 					"Aborts if no result was computet after 'time out' elapsed.");

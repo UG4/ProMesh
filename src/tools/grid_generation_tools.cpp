@@ -2,7 +2,7 @@
  * Copyright (c) 2008-2015:  G-CSC, Goethe University Frankfurt
  * Copyright (c) 2006-2008:  Steinbeis Forschungszentrum (STZ Ölbronn)
  * Copyright (c) 2006-2015:  Sebastian Reiter
- * Author: Sebastian Reiter
+ * Author: Sebastian Reiter, additions by Markus Knodel
  *
  * This file is part of ProMesh.
  * 
@@ -36,6 +36,7 @@
 #include "../scene/csg_object.h"
 #include "script_tools.h"
 #include "lib_grid/file_io/file_io_vtu.h"
+#include "externalTetgenCommands.h"
 
 
 //#include "lib_discretization/spatial_discretization/disc_util/finite_volume_output.h"
@@ -630,6 +631,48 @@ class IdentifierVtuROI : public ITool
 		}
 };
 
+class TetgenExternalCall : public ITool
+{
+	public:
+
+	void execute(LGObject* obj, QWidget* widget)
+	{
+		using namespace std;
+		using namespace ug;
+
+		ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+
+		//	get parameters
+		QString tetgenCall = externalCommands::globVarTetgenCall;
+
+		if(dlg)
+		{
+			tetgenCall = dlg->to_string(0);
+			externalCommands::globVarTetgenCall = tetgenCall;
+		}
+
+		UG_LOG("Set for external tetgen call the command: " << externalCommands::globVarTetgenCall.toLocal8Bit().constData() << std::endl);
+
+	}
+
+	const char* get_name()		{return "Tetgen Call Command";}
+	const char* get_tooltip()	{return "Set the command for tetgen";}
+	const char* get_group()		{return "Grid Generation";}
+	bool accepts_null_object_ptr()	{return true;}
+
+	QWidget* get_dialog(QWidget* parent)
+	{
+		ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
+											IDB_APPLY | IDB_OK | IDB_CLOSE);
+
+		QString tetgenCall = externalCommands::globVarTetgenCall;
+
+		//	The name
+		dlg->addTextBox(tr("TetgenCommand:"), tetgenCall );
+		return dlg;
+	}
+};
+
 
 void PreRegisterGridGenerationTools(ToolManager* toolMgr)
 {
@@ -639,6 +682,8 @@ void PreRegisterGridGenerationTools(ToolManager* toolMgr)
 	toolMgr->register_tool(new ToolMergeMeshes);
 
 	toolMgr->register_tool(new IdentifierVtuROI);
+
+	toolMgr->register_tool(new TetgenExternalCall);
 }
 
 void PostRegisterGridGenerationTools(ToolManager* toolMgr)
