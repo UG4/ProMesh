@@ -115,7 +115,7 @@ jobs:
     #    cmake -B ug4-git/tools/tetgen/build -S ug4-git/tools/tetgen
     #    cmake --build ug4-git/tools/tetgen/build --target tetgen --config Release
     
-    - name: (3) Move content 
+    - name: (4) Move content (Windows)
       if: startsWith(matrix.os, 'windows') == true
       run: |
         dir ug4-git
@@ -127,6 +127,17 @@ jobs:
         dir ug4-git\lib
     #    mkdir ug4-git\bin
     #    copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
+
+    - name: (4) Move content (Ubuntu)
+      if: startsWith(matrix.os, 'ubuntu') == true
+      run: |
+        ls ug4-git
+        ls ug4-git\ugcore
+        mv ug4-git\ugcore\bin ug4-git
+        mv ug4-git\ugcore\lib ug4-git
+        ls ug4-git
+        ls ug4-git\bin
+        ls ug4-git\lib
          
 
     - name: (5) Install GL develop
