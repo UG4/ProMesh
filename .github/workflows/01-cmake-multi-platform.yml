@@ -132,12 +132,12 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu') == true
       run: |
         ls ug4-git
-        ls ug4-git\ugcore
-        mv ug4-git\ugcore\bin ug4-git
-        mv ug4-git\ugcore\lib ug4-git
+        ls ug4-git/ugcore
+        mv ug4-git/ugcore/bin ug4-git
+        mv ug4-git/ugcore/lib ug4-git
         ls ug4-git
-        ls ug4-git\bin
-        ls ug4-git\lib
+        ls ug4-git/bin
+        ls ug4-git/lib
          
 
     - name: (5) Install GL develop
