@@ -23,7 +23,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 2.6...3.20)
 project(P_PROMESH4)
 
 set (CMAKE_CXX_STANDARD 11)
