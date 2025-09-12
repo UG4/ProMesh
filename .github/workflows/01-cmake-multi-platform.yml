@@ -36,7 +36,7 @@ jobs:
     steps:
             
     - name: (1.1) Install Qt
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v3
       with:
         tools: 'tools_qtcreator,qt.tools.qtcreator'
         add-tools-to-path: True
