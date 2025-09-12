@@ -167,8 +167,8 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu') == true
       run: |
         ls ${{ github.workspace }}
-        ls ${{ github.workspace }}\build
-        linuxdeployqt ${{ github.workspace }}\build\Release
+        ls ${{ github.workspace }}/build
+        linuxdeployqt ${{ github.workspace }}/build/Release
          
     - name: (9) Artifacts
       uses: actions/upload-artifact@v4
