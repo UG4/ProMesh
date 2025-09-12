@@ -28,30 +28,18 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         # os: [windows-latest]
         build_type: [Release]
-        #c_compiler: [clang, cl]
-        #include:
-        #  - os: windows-latest
-        #    c_compiler: cl
-        #    cpp_compiler: cl
-        #  - os: ubuntu-latest
-        #    c_compiler: clang
-        #    cpp_compiler: clang++
-        #exclude:
-        #  - os: windows-latest
-        #    c_compiler: clang
-        #  - os: ubuntu-latest
-        #    c_compiler: cl
 
 
     steps:
             
     - name: (1.1) Install Qt
-      uses: jurplel/install-qt-action@v3
+      uses: jurplel/install-qt-action@v4
       with:
         tools: 'tools_qtcreator,qt.tools.qtcreator'
+        add-tools-to-path: True
 
     - name: (1.2) Check content 
       if: startsWith(matrix.os, 'windows') == true
@@ -129,7 +117,7 @@ jobs:
     #    copy ug4-git\tools\tetgen\build\Release\tetgen.exe ug4-git\bin\tetgen.exe
 
     - name: (4) Move content (Ubuntu)
-      if: startsWith(matrix.os, 'ubuntu') == true
+      if: startsWith(matrix.os, 'ubuntu') == true || startsWith(matrix.os, 'macos') == true
       run: |
         ls ug4-git
         ls ug4-git/ugcore
@@ -142,7 +130,8 @@ jobs:
 
     - name: (5) Install GL develop
       if: startsWith(matrix.os, 'ubuntu') == true
-      run: sudo apt-get install -y libgl-dev freeglut3-dev
+      run: | 
+        sudo apt-get install -y libgl-dev freeglut3-dev
 
 
     - name: (6) Set reusable strings
@@ -169,9 +158,17 @@ jobs:
       # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} 
 
-    - name: (8.2) Fix content
+    - name: (8.2a) Fix content (Windows)
+      if: startsWith(matrix.os, 'windows') == true
       run: | 
         ..\Qt\5.15.2\msvc2019_64\bin\windeployqt.exe ${{ github.workspace }}\build\Release
+    
+    - name: (8.2b) Fix content (Linux)
+      if: startsWith(matrix.os, 'ubuntu') == true
+      run: |
+        ls ${{ github.workspace }}
+        ls ${{ github.workspace }}\build
+        linuxdeployqt ${{ github.workspace }}\build\Release
          
     - name: (9) Artifacts
       uses: actions/upload-artifact@v4
