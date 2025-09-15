@@ -34,16 +34,16 @@ jobs:
 
 
     steps:
-    #- name: (0.1) Install clang on MacOS
-    #  if: startsWith(matrix.os, 'macos') == true
-    #  run: |
-    #    brew install llvm
-    #    echo "LLVM_PATH=$(brew --prefix llvm)" >> $GITHUB_ENV
-    #    echo "CC=$(brew --prefix llvm)/bin/clang" >> $GITHUB_ENV
-    #    echo "CXX=$(brew --prefix llvm)/bin/clang++" >> $GITHUB_ENV
-    #    echo "PATH=$(brew --prefix llvm)/bin:$PATH" >> $GITHUB_ENV
-    #    echo "LDFLAGS=-L$(brew --prefix llvm)/lib" >> $GITHUB_ENV
-    #    echo "CPPFLAGS=-I$(brew --prefix llvm)/include" >> $GITHUB_ENV
+    - name: (0.1) Install clang on MacOS
+      if: startsWith(matrix.os, 'macos') == true
+      run: |
+        brew install gcc@15
+        echo "LLVM_PATH=$(brew --prefix gcc@15)" >> $GITHUB_ENV
+        echo "CC=$(brew --prefix gcc@15)/bin/clang" >> $GITHUB_ENV
+        echo "CXX=$(brew --prefix gcc@15)/bin/clang++" >> $GITHUB_ENV
+        echo "PATH=$(brew --prefix gcc@15)/bin:$PATH" >> $GITHUB_ENV
+        echo "LDFLAGS=-L$(brew --prefix gcc@15)/lib" >> $GITHUB_ENV
+        echo "CPPFLAGS=-I$(brew --prefix gcc@15)/include" >> $GITHUB_ENV
 
             
     - name: (1.1) Install Qt
