@@ -95,7 +95,7 @@ jobs:
       with:
         repository: UG4/external_EigenForUG4.git
         path: ug4-git/externals/EigenForUG4
-        ref: master
+        ref: feature-eigen34
         
     - name: (2.6) Install UG4/tool_tetgen.git
       uses: actions/checkout@v4
