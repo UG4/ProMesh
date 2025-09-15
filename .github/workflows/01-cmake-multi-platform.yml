@@ -37,7 +37,7 @@ jobs:
     - name: (0.1) Install clang on MacOS
       if: startsWith(matrix.os, 'macos') == true
       run: |
-        brew install llvm@20
+        brew install llvm
         # echo "::add-path::/usr/local/opt/llvm/bin"
         # clang --version
         # clang++ --version
