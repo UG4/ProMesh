@@ -48,16 +48,19 @@ jobs:
             
     - name: (1.1a) Install Qt on Apple Silicon
       if: matrix.os == 'macos-latest'
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v3
       with:
         tools: 'tools_qtcreator,qt.tools.qtcreator'
         add-tools-to-path: True
-        version: 5.15.*
-        host: arm64
+        aqtversion: '==3.1.*'
+        version: '5.15.2'
+        host: 'mac'
+        target: 'desktop'
+        arch: 'clang_64'
     
     - name: (1.1b) Install Qt on all other OS.
       if: matrix.os != 'macos-latest'
-      uses: jurplel/install-qt-action@v4
+      uses: jurplel/install-qt-action@v3
       with:
         tools: 'tools_qtcreator,qt.tools.qtcreator'
         add-tools-to-path: True
