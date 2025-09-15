@@ -46,7 +46,17 @@ jobs:
         echo "CPPFLAGS=-I$(brew --prefix gcc@15)/include" >> $GITHUB_ENV
 
             
-    - name: (1.1) Install Qt
+    - name: (1.1a) Install Qt on Apple Silicon
+      if: matrix.os == 'macos-latest'
+      uses: jurplel/install-qt-action@v4
+      with:
+        tools: 'tools_qtcreator,qt.tools.qtcreator'
+        add-tools-to-path: True
+        version: 5.15.*
+        host: arm64
+    
+    - name: (1.1b) Install Qt on all other OS.
+      if: matrix.os != 'macos-latest'
       uses: jurplel/install-qt-action@v4
       with:
         tools: 'tools_qtcreator,qt.tools.qtcreator'
