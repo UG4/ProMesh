@@ -29,7 +29,7 @@ jobs:
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
         # os: [ubuntu-latest, windows-latest, macos-latest] # TODO: MacOS
-        os: [windows-latest]  # working versions.
+        os: [windows-2022]  # working versions. # Windows-2025 does not support NSIS.
         build_type: [Release]
 
 
