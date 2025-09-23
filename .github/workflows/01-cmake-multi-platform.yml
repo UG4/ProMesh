@@ -60,7 +60,7 @@ jobs:
     
     - name: (1.1b) Install Qt on all other OS.
       if: matrix.os != 'macos-latest'
-      uses: jurplel/install-qt-action@v3
+      uses: jurplel/install-qt-action@v4
       with:
         tools: 'tools_qtcreator,qt.tools.qtcreator'
         add-tools-to-path: True
