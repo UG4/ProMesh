@@ -28,8 +28,8 @@ jobs:
       #
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        # os: [windows-latest]
+        # os: [ubuntu-latest, windows-latest, macos-latest] # TODO: MacOS
+        os: [windows-latest, ubuntu-latest]  # working versions.
         build_type: [Release]
 
 
