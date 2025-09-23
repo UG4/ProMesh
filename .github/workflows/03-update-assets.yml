@@ -52,7 +52,7 @@ jobs:
         run: echo "URL=${{ steps.get_release.outputs.upload_url }}"
           
       - name: Upload Release Binary
-        uses: AButler/upload-release-assets@v4.0
+        uses: AButler/upload-release-assets@v4.8.0
         with:
           files: "./ProMesh4-Installer.exe"
           repo-token: ${{ secrets.GITHUB_TOKEN }}
