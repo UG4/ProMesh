@@ -50,7 +50,7 @@ jobs:
 
     - name: (3) Create installer
       if: startsWith( ${{ matrix.os }}, "windows-latest")
-      uses: joncloud/makensis-action@v4.1
+      uses: joncloud/makensis-action@v5.0
       with:
         script-file: "deployment/win64/promesh4-installer.nsi"
         arguments: "/V3"
