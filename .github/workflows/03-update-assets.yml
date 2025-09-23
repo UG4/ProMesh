@@ -21,7 +21,7 @@ jobs:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
         build_type: [Release]
     
     steps:
