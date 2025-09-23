@@ -28,31 +28,6 @@
 
 #include <QString>
 #include <QProcess>
-#include "promesh_plugin.h"
-#include "app.h"
-#include "standard_tools.h"
-#include "registry/registry.h"
-#include "bridge/util.h"
-#include "tooltips.h"
-#include "tools/file_io_tools.h"
-#include "lib_grid/file_io/file_io_tetgen.h"
-#include <vector>
-#include <fstream>
-#include "app.h"
-#include "standard_tools.h"
-#include "tools_util.h"
-#include "lib_grid/algorithms/remeshing/delaunay_triangulation.h"
-#include "tools/grid_generation_tools.h"
-#include "tooltips.h"
-#include "../scene/csg_object.h"
-#include "script_tools.h"
-#include "lib_grid/file_io/file_io_vtu.h"
-
-//using namespace ug;
-//using namespace std;
-//using namespace ug::promesh;
-//using namespace ug::bridge;
-//using namespace app;
 
 
 namespace externalCommands
