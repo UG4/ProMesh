@@ -664,7 +664,7 @@ bool MainWindow::load_grid_from_file(const char* filename)
 		UG_LOG("ERROR: " << err.get_msg() << endl);
 		return false;
 	}
-	catch(std::runtime_error err){
+	catch(std::runtime_error &err){
 		UG_LOG("ERROR: " << err.what() << endl);
 		return false;
 	}
