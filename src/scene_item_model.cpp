@@ -165,8 +165,7 @@ int SceneItemModel::rowCount ( const QModelIndex & parent) const
 
 int SceneItemModel::columnCount ( const QModelIndex & parent) const
 {
-	if(parent.isValid())
-		return 3;
+	// if(parent.isValid()) return 3;
 	return 3;
 }
 
@@ -497,3 +496,4 @@ void SceneItemModel::eraseItemInfo(int index)
 
 	m_itemInfos.erase(m_itemInfos.begin() + index);
 }
+
