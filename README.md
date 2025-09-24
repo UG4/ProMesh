@@ -1,4 +1,8 @@
 # ProMesh #
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=UG4_ProMesh&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=UG4_ProMesh)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=UG4_ProMesh&metric=bugs)](https://sonarcloud.io/summary/new_code?id=UG4_ProMesh)
+
 ## Grid Generation for Scientific Computations ##
 
 **ProMesh** is a cross-platform meshing software with support for
