@@ -32,7 +32,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           # name: ProMesh4-Installer-${{matrix.os}}
-          name: ProMesh4-Installer-windows-latest-${{github.sha}}
+          name: ProMesh4-Installer-windows-2022-${{github.sha}}
           github-token: ${{ github.token }}
           repository: ${{ github.repository }}
 
