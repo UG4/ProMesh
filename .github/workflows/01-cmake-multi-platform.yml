@@ -7,7 +7,7 @@ name: CMake build (on multiple platforms).
 
 # workflow_call: Reusable workflows (other workflows can trigger this)
 # workflow_dispatch: Allows to run this workflow manually from the Actions tab
-on:  [workflow_call, workflow_dispatch]
+on:  [workflow_call, workflow_dispatch, push]
 
 
 # on: [push, pull_request]
