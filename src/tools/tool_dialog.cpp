@@ -40,7 +40,7 @@ using namespace std;
 ToolWidget::ToolWidget(const QString& name, QWidget* parent,
 					ITool* tool, uint buttons) :
 	QFrame(parent),
-	m_currentFormLayout(NULL)
+	m_currentFormLayout(nullptr)
 {
 
 	m_tool = tool;
@@ -182,7 +182,7 @@ void ToolWidget::addCheckBox(const QString& caption,
 {
 	QCheckBox* check = new QCheckBox(caption, this);
 	check->setChecked(bChecked);
-	m_currentFormLayout = NULL;
+	m_currentFormLayout = nullptr;
 	m_mainLayout->addWidget(check);
 	m_valueSignalMapper->setMapping(check, (int)m_widgets.size());
 	connect(check, SIGNAL(stateChanged(int)), m_valueSignalMapper, SLOT(map()));
@@ -214,7 +214,7 @@ void ToolWidget::addTextBox(const QString& caption, const QString& text)
 void ToolWidget::addVector(const QString& caption, int size, double* values)
 {
 	const char* coordLabels[] = {"x", "y", "z", "w"};
-	const char** labels = size <= 4 ? coordLabels : NULL;
+	const char** labels = size <= 4 ? coordLabels : nullptr;
 	MatrixWidget* mat = new MatrixWidget(size, 1, this, labels);
 
 	if(values){
@@ -305,7 +305,7 @@ void ToolWidget::clearLayout(QLayout* layout)
 void ToolWidget::clear()
 {
 	clearLayout(m_mainLayout);
-	m_currentFormLayout = NULL;
+	m_currentFormLayout = nullptr;
 	m_widgets.clear();
 }
 
@@ -535,7 +535,7 @@ QWidget* ToolWidget::to_widget(int paramIndex, bool* bOkOut)
 	}
 	if(bOkOut)
 		*bOkOut = false;
-	return NULL;
+	return nullptr;
 }
 
 bool ToolWidget::setNumber(int paramIndex, double val)

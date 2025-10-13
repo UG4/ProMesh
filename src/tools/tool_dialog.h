@@ -82,7 +82,7 @@ class ToolWidget : public QFrame
 
 		void addTextBox(const QString& caption, const QString& text);
 
-		void addVector(const QString& caption, int size, double* values = NULL);
+		void addVector(const QString& caption, int size, double* values = nullptr);
 
 		void addMatrix(const QString& caption, int numRows, int numCols);
 
@@ -93,21 +93,21 @@ class ToolWidget : public QFrame
 		void addVector3(const QString& caption,
 						double x, double y, double z);
 */
-		bool to_bool(int paramIndex, bool* bOKOut = NULL);
-		int to_int(int paramIndex, bool* bOKOut = NULL);
-		double to_double(int paramIndex, bool* bOKOut = NULL);
+		bool to_bool(int paramIndex, bool* bOKOut = nullptr);
+		int to_int(int paramIndex, bool* bOKOut = nullptr);
+		double to_double(int paramIndex, bool* bOKOut = nullptr);
 	///	use this method to retreive the selected entries in a list box.
-		std::vector<int> to_index_list(int paramIndex, bool* bOKOut = NULL);
-		QString to_string(int paramIndex, bool* bOKOut = NULL);
-		QStringList to_string_list(int paramIndex, bool* bOKOut = NULL);
-		ug::vector3 to_vector3(int paramIndex, bool* bOKOut = NULL);
-		ug::matrix33 to_matrix33(int paramIndex, bool* bOKOut = NULL);
-		ug::matrix44 to_matrix44(int paramIndex, bool* bOKOut = NULL);
-		QWidget* to_widget(int paramIndex, bool* bOkOut = NULL);
+		std::vector<int> to_index_list(int paramIndex, bool* bOKOut = nullptr);
+		QString to_string(int paramIndex, bool* bOKOut = nullptr);
+		QStringList to_string_list(int paramIndex, bool* bOKOut = nullptr);
+		ug::vector3 to_vector3(int paramIndex, bool* bOKOut = nullptr);
+		ug::matrix33 to_matrix33(int paramIndex, bool* bOKOut = nullptr);
+		ug::matrix44 to_matrix44(int paramIndex, bool* bOKOut = nullptr);
+		QWidget* to_widget(int paramIndex, bool* bOkOut = nullptr);
 
 /*
 		void to_vector3(double& xOut, double& yOut, double& zOut,
-						bool* bOKOut = NULL);
+						bool* bOKOut = nullptr);
 */
 		bool setNumber(int paramIndex, double val);
 		bool setString(int paramIndex, const QString& param);
@@ -126,7 +126,7 @@ class ToolWidget : public QFrame
 	 *	you may specify the optional parameter bOKOut (make sure that
 	 *	the pointer points to a valid boolean).*/
 		template <class TNumber>
-		TNumber to_number(int paramIndex, bool* bOKOut = NULL);
+		TNumber to_number(int paramIndex, bool* bOKOut = nullptr);
 
 	 /// returns the current form layout and creates a new if none is available.
 	 	 QFormLayout* current_form_layout();

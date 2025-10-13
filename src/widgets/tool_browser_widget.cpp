@@ -40,7 +40,7 @@ using namespace std;
 
 ToolBrowser::ToolBrowser(QWidget* parent) :
 	QFrame(parent),
-	m_iconTab(NULL),
+	m_iconTab(nullptr),
 	m_revision(0)
 {
 	m_layout = new QVBoxLayout(this);
@@ -67,7 +67,7 @@ WidgetContainer* ToolBrowser::group_container(const std::string& groupName)
 
 	string curGrp = groupTokens[0];
 	WidgetContainer* parent = m_groupContainers[curGrp];
-	if(parent == NULL){
+	if(parent == nullptr){
 		WidgetList* wlist = new WidgetList(m_iconTab);
 		parent = wlist->widgetContainer();
 		m_iconTab->addPage(wlist, m_toolMgr->group_icon(curGrp), QString(curGrp.c_str()));
@@ -77,7 +77,7 @@ WidgetContainer* ToolBrowser::group_container(const std::string& groupName)
 	for(size_t igrp = 1; igrp < groupTokens.size(); ++igrp){
 		curGrp.append("|").append(groupTokens[igrp]);
 		WidgetContainer* curContainer = m_groupContainers[curGrp];
-		if(curContainer == NULL){
+		if(curContainer == nullptr){
 			ExtendibleWidget* extWidget = new ExtendibleWidget(parent);
 			parent->addWidget(extWidget);
 			QString extWidgetName(groupTokens[igrp].c_str());
@@ -102,7 +102,7 @@ void ToolBrowser::refresh(ToolManager* toolMgr)
 {
 	if(m_toolMgr && (m_toolMgr != toolMgr)){
 		delete m_iconTab;
-		m_iconTab = NULL;
+		m_iconTab = nullptr;
 		// m_tools.clear();
 		// m_toolIndexMap = map<string, size_t>();
 		m_toolMap = map<string, ToolEntry>();
@@ -140,10 +140,10 @@ void ToolBrowser::refresh(ToolManager* toolMgr)
 			delete entry.widget;
 			if(entry.extendibleWidget)
 				delete entry.extendibleWidget;
-			entry.widget = NULL,
-			entry.extendibleWidget = NULL;
-			entry.tool = NULL;
-			entry.parentContainer = NULL;
+			entry.widget = nullptr,
+			entry.extendibleWidget = nullptr;
+			entry.tool = nullptr;
+			entry.parentContainer = nullptr;
 		}
 
 		if(!entry.tool){
@@ -191,7 +191,7 @@ void ToolBrowser::refresh(ToolManager* toolMgr)
 				}
 				else{
 					delete extWidget;
-					entry.extendibleWidget = NULL;
+					entry.extendibleWidget = nullptr;
 					QPushButton* btn = new QPushButton(tool->get_name(), entry.parentContainer);
 					btn->setToolTip(tr(tool->get_tooltip()));
 					m_signalMapper->setMapping(btn, (int)itool);
