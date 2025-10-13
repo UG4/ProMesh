@@ -69,9 +69,9 @@ LGObject* CreateLGObjectFromFile(const char* filename)
 	if(LoadLGObjectFromFile(pObj, filename))
 		return pObj;
 
-//	if the load failed we'll erase the object and return NULL.
+//	if the load failed we'll erase the object and return nullptr.
 	delete pObj;
-	return NULL;
+	return nullptr;
 }
 
 LGObject* CreateEmptyLGObject(const char* name)

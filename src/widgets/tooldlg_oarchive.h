@@ -60,7 +60,7 @@ public:
 
 	tooldlg_oarchive(QWidget* parent) :
 		m_parent(parent),
-		m_layout(NULL),
+		m_layout(nullptr),
 		m_curName(""),
 		m_expandProperties(false)
 	{
@@ -200,7 +200,7 @@ private:
 			layout = m_widgetLayers.top().layout();
 		}
 
-		ExtendibleWidget* extWidget = NULL;
+		ExtendibleWidget* extWidget = nullptr;
 		if(name != 0 && *name != 0){
 			extWidget = new ExtendibleWidget(parent);
 			layout->addWidget(extWidget);
@@ -231,7 +231,7 @@ private:
 	class WidgetLayer {
 		public:
 			WidgetLayer (QWidget* parent) :
-				m_toolWidget(NULL)
+				m_toolWidget(nullptr)
 			{
 				m_frame = new QFrame(parent);
 				m_layout = new QVBoxLayout(m_frame);
@@ -245,7 +245,7 @@ private:
 			QLayout* layout ()		{return m_layout;}
 			ToolWidget* toolWidget(){
 				if(!m_toolWidget){
-					m_toolWidget = new ToolWidget(QString("--properties--"), m_frame, NULL, 0);
+					m_toolWidget = new ToolWidget(QString("--properties--"), m_frame, nullptr, 0);
 					m_layout->addWidget(m_toolWidget);
 					m_layout->setAlignment(m_toolWidget, Qt::AlignLeft);
 				}
@@ -262,7 +262,7 @@ private:
 	QFrame*			m_frame;
 	std::stack<WidgetLayer>	m_widgetLayers;
 	QLayout*		m_layout;
-	const char*		m_curName;	///< can be NULL due to intermediate objects
+	const char*		m_curName;	///< can be nullptr due to intermediate objects
 	std::string		m_prefix;
 	bool			m_expandProperties;
 };

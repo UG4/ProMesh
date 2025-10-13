@@ -74,7 +74,7 @@ using namespace ug;
 ////////////////////////////////////////////////////////////////////////
 //	constructor
 MainWindow::MainWindow() :
-	m_activeModule (NULL),
+	m_activeModule (nullptr),
 	m_settings(),
 	m_selectionElement(0),
 	m_selectionMode(0),
@@ -82,12 +82,12 @@ MainWindow::MainWindow() :
 	m_elementModeListIndex(3),
 	m_mouseMoveAction(MMA_DEFAULT),
 	m_activeAxis(X_AXIS | Y_AXIS | Z_AXIS),
-	m_activeObject(NULL),
-	m_actionLogSender(NULL),
+	m_activeObject(nullptr),
+	m_actionLogSender(nullptr),
 	#ifdef PROMESH_USE_WEBKIT
-		m_helpBrowser(NULL),
+		m_helpBrowser(nullptr),
 	#endif
-	m_dlgAbout(NULL)
+	m_dlgAbout(nullptr)
 {
 }
 
@@ -675,7 +675,7 @@ bool MainWindow::load_grid_from_file(const char* filename)
 LGObject* MainWindow::create_empty_object(const char* name, SceneObjectType sot)
 {
 //	create a new object
-	LGObject* pObj = NULL;
+	LGObject* pObj = nullptr;
 
 	switch(sot){
 		case SOT_LG:
@@ -782,7 +782,7 @@ int MainWindow::loadIntoMesh()
 		}
 		catch(UGError err){
 			delete pObj;
-			pObj = NULL;
+			pObj = nullptr;
 			QMessageBox msg(this);
 			QString str = tr("Load failed: ");
 			str.append(err.get_msg().c_str());
@@ -999,7 +999,7 @@ void MainWindow::eraseActiveSceneObject()
 
 			if(performErase){
 				if(lgobj == m_actionLogSender)
-					m_actionLogSender = NULL;
+					m_actionLogSender = nullptr;
 
 			//	perform erase
 				m_scene->erase_object(index);

@@ -42,7 +42,7 @@ using namespace std;
 QScriptEditor::QScriptEditor (QWidget* parent) :
 	QDialog (parent),
 	m_filename (tr("untitled.psc")),
-	m_replayTarget (NULL)
+	m_replayTarget (nullptr)
 {
 
 	this->setWindowTitle("Script Editor");
@@ -286,6 +286,6 @@ void QScriptEditor::timeout()
 void QScriptEditor::stopReplay()
 {
 	m_timer->stop();
-	m_replayTarget = NULL;
+	m_replayTarget = nullptr;
 	m_applyBtn->setText(tr("Apply"));
 }

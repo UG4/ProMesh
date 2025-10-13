@@ -75,7 +75,7 @@ get_object(int index)
 {
 	if(index_is_valid(index))
 		return m_vObjects[index];
-	return NULL;
+	return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -132,7 +132,7 @@ get_scene_object(int index)
 {
 	if(index_is_valid(index))
 		return m_vObjects[index];
-	return NULL;
+	return nullptr;
 }
 
 template <class TObject>

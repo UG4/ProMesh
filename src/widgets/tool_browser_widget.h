@@ -61,7 +61,7 @@ class ToolBrowser : public QFrame
 
 	private:
 		struct ToolEntry{
-			ToolEntry() : parentContainer(NULL), widget(NULL),
+			ToolEntry() : parentContainer(nullptr), widget(nullptr),
 						  extendibleWidget(NULL), tool(NULL), revision(0) {}
 			WidgetContainer*	parentContainer;
 			QWidget*			widget;

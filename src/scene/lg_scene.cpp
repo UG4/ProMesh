@@ -1504,7 +1504,7 @@ void LGScene::render_volumes(LGObject* pObj)
 		//	it's not.
 		//	if it has exactly one visible adjacent volume, or no adjacent volumes at all,
 		//	then it has to be displayed
-			Volume* visVol = NULL;
+			Volume* visVol = nullptr;
 			int newSubInd = -1;
 
 			int fSubInd = sh.get_subset_index(f);
@@ -1544,7 +1544,7 @@ void LGScene::render_volumes(LGObject* pObj)
 						//	if newSubInd has already been assigned, we'll reset it to 0
 							if(newSubInd != -1){
 								newSubInd = -1;
-								visVol = NULL;
+								visVol = nullptr;
 							}
 							else{
 								newSubInd = vSubInd;
@@ -1969,7 +1969,7 @@ ug::Vertex* LGScene::
 get_clicked_vertex(LGObject* obj, const ug::vector3& from,
 				   const ug::vector3& to)
 {
-	Vertex* vrtClosest = NULL;
+	Vertex* vrtClosest = nullptr;
 
 	if(obj){
 		Grid& grid = obj->grid();
@@ -2001,7 +2001,7 @@ ug::Edge* LGScene::
 get_clicked_edge(LGObject* obj, const ug::vector3& from,
 				 const ug::vector3& to, bool closestToTo)
 {
-	Edge* eClosest = NULL;
+	Edge* eClosest = nullptr;
 
 	if(obj){
 	//	iterate through the edges and check the center of each against
@@ -2086,7 +2086,7 @@ get_clicked_face(LGObject* pObj, const ug::vector3& from,
 
 	Grid::FaceAttachmentAccessor<ABool> aaRenderedFACE(grid, m_aRendered);
 
-	Face* clickedFace = NULL;
+	Face* clickedFace = nullptr;
 	number maxDistSq = m_zFar * 2.;
 	maxDistSq *= maxDistSq;
 
@@ -2205,7 +2205,7 @@ get_clicked_volume(LGObject* pObj, const ug::vector3& from,
 	}
 
 //	nothing seems to be clicked
-	return NULL;
+	return nullptr;
 }
 
 size_t LGScene::
