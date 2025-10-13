@@ -58,9 +58,9 @@ MeshModule ()
 MeshModule::
 MeshModule (QWidget* parent) :
 	IModule(parent),
-	m_sceneInspector(NULL),
-	m_scene(NULL),
-	m_sceneInspectorMenu(NULL)
+	m_sceneInspector(nullptr),
+	m_scene(nullptr),
+	m_sceneInspectorMenu(nullptr)
 {}
 
 MeshModule::
@@ -224,13 +224,13 @@ deactivate()
 	if(m_sceneInspector){
 		m_sceneInspector->disconnect(m_projectorWidget);
 		m_sceneInspector->disconnect(this);
-		m_sceneInspector = NULL;
+		m_sceneInspector = nullptr;
 	}
 
 	if(m_scene){
 		m_scene->disconnect(m_projectorWidget);
 		m_scene->disconnect(this);
-		m_scene = NULL;
+		m_scene = nullptr;
 	}
 }
 

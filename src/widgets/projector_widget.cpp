@@ -48,8 +48,8 @@ static ug::Factory<ug::RefinementProjector, ug::ProjectorTypes>	projFactory;
 ProjectorWidget::
 ProjectorWidget (QWidget* parent) :
 	QFrame(parent),
-	m_curContent(NULL),
-	m_activeObject(NULL),
+	m_curContent(nullptr),
+	m_activeObject(nullptr),
 	m_activeSubsetIndex(-1)
 {
 	m_vlayout = new QVBoxLayout(this);
@@ -82,7 +82,7 @@ void ProjectorWidget::
 objectToBeRemoved(ISceneObject* pObj)
 {
 	if(pObj == static_cast<ISceneObject*>(m_activeObject))
-		setActiveSubset(NULL, -1);
+		setActiveSubset(nullptr, -1);
 }
 
 void ProjectorWidget::
@@ -97,7 +97,7 @@ changeEvent(QEvent* evt)
 			m_typeBox->setVisible(false);
 			if(m_curContent)
 				delete m_curContent;
-			m_curContent = NULL;
+			m_curContent = nullptr;
 		}
 	}
 }
@@ -129,7 +129,7 @@ setActiveSubset(ISceneObject* obj, int subsetIndex)
 		setEnabled(false);
 		if(m_curContent)
 			delete m_curContent;
-		m_curContent = NULL;
+		m_curContent = nullptr;
 	}
 }
 
@@ -143,7 +143,7 @@ projectorTypeChanged(const QString &text)
 	if(projName.compare("none") == 0){
 		m_activeObject->projection_handler()
 			.set_projector(m_activeSubsetIndex, ug::SPRefinementProjector());
-		update_content(NULL);
+		update_content(nullptr);
 	}
 	else{
 	//	if the current projector for the active subset has a different name, create a new one
@@ -167,7 +167,7 @@ update_content(ug::RefinementProjector* proj)
 	if(!proj){
 		if(m_curContent){
 			delete m_curContent;
-			m_curContent = NULL;
+			m_curContent = nullptr;
 		}
 		return;
 	}

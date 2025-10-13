@@ -142,7 +142,7 @@ get_dialog(QWidget* parent)
 	vector<ScriptParameter>& inputs = m_scriptDecls.inputs;
 
 	if(inputs.empty())
-		return NULL;
+		return nullptr;
 
 	ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
 									IDB_APPLY | IDB_OK | IDB_CLOSE);

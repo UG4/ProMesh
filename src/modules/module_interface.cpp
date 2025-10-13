@@ -28,7 +28,7 @@
 IModule::
 IModule () :
 	QObject (),
-	m_parent (NULL)
+	m_parent (nullptr)
 {}
 
 IModule::
@@ -78,5 +78,5 @@ QMenu*
 IModule::
 getSceneInspectorMenu()
 {
-	return NULL;
+	return nullptr;
 }
