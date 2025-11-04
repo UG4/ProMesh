@@ -1350,7 +1350,7 @@ populateMenuBar ()
 void MainWindow::
 activateModule (IModule* mod)
 {
-	typedef IModule::dock_list_t dock_list_t;
+	using dock_list_t = IModule::dock_list_t;
 
 	if(m_activeModule == mod)
 		return;

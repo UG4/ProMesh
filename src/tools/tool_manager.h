@@ -85,7 +85,7 @@ class ToolManager : public QObject
 	Q_OBJECT
 
 	public:
-		typedef std::map<std::string, QIcon> GroupIconMap;
+		using GroupIconMap = std::map<std::string, QIcon>;
 
 		ToolManager(QWidget* parent);
 	///	calls delete on all registered tools.

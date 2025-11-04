@@ -61,7 +61,7 @@ class MyApplication : public QApplication
 {
 	public:
 		MyApplication(int & argc, char ** argv) :
-			QApplication(argc, argv), m_pMainWindow(NULL)	{}
+			QApplication(argc, argv), m_pMainWindow(nullptr)	{}
 
 		virtual bool	event ( QEvent * e )
 		{

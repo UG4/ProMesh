@@ -126,9 +126,9 @@ void RClickMenu_SceneInspector::rename()
 	LGObject* obj = app::getActiveObject();
 	if(obj){
 		/*ToolWidget* widget = new ToolWidget("rename", this,
-										  NULL, IDB_APPLY);
+										  nullptr, IDB_APPLY);
 
-		QDialog* dlg = new QDialog(NULL);
+		QDialog* dlg = new QDialog(nullptr);
 		QVBoxLayout* layout = new QVBoxLayout(dlg);
 		dlg->setLayout(layout);
 		layout->addWidget(widget);

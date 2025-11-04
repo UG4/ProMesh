@@ -38,8 +38,7 @@ class IModule : public QObject {
 	Q_OBJECT
 
 public:
-	typedef std::vector<std::pair<Qt::DockWidgetArea, QDockWidget*> >
-			dock_list_t;
+	using dock_list_t = std::vector<std::pair<Qt::DockWidgetArea, QDockWidget*> >;
 
 	IModule ();
 	IModule (QWidget* parent);

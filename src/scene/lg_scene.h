@@ -41,7 +41,7 @@ class LGScene : public TScene<LGObject>
 {
 	Q_OBJECT
 
-	typedef TScene<LGObject> BaseClass;
+	using BaseClass = TScene<LGObject>;
 
 	public:
 		LGScene();
@@ -274,7 +274,7 @@ class LGScene : public TScene<LGObject>
 		ug::RelativePositionIndicator clip_point(const ug::vector3& point);
 
 	protected:
-		typedef ug::Attachment<char> AChar;
+		using AChar = ug::Attachment<char>;
 
 	protected:
 		unsigned int m_drawModeFront;

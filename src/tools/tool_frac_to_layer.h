@@ -40,8 +40,8 @@ class FracToLayerWidget : public QWidget
 	Q_OBJECT
 
 	public:
-		typedef ug::FractureInfo SubsetEntry;
-		typedef std::vector<SubsetEntry>	SubsetEntryVec;
+		using SubsetEntry = ug::FractureInfo;
+		using SubsetEntryVec = std::vector<SubsetEntry>;
 
 	public:
 		FracToLayerWidget(const QString& name, QWidget* parent, ITool* tool);

@@ -524,7 +524,7 @@ QWidget* ToolWidget::to_widget(int paramIndex, bool* bOkOut)
 		UG_LOG("ERROR: bad parameter index in ToolDialog::to_widget: " << paramIndex << std::endl);
 		if(bOkOut)
 			*bOkOut = false;
-		return NULL;
+		return nullptr;
 	}
 
 	WidgetEntry& we = m_widgets[paramIndex];

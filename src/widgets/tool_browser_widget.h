@@ -62,7 +62,7 @@ class ToolBrowser : public QFrame
 	private:
 		struct ToolEntry{
 			ToolEntry() : parentContainer(nullptr), widget(nullptr),
-						  extendibleWidget(NULL), tool(NULL), revision(0) {}
+						  extendibleWidget(nullptr), tool(nullptr), revision(0) {}
 			WidgetContainer*	parentContainer;
 			QWidget*			widget;
 			ExtendibleWidget*	extendibleWidget;///< only used if the widget is embedded in an extendibleWidget

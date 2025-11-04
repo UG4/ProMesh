@@ -125,7 +125,7 @@ void ToolManager::launchTool(int toolID)
 			if(obj || tool->accepts_null_object_ptr()){
 				try{
 					obj->create_undo_point_if_selection_changed();
-					tool->execute(obj, NULL);
+					tool->execute(obj, nullptr);
 				}
 				catch(UGError& err){
 					UG_LOG("Execution of tool " << tool->get_name()

@@ -188,7 +188,7 @@ class ToolPrintSelectionInfo : public ITool
 template <class TGeomObj>
 static bool SubsetContainsSelected(SubsetHandler& sh, Selector& sel, int si)
 {
-	typedef typename geometry_traits<TGeomObj>::iterator GeomObjIter;
+	using GeomObjIter = typename geometry_traits<TGeomObj>::iterator;
 	for(GeomObjIter iter = sh.begin<TGeomObj>(si);
 	iter != sh.end<TGeomObj>(si); ++iter)
 	{
@@ -259,7 +259,7 @@ class ToolPrintVertexDistance : public ITool
 				min = max = 0;
 			else{
 			//	iterate over all selected vertices
-				typedef vector<Vertex*>::iterator VrtIter;
+			using VrtIter = vector<Vertex*>::iterator;
 				for(VrtIter baseIter = vrts.begin();
 					baseIter != vrts.end(); ++baseIter)
 				{

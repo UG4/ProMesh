@@ -70,7 +70,7 @@ QWidget* VisibilityDelegate::createEditor(QWidget* parent,
 							  const QStyleOptionViewItem& option,
 							  const QModelIndex& index) const
 {
-	return NULL;
+	return nullptr;
 }
 
 
@@ -127,7 +127,7 @@ QWidget* ColorDelegate::createEditor(QWidget* parent,
 
 		return editor;
 	}
-	return NULL;
+	return nullptr;
 }
 
 void ColorDelegate::setEditorData(QWidget* editor,

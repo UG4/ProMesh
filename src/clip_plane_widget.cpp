@@ -33,7 +33,7 @@ using namespace ug;
 
 ClipPlaneWidget::ClipPlaneWidget(QWidget* parent) : QWidget(parent)
 {
-	m_scene = NULL;
+	m_scene = nullptr;
 	QVBoxLayout* vLayout = new QVBoxLayout;
 
 //	set up the layouts, checkboxes and sliders for each plane

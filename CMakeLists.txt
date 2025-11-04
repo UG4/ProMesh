@@ -26,7 +26,7 @@
 cmake_minimum_required(VERSION 2.6...3.20)
 project(P_PROMESH4)
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 17)
 
 set(ProMeshSRC	src/app.cpp
 				src/clip_plane_widget.cpp
@@ -85,7 +85,6 @@ set(ProMeshSRC	src/app.cpp
 				src/widgets/widget_container.cpp
 				src/widgets/widget_list.cpp)
 
-# set (CMAKE_CXX_STANDARD 11)
 
 # Some options which allow to control makefile generation
 option(DEBUG "If enabled a debug build is performed - this slows down performance." OFF)

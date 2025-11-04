@@ -33,10 +33,9 @@
 
 namespace cam
 {
-
-const float SMALL = 1.e-12f;
-typedef ug::vector2 vector2;
-typedef ug::vector3 vector3;
+	constexpr float SMALL = 1.e-12f;
+	using vector2 = ug::vector2;
+	using vector3 = ug::vector3;
 /*
 ///	a simple type for a 2-component math-vector.
 struct vector2

@@ -258,8 +258,8 @@ class LGObject : public ISceneObject, public ug::promesh::Mesh
 		bool load_ugx(const char* filename);
 
 	protected:
-		typedef std::vector<GLuint>	DisplayListVec;
-		typedef std::vector<int>	DisplayModeVec;
+		using DisplayListVec = std::vector<GLuint>;
+		using DisplayModeVec = std::vector<int>;
 
 	public:
 	//protected:

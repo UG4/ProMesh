@@ -45,13 +45,13 @@ class UndoHistory
 	/** returns true if redo is possible for the given id*/
 		bool can_redo();
 
-	/** returns the name of the last valid undo-file and NULL if
+	/** returns the name of the last valid undo-file and nullptr if
 	 *	none exists. The undo-file is popped from the stack
 	 *	The returned pointer is valid until the next call of
 	 *	either undo, redo or create_history_entry.*/
 		const char* undo();
 
-	/** returns the name of the next valid redo-file and NULL if
+	/** returns the name of the next valid redo-file and nullptr if
 	 *	none exists. The redo-file is popped from the stack
 	 *	The returned pointer is valid until the next call of
 	 *	either undo, redo or create_history_entry.*/
@@ -67,8 +67,8 @@ class UndoHistory
 		void set_suffix(const char* suffix);
 
 	private:
-		typedef std::deque<std::string>	FileQueue;
-		typedef std::stack<std::string>	FileStack;
+		using FileQueue = std::deque<std::string>;
+		using FileStack = std::stack<std::string>;
 
 		bool		m_bInitialized;
 		int			m_counter;

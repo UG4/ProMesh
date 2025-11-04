@@ -45,12 +45,12 @@ using namespace ug::promesh;
 
 static
 void DefineGroup(ostream& out, const char* id, const char* name, const char* desc,
-				 const char* parentGroup = NULL);
+				 const char* parentGroup = nullptr);
 static void DefineType(ostream& out, const char* type, const char* desc, const char* group);
-static void WriteClass(ostream& out, Registry& reg, const char* name, const char* forceGroup = NULL);
-static void WriteClass(ostream& out, Registry& reg, const IExportedClass* cls, const char* forceGroup = NULL);
-static void WriteFunction(ostream& out, Registry& reg, const char* name, const char* forceGroup = NULL);
-static void WriteFunction(ostream& out, Registry& reg, const ExportedFunction* func, const char* forceGroup = NULL);
+static void WriteClass(ostream& out, Registry& reg, const char* name, const char* forceGroup = nullptr);
+static void WriteClass(ostream& out, Registry& reg, const IExportedClass* cls, const char* forceGroup = nullptr);
+static void WriteFunction(ostream& out, Registry& reg, const char* name, const char* forceGroup = nullptr);
+static void WriteFunction(ostream& out, Registry& reg, const ExportedFunction* func, const char* forceGroup = nullptr);
 static void WriteGroupMembers(ostream& out, Registry& reg, const char* id);
 static void WriteGroupID(ostream& out, const char* id);
 static void WriteGroupID(ostream& out, const string& id);
@@ -443,7 +443,7 @@ void WriteClass(ostream& out, Registry& reg, const IExportedClass* cls, const ch
 static
 void WriteFunction(ostream& out, Registry& reg, const char* name, const char* forceGroup)
 {
-	const ExportedFunction* func = NULL;
+	const ExportedFunction* func = nullptr;
 	size_t funcInd = 0;
 	for(size_t i = 0; i < reg.num_functions(); ++i){
 		const ExportedFunction& tfunc = reg.get_function(i);

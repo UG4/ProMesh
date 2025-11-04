@@ -54,9 +54,9 @@ class tooldlg_oarchive :
 		public boost::archive::detail::common_oarchive<tooldlg_oarchive>
 {
 public:
-	typedef boost::archive::detail::common_oarchive<tooldlg_oarchive> base_t;
-	typedef boost::mpl::bool_<false> is_loading;
-	typedef boost::mpl::bool_<true> is_saving;
+	using base_t = boost::archive::detail::common_oarchive<tooldlg_oarchive>;
+	using is_loading = boost::mpl::bool_<false>;
+	using is_saving = boost::mpl::bool_<true>;
 
 	tooldlg_oarchive(QWidget* parent) :
 		m_parent(parent),
@@ -208,7 +208,7 @@ private:
 			extWidget->setText(QString(name));
 			extWidget->setChecked(m_expandProperties);
 			parent = extWidget;
-			layout = NULL;
+			layout = nullptr;
 		}
 
 		m_widgetLayers.push(WidgetLayer(parent));

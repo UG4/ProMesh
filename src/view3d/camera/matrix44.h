@@ -59,7 +59,7 @@ struct matrix44
     const float* operator[](unsigned int index) const	{return m[index];}
 };
 
-typedef matrix44 matrix;
+using matrix = matrix44;
 
 //	some basic methods for matrix manipulation. should be somewhere else...
 void MatIdentity(matrix44& mat);

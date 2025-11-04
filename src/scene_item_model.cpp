@@ -32,7 +32,7 @@ using namespace std;
 
 SceneItemModel::SceneItemModel() : QAbstractItemModel()
 {
-	m_scene = NULL;
+	m_scene = nullptr;
 	m_iconVisible.addFile(":images/visible_16.png");
 	m_iconInvisible.addFile(":images/invisible_16.png");
 	m_iconColor.addFile(":images/cube_solid.png");
@@ -366,11 +366,11 @@ void SceneItemModel::newObject(ISceneObject* obj)
 	beginInsertRows(QModelIndex(), rowIndex, rowIndex);
 
 //	create a new ItemInfo.
-	SceneItemInfo* itemInfo = new SceneItemInfo;
+	auto* itemInfo = new SceneItemInfo;
 	m_itemInfos.push_back(itemInfo);
 	itemInfo->type = SIT_OBJECT;
 	itemInfo->obj = obj;
-	itemInfo->parent = NULL;
+	itemInfo->parent = nullptr;
 
 //	call update to populate children
 	updateItemInfo(itemInfo);
@@ -403,14 +403,14 @@ SceneItemInfo* SceneItemModel::itemInfoFromIndex(const QModelIndex& index) const
 {
 	if(index.isValid())
 		return static_cast<SceneItemInfo*>(index.internalPointer());
-	return NULL;
+	return nullptr;
 }
 
 ISceneObject* SceneItemModel::objectFromIndex(const QModelIndex& index) const
 {
 	if(SceneItemInfo* itemInfo = itemInfoFromIndex(index))
 		return itemInfo->obj;
-	return NULL;
+	return nullptr;
 }
 
 QModelIndex SceneItemModel::parentObjectIndexFromIndex(const QModelIndex& index) const

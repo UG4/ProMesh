@@ -74,8 +74,8 @@ class TScene : public IScene
 			bool	m_autoDelete;
 		};
 
-		typedef std::vector<TObject*>	ObjectVec;
-		typedef std::vector<ObjectInfo>	InfoVec;
+		using ObjectVec = std::vector<TObject*>;
+		using InfoVec = std::vector<ObjectInfo>;
 
 	protected:
 		ObjectVec	m_vObjects;

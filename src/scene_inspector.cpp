@@ -143,7 +143,7 @@ ISceneObject* SceneInspector::getActiveObject()
 	QModelIndex index = currentIndex();
 	if(index.isValid())
 		return m_model->objectFromIndex(index);
-	return NULL;
+	return nullptr;
 }
 
 void SceneInspector::setActiveObject(int index)

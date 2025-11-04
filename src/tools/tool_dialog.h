@@ -165,7 +165,7 @@ class ToolWidget : public QFrame
 			int			m_widgetType;
 		};
 
-		typedef std::vector<WidgetEntry> WidgetEntryVec;
+		using WidgetEntryVec = std::vector<WidgetEntry>;
 
 	protected:
 		QSignalMapper*	m_signalMapper;

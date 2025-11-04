@@ -255,7 +255,7 @@ class RegistryTool : public ITool{
 		{
 
 			if(m_func->num_parameter() <= 1){
-				return NULL;
+				return nullptr;
 			}
 
 			ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
@@ -483,7 +483,7 @@ class RegistryTool : public ITool{
 
 			if(paramError){
 				delete dlg;
-				return NULL;
+				return nullptr;
 			}
 			else
 				return dlg;
@@ -526,7 +526,7 @@ void RegisterTool(ToolManager* toolMgr,
 
 void RegisterRegistryTools(ToolManager* toolMgr)
 {
-	typedef ProMeshRegistry::func_iter_t func_iter_t;
+	using func_iter_t = ProMeshRegistry::func_iter_t;
 
 	ProMeshRegistry& reg = GetProMeshRegistry();
 

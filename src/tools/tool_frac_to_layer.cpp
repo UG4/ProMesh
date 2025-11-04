@@ -33,7 +33,7 @@ FracToLayerWidget(const QString& name, QWidget* parent,
 	QWidget(parent)
 {
 	m_tool = tool;
-	m_object = NULL;
+	m_object = nullptr;
 	QString title = name;
 	title.append(": ");
 
@@ -54,10 +54,10 @@ FracToLayerWidget(const QString& name, QWidget* parent,
 	vLayout->addWidget(m_cbExpandOuterBounds);
 
 //	create a hbox-layout for the add-button
-	QHBoxLayout* hAddLayout = new QHBoxLayout();
+	auto* hAddLayout = new QHBoxLayout();
 	vLayout->addLayout(hAddLayout);
 
-	QPushButton* btnAdd = new QPushButton(tr("add subset"), this);
+	auto* btnAdd = new QPushButton(tr("add subset"), this);
 	connect(btnAdd, SIGNAL(clicked()), this, SLOT(addClicked()));
 
 	m_qSubsetIndex = new QSpinBox(this);
@@ -222,7 +222,7 @@ clearClicked()
 {
 	m_entries.clear();
 	m_listWidget->clear();
-	m_object = NULL;
+	m_object = nullptr;
 }
 
 void FracToLayerWidget::

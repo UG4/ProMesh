@@ -51,8 +51,7 @@
 //	Attachments
 namespace ug
 {
-
-typedef Attachment<ug::Sphere3> ASphere;
+	using ASphere = Attachment<ug::Sphere3>;
 
 
 ////////////////////////////////////////////////////////////////////////

@@ -66,7 +66,7 @@ class ProjectorWidget : public QFrame
 
 		// PropertyWidget*	getPropertyWidget(const char* projectorName);
 
-		typedef std::map<std::string, PropertyWidget*>	PropertyWidgetMap;
+		using PropertyWidgetMap = std::map<std::string, PropertyWidget*>;
 
 		QVBoxLayout* 		m_vlayout;
 		QComboBox*			m_typeBox;

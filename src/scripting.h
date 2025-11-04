@@ -31,7 +31,7 @@
 #include "common/util/variant.h"
 #include "../../plugins/LuaShell/lua_shell.h"
 
-typedef SmartPtr<ug::luashell::LuaShell> SPLuaShell;
+using SPLuaShell = SmartPtr<ug::luashell::LuaShell>;
 
 SPLuaShell GetDefaultLuaShell ();
 
