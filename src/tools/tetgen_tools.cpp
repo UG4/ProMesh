@@ -29,15 +29,15 @@
 #include <QString>
 #include <QProcess>
 #include "promesh_plugin.h"
-#include "app.h"
-#include "standard_tools.h"
+#include "app.hpp"
+#include "standard_tools.hpp"
 #include "registry/registry.h"
 #include "bridge/util.h"
 #include "tooltips.h"
 #include "tools/file_io_tools.h"
 #include "lib_grid/file_io/file_io_tetgen.h"
 
-#include "externalTetgenCommands.h"
+#include "externalTetgenCommands.hpp"
 
 using namespace ug;
 using namespace std;

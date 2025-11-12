@@ -30,80 +30,78 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 
-#include "app.h"
+#include "app.hpp"
 
-#include "clip_plane_widget.h"
-#include "mesh_module.h"
-#include "rclick_menu_scene_inspector.h"
-#include "scene_inspector.h"
-#include "scene/lg_scene.h"
-#include "tools/standard_tools.h"
-#include "tools/tool_manager.h"
-#include "widgets/projector_widget.h"
-#include "widgets/property_widget.h"
-#include "widgets/tool_browser_widget.h"
-#include "widgets/widget_list.h"
-#include "widgets/matrix_widget.h"
+#include "clip_plane_widget.hpp"
+#include "mesh_module.hpp"
+#include "rclick_menu_scene_inspector.hpp"
+#include "scene_inspector.hpp"
+#include "scene/lg_scene.hpp"
+#include "tools/standard_tools.hpp"
+#include "tools/tool_manager.hpp"
+#include "widgets/projector_widget.hpp"
+#include "widgets/property_widget.hpp"
+#include "widgets/tool_browser_widget.hpp"
+#include "widgets/widget_list.hpp"
+#include "widgets/matrix_widget.hpp"
 #include "tools/coordinate_transform_tools.h"
-#include "widgets/script_editor.h"
-#include "util/file_util.h"
+#include "widgets/script_editor.hpp"
+#include "util/file_util.hpp"
 
 using namespace std;
 using namespace ug;
 
-MeshModule::
-MeshModule ()
-{}
+
 
 MeshModule::
 MeshModule (QWidget* parent) :
 	IModule(parent),
-	m_sceneInspector(nullptr),
-	m_scene(nullptr),
-	m_sceneInspectorMenu(nullptr)
+	_scene_inspector(nullptr),
+	_scene(nullptr),
+	_scene_inspector_menu(nullptr)
 {}
 
-MeshModule::
-~MeshModule ()
-{}
+
 
 void MeshModule::
-activate(SceneInspector* sceneInspector, LGScene* scene)
+activate(SceneInspector* scene_inspector, LGScene* scene)
 {
-	if(m_sceneInspector == sceneInspector && m_scene == scene)
+	if(_scene_inspector == scene_inspector && _scene == scene)
 		return;
 	
-	if(m_sceneInspector || m_scene){
+	if(_scene_inspector || _scene){
 		deactivate();
-		if(m_sceneInspectorMenu)
-			delete m_sceneInspectorMenu;
+		if(_scene_inspector_menu)
+			delete _scene_inspector_menu;
 	}
 
-	m_sceneInspector = sceneInspector;
+	_scene_inspector = scene_inspector;
 
-	if(m_dockWidgets.empty()){
+	if(_dock_widgets.empty()){
 	//	projector dock
-		QDockWidget* pProjectorDock = new QDockWidget(tr("Projectors"), parentWidget());
+		auto pProjectorDock = new QDockWidget(tr("Projectors"), parentWidget());
 		pProjectorDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
 		pProjectorDock->setObjectName(tr("projector_dock"));
-		WidgetList* projectorList = new WidgetList(pProjectorDock);
-		m_projectorWidget = new ProjectorWidget(projectorList);
-		projectorList->addWidget(m_projectorWidget);
+
+		auto* projectorList = new WidgetList(pProjectorDock);
+		_widget_projector = new ProjectorWidget(projectorList);
+		projectorList->addWidget(_widget_projector);
+
 		pProjectorDock->setWidget(projectorList);
-		m_dockWidgets.push_back(make_pair(Qt::RightDockWidgetArea, pProjectorDock));
+		_dock_widgets.emplace_back(Qt::RightDockWidgetArea, pProjectorDock);
 
 
 	//	clip-plane dock
-		QDockWidget* pClipPlaneDock= new QDockWidget(tr("Clip Planes"), parentWidget());
+		auto* pClipPlaneDock= new QDockWidget(tr("Clip Planes"), parentWidget());
 		pClipPlaneDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
 		pClipPlaneDock->setObjectName(tr("clip_plane_widget_dock"));
-		m_clipPlaneWidget = new ClipPlaneWidget(pClipPlaneDock);
-		pClipPlaneDock->setWidget(m_clipPlaneWidget);
-		m_dockWidgets.push_back(make_pair(Qt::RightDockWidgetArea, pClipPlaneDock));
+		_widget_clip_plane = new ClipPlaneWidget(pClipPlaneDock);
+		pClipPlaneDock->setWidget(_widget_clip_plane);
+		_dock_widgets.emplace_back(Qt::RightDockWidgetArea, pClipPlaneDock);
 
-		m_toolManager = new ToolManager(parentWidget());
+		_tool_manager = new ToolManager(parentWidget());
 		try{
-			RegisterStandardTools(m_toolManager);
+			RegisterStandardTools(_tool_manager);
 		}
 		catch(UGError& err){
 			UG_LOG("ERROR: ")
@@ -118,119 +116,116 @@ activate(SceneInspector* sceneInspector, LGScene* scene)
 
 
 	//	tool browser dock
-		QDockWidget* toolBrowserDock = new QDockWidget(tr("Tool Browser"), parentWidget());
+		auto* toolBrowserDock = new QDockWidget(tr("Tool Browser"), parentWidget());
 		toolBrowserDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
 		toolBrowserDock->setObjectName(tr("tool_browser_dock"));
 
-		m_toolBrowser = new ToolBrowser(parentWidget());
-		m_toolBrowser->refresh(m_toolManager);
-		m_toolBrowser->setObjectName(tr("tool_browser"));
-		toolBrowserDock->setWidget(m_toolBrowser);
-		m_dockWidgets.push_back(make_pair(Qt::LeftDockWidgetArea, toolBrowserDock));
+		_tool_browser = new ToolBrowser(parentWidget());
+		_tool_browser->refresh(_tool_manager);
+		_tool_browser->setObjectName(tr("tool_browser"));
+		toolBrowserDock->setWidget(_tool_browser);
+		_dock_widgets.emplace_back(Qt::LeftDockWidgetArea, toolBrowserDock);
 
 
 	//	coordinate dock
-		QDockWidget* coordinatesDock = new QDockWidget(tr("Coordinates"), parentWidget());
+		auto* coordinatesDock = new QDockWidget(tr("Coordinates"), parentWidget());
 		coordinatesDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
 		coordinatesDock->setObjectName(tr("coordinates_dock"));
 		const char* coordLabels[] = {"x", "y", "z"};
-		m_coordsWidget = new MatrixWidget(3, 1, coordinatesDock, coordLabels, true);
-		connect(scene, SIGNAL(geometry_changed()), this, SLOT(refreshCoordinates()));
-		connect(scene, SIGNAL(selection_changed()), this, SLOT(refreshCoordinates()));
-		connect(m_sceneInspector, SIGNAL(objectChanged(ISceneObject*)), this, SLOT(refreshCoordinates()));
-		connect(m_coordsWidget, SIGNAL(valueChanged()), this, SLOT(coordinatesChanged()));
+		_widget_coords = new MatrixWidget(3, 1, coordinatesDock, coordLabels, true);
+		connect(scene, &LGScene::geometry_changed, this, &MeshModule::refreshCoordinates);
+		connect(scene, &LGScene::selection_changed, this, &MeshModule::refreshCoordinates);
+		connect(_scene_inspector, &SceneInspector::objectChanged, this, &MeshModule::refreshCoordinates);
+		connect(_widget_coords, static_cast<void (MatrixWidget::*)()>(&MatrixWidget::valueChanged), this, &MeshModule::coordinatesChanged);
 
-		// m_coordsWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-		// QHBoxLayout* coordinatesLayout = new QHBoxLayout(coordinatesDock);
-		// coordinatesLayout->addWidget(m_coordsWidget);
-		m_coordsWidget->setFixedHeight(m_coordsWidget->sizeHint().height());
-		coordinatesDock->setWidget(m_coordsWidget);
-		m_dockWidgets.push_back(make_pair(Qt::LeftDockWidgetArea, coordinatesDock));
+		_widget_coords->setFixedHeight(_widget_coords->sizeHint().height());
+		coordinatesDock->setWidget(_widget_coords);
+		_dock_widgets.emplace_back(Qt::LeftDockWidgetArea, coordinatesDock);
 
 	//	script editor
-		m_scriptEditor = new QScriptEditor(parentWidget());
-		m_scriptEditor->setWindowFlags(Qt::Window |
+		_script_editor = new QScriptEditor(parentWidget());
+		_script_editor->setWindowFlags(Qt::Window |
 		                               Qt::CustomizeWindowHint |
 		                               Qt::WindowCloseButtonHint |
 		                               Qt::WindowMinimizeButtonHint |
 		                               Qt::WindowMaximizeButtonHint);
 
 	//	script menu
-		QAction* actScriptEditor = new QAction(tr("Live Script Editor"), parentWidget());
-		actScriptEditor->setStatusTip("Opens the live script editor");
-		connect(actScriptEditor, SIGNAL(triggered()), this, SLOT(showScriptEditor()));
-		
-		QAction* actNewScript = new QAction(tr("New Script"), parentWidget());
-		actNewScript->setStatusTip("Creates a new script and opens it for editing");
-		connect(actNewScript, SIGNAL(triggered()), this, SLOT(newScript()));
+		auto* action_script_editor = new QAction(tr("Live Script Editor"), parentWidget());
+		action_script_editor->setStatusTip("Opens the live script editor");
+		connect(action_script_editor, &QAction::triggered, this, &MeshModule::showScriptEditor);
 
-		QAction* actEditScript = new QAction(tr("Edit Script"), parentWidget());
-		actEditScript->setStatusTip("Opens a script for editing");
-		connect(actEditScript, SIGNAL(triggered()), this, SLOT(editScript()));
+		auto* action_new_script = new QAction(tr("New Script"), parentWidget());
+		action_new_script->setStatusTip("Creates a new script and opens it for editing");
+		connect(action_new_script, &QAction::triggered, this, &MeshModule::newScript);
 
-		QAction* actBrowseUserScripts = new QAction(tr("Browse Default User Scripts"), parentWidget());
-		actBrowseUserScripts->setStatusTip("Opens the default path at which user scripts are located.");
-		connect(actBrowseUserScripts, SIGNAL(triggered()), this, SLOT(browseUserScripts()));
-		
-		QAction* actRefreshToolDialogs = new QAction(tr("Refresh Tool Dialogs"), parentWidget());
-		actRefreshToolDialogs->setShortcut(tr("Ctrl+T"));
-		actRefreshToolDialogs->setStatusTip("Refreshes contents of the tool-dialogs.");
-		connect(actRefreshToolDialogs, SIGNAL(triggered()), this, SLOT(refreshToolDialogsClicked()));
+		auto* action_edit_script = new QAction(tr("Edit Script"), parentWidget());
+		action_edit_script->setStatusTip("Opens a script for editing");
+		connect(action_edit_script, &QAction::triggered, this, &MeshModule::editScript);
 
-		QAction* actAddCustomUserScriptDir = new QAction(tr("Add Custom User Script Directory"), parentWidget());
-		actAddCustomUserScriptDir->setStatusTip("Adds Custom User Scripts located in the specified folder to the tool-dialog.");
-		connect(actAddCustomUserScriptDir, SIGNAL(triggered()), this, SLOT(addCustomUserScriptDir()));
+		auto* action_browse_user_scripts = new QAction(tr("Browse Default User Scripts"), parentWidget());
+		action_browse_user_scripts->setStatusTip("Opens the default path at which user scripts are located.");
+		connect(action_browse_user_scripts, &QAction::triggered, this, &MeshModule::browseUserScripts);
 
-		QAction* actRemoveCustomUserScriptDirs = new QAction(tr("Remove Custom User Script Directories"), parentWidget());
-		actRemoveCustomUserScriptDirs->setStatusTip("Removes Custom User Scripts from the tool-dialog.");
-		connect(actRemoveCustomUserScriptDirs, SIGNAL(triggered()), this, SLOT(removeCustomUserScriptDirs()));
+		auto* action_refresh_tool_dialogs = new QAction(tr("Refresh Tool Dialogs"), parentWidget());
+		action_refresh_tool_dialogs->setShortcut(tr("Ctrl+T"));
+		action_refresh_tool_dialogs->setStatusTip("Refreshes contents of the tool-dialogs.");
+		connect(action_refresh_tool_dialogs, &QAction::triggered, this, &MeshModule::refreshToolDialogsClicked);
 
-		QMenu* sceneMenu = new QMenu("&Scripts", parentWidget());
-		sceneMenu->addAction(actNewScript);
-		sceneMenu->addAction(actEditScript);
-		sceneMenu->addAction(actAddCustomUserScriptDir);
-		sceneMenu->addAction(actRemoveCustomUserScriptDirs);
-		sceneMenu->addSeparator();
-		sceneMenu->addAction(actBrowseUserScripts);
-		sceneMenu->addSeparator();
-		sceneMenu->addAction(actRefreshToolDialogs);
-		sceneMenu->addSeparator();
-		sceneMenu->addAction(actScriptEditor);
+		auto* action_add_custom_user_script_dir = new QAction(tr("Add Custom User Script Directory"), parentWidget());
+		action_add_custom_user_script_dir->setStatusTip("Adds Custom User Scripts located in the specified folder to the tool-dialog.");
+		connect(action_add_custom_user_script_dir, &QAction::triggered, this, &MeshModule::addCustomUserScriptDir);
 
-		m_menus.push_back(sceneMenu);
+		auto* action_remove_custom_user_script_dirs = new QAction(tr("Remove Custom User Script Directories"), parentWidget());
+		action_remove_custom_user_script_dirs->setStatusTip("Removes Custom User Scripts from the tool-dialog.");
+		connect(action_remove_custom_user_script_dirs, &QAction::triggered, this, &MeshModule::removeCustomUserScriptDirs);
+
+		auto* scene_menu = new QMenu("&Scripts", parentWidget());
+		scene_menu->addAction(action_new_script);
+		scene_menu->addAction(action_edit_script);
+		scene_menu->addAction(action_add_custom_user_script_dir);
+		scene_menu->addAction(action_remove_custom_user_script_dirs);
+		scene_menu->addSeparator();
+		scene_menu->addAction(action_browse_user_scripts);
+		scene_menu->addSeparator();
+		scene_menu->addAction(action_refresh_tool_dialogs);
+		scene_menu->addSeparator();
+		scene_menu->addAction(action_script_editor);
+
+		_menus.push_back(scene_menu);
 	}
 
-	if(m_sceneInspector){
-		if(!m_sceneInspectorMenu){
-			m_sceneInspectorMenu = new RClickMenu_SceneInspector(m_sceneInspector);
-			m_sceneInspectorMenu->setVisible(false);
+	if(_scene_inspector){
+		if(!_scene_inspector_menu){
+			_scene_inspector_menu = new RClickMenu_SceneInspector(_scene_inspector);
+			_scene_inspector_menu->setVisible(false);
 		}
 
-		connect(m_sceneInspector, SIGNAL(subsetChanged(ISceneObject*, int)),
-				m_projectorWidget, SLOT(setActiveSubset(ISceneObject*, int)));
+		connect(_scene_inspector,  &SceneInspector::subsetChanged,
+			    _widget_projector, &ProjectorWidget::setActiveSubset);
 	}
 
-	if(m_scene != scene){
-		connect(scene, SIGNAL(object_to_be_removed(ISceneObject*)),
-				m_projectorWidget, SLOT(objectToBeRemoved(ISceneObject*)));
-		m_clipPlaneWidget->setScene(scene);
-		m_scene = scene;
+	if(_scene != scene){
+		connect(scene, &LGScene::object_to_be_removed,
+			    _widget_projector, &ProjectorWidget::objectToBeRemoved);
+		_widget_clip_plane->setScene(scene);
+		_scene = scene;
 	}
 }
 
 void MeshModule::
 deactivate()
 {
-	if(m_sceneInspector){
-		m_sceneInspector->disconnect(m_projectorWidget);
-		m_sceneInspector->disconnect(this);
-		m_sceneInspector = nullptr;
+	if(_scene_inspector){
+		_scene_inspector->disconnect(_widget_projector);
+		_scene_inspector->disconnect(this);
+		_scene_inspector = nullptr;
 	}
 
-	if(m_scene){
-		m_scene->disconnect(m_projectorWidget);
-		m_scene->disconnect(this);
-		m_scene = nullptr;
+	if(_scene){
+		_scene->disconnect(_widget_projector);
+		_scene->disconnect(this);
+		_scene = nullptr;
 	}
 }
 
@@ -239,21 +234,21 @@ MeshModule::dock_list_t
 MeshModule::
 getDockWidgets()
 {
-	return m_dockWidgets;
+	return _dock_widgets;
 }
 
 std::vector<QToolBar*>
 MeshModule::
 getToolBars()
 {
-	return std::vector<QToolBar*>();
+	return {};
 }
 
 QMenu*
 MeshModule::
 getSceneInspectorMenu()
 {
-	return m_sceneInspectorMenu->getMenu();
+	return _scene_inspector_menu->getMenu();
 }
 
 
@@ -261,7 +256,7 @@ std::vector<QMenu*>
 MeshModule::
 getMenus()
 {
-	return m_menus;
+	return _menus;
 }
 
 
@@ -278,25 +273,25 @@ keyPressEvent(QKeyEvent* event)
 	if(qtMods.testFlag(Qt::AltModifier))
 		mods |= SMK_ALT;
 
-	m_toolManager->execute_shortcut(event->key(), mods);
+	_tool_manager->execute_shortcut(event->key(), mods);
 }
 
 void MeshModule::showScriptEditor()
 {
-	m_scriptEditor->show();
-	m_scriptEditor->raise();
-	m_scriptEditor->activateWindow();
+	_script_editor->show();
+	_script_editor->raise();
+	_script_editor->activateWindow();
 }
 
 void MeshModule::refreshToolDialogsClicked()
 {
-	RefreshScriptTools(m_toolManager);
-	m_toolBrowser->refresh(m_toolManager);
+	RefreshScriptTools(_tool_manager);
+	_tool_browser->refresh(_tool_manager);
 }
 
 void MeshModule::browseUserScripts()
 {
-	QDir scriptDir = app::UserScriptDir();
+	//QDir scriptDir = app::UserScriptDir();
 	QString path = QDir::toNativeSeparators(app::UserScriptDir().path());
 	QDesktopServices::openUrl(QUrl("file:///" + path));
 }
@@ -375,7 +370,7 @@ void MeshModule::refreshCoordinates()
 	}
 
 	for(int i = 0; i < 3; ++i)
-		m_coordsWidget->set_value(i, 0, center[i]);
+		_widget_coords->set_value(i, 0, center[i]);
 }
 
 void MeshModule::coordinatesChanged()
@@ -384,7 +379,7 @@ void MeshModule::coordinatesChanged()
 	if(obj){
 		vector3 c(0, 0, 0);
 		for(int i = 0; i < 3; ++i)
-			c[i] = m_coordsWidget->value(i, 0);
+			c[i] = _widget_coords->value(i, 0);
 		promesh::MoveSelectionTo(obj, c);
 		obj->write_selection_to_action_log ();
 		obj->log_action(QString("MoveSelectionTo (mesh, Vec3d(%1,%2,%3))\n")

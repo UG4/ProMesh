@@ -27,12 +27,12 @@
  
 #include <QtWidgets>
 #include <QApplication>
-#include "main_window.h"
-#include "app.h"
+#include "main_window.hpp"
+#include "app.hpp"
 #include "lib_grid/algorithms/selection_util.h"
-#include "tools/tool_manager.h"
-#include "options/options.h"
-#include "modules/module_interface.h"
+#include "tools/tool_manager.hpp"
+#include "options/options.hpp"
+#include "modules/module_interface.hpp"
 #include "common/profiler/profiler.h"
 
 using namespace std;
@@ -40,20 +40,20 @@ using namespace ug;
 
 void MainWindow::beginMouseMoveAction(MouseMoveAction mma)
 {
-	m_mouseMoveActionObject = app::getActiveObject();
-	if(m_mouseMoveActionObject){
-		m_activeAxis = X_AXIS | Y_AXIS | Z_AXIS;
-		m_mouseMoveAction = mma;
-		m_mouseMoveActionStart = QCursor::pos();
+	_mouse_move_action_object = app::getActiveObject();
+	if(_mouse_move_action_object){
+		_active_axis = X_AXIS | Y_AXIS | Z_AXIS;
+		_mouse_move_action = mma;
+		_mouse_move_action_start = QCursor::pos();
 		setMouseTracking(true);
 		grabMouse();
 
 		switch(mma){
 			case MMA_GRAB:
-				m_mouseMoveActionObject->begin_transform(TT_GRAB);
+				_mouse_move_action_object->begin_transform(TT_GRAB);
 				break;
 			case MMA_SCALE:
-				m_mouseMoveActionObject->begin_transform(TT_SCALE);
+				_mouse_move_action_object->begin_transform(TT_SCALE);
 				break;
 			default:
 				break;
@@ -63,18 +63,18 @@ void MainWindow::beginMouseMoveAction(MouseMoveAction mma)
 
 void MainWindow::updateMouseMoveAction()
 {
-	LGObject* obj = m_mouseMoveActionObject;
+	LGObject* obj = _mouse_move_action_object;
 	if(!obj)
 		return;
 
 //	calculate the transform in world coordinates
 //	get the current position and calculate the offset from the initial position
 	QPoint pos = QCursor::pos();
-	number dx = pos.x() - m_mouseMoveActionStart.x();
-	number dy = pos.y() - m_mouseMoveActionStart.y();
+	number dx = pos.x() - _mouse_move_action_start.x();
+	number dy = pos.y() - _mouse_move_action_start.y();
 
 //	get horizontal and vertical camera axis
-	cam::CModelViewerCamera& cam = m_pView->camera();
+	cam::CModelViewerCamera& cam = _p_view->camera();
 
 	vector3 right = cam.get_right_dir();
 	vector3 up = cam.get_up_dir();
@@ -87,17 +87,17 @@ void MainWindow::updateMouseMoveAction()
 
 	number camDist = VecDistance(from, grabCenter);
 
-	switch(m_mouseMoveAction){
+	switch(_mouse_move_action){
 		case MMA_GRAB:
 		{
 		//	calculate the offset and perform the grab
 			vector3 dir;
 			VecScaleAdd(dir, dx, right, - dy, up);
-			if(m_activeAxis == X_AXIS)
+			if(_active_axis == X_AXIS)
 				dir.y() = dir.z() = 0;
-			if(m_activeAxis == Y_AXIS)
+			if(_active_axis == Y_AXIS)
 				dir.x() = dir.z() = 0;
-			if(m_activeAxis == Z_AXIS)
+			if(_active_axis == Z_AXIS)
 				dir.x() = dir.y() = 0;
 
 			VecScale(dir, dir, camDist / 1000.f);
@@ -111,11 +111,11 @@ void MainWindow::updateMouseMoveAction()
 		//	calculate the scale-facs
 			number scale = 1. + (dx-dy) / 250.;
 			vector3 scaleFacs(1,1,1);
-			if(m_activeAxis & X_AXIS)
+			if(_active_axis & X_AXIS)
 				scaleFacs.x() = scale;
-			if(m_activeAxis & Y_AXIS)
+			if(_active_axis & Y_AXIS)
 				scaleFacs.y() = scale;
-			if(m_activeAxis & Z_AXIS)
+			if(_active_axis & Z_AXIS)
 				scaleFacs.z() = scale;
 
 			for(int i = 0; i < 3; ++i)
@@ -129,9 +129,9 @@ void MainWindow::updateMouseMoveAction()
 
 void MainWindow::endMouseMoveAction(bool bApply)
 {
-	if(m_mouseMoveAction != MMA_DEFAULT){
-		m_mouseMoveActionObject->end_transform(bApply);
-		m_mouseMoveAction = MMA_DEFAULT;
+	if(_mouse_move_action != MMA_DEFAULT){
+		_mouse_move_action_object->end_transform(bApply);
+		_mouse_move_action = MMA_DEFAULT;
 		setMouseTracking(false);
 		releaseMouse();
 	}
@@ -141,7 +141,7 @@ void MainWindow::endMouseMoveAction(bool bApply)
 // BEGIN: QMainWindow events
 void MainWindow::mousePressEvent(QMouseEvent* event)
 {
-	if(m_mouseMoveAction != MMA_DEFAULT){
+	if(_mouse_move_action != MMA_DEFAULT){
 		if(event->button() == Qt::LeftButton)
 			endMouseMoveAction(true);
 		else if(event->button() == Qt::RightButton)
@@ -151,13 +151,13 @@ void MainWindow::mousePressEvent(QMouseEvent* event)
 
 void MainWindow::mouseMoveEvent(QMouseEvent* event)
 {
-	if(m_mouseMoveAction != MMA_DEFAULT)
+	if(_mouse_move_action != MMA_DEFAULT)
 		updateMouseMoveAction();
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent* event)
 {
-	if(m_mouseMoveAction != MMA_DEFAULT){
+	if(_mouse_move_action != MMA_DEFAULT){
 		endMouseMoveAction(false);
 	}
 }
@@ -218,50 +218,50 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 			break;
 
 		case Qt::Key_V:{
-				QPoint p = m_pView->mapFromGlobal(QCursor::pos());
+				QPoint p = _p_view->mapFromGlobal(QCursor::pos());
 				insertVertexAtScreenCoord(p.x(), p.y());
 			}break;
 
 		case Qt::Key_X:
-			if(m_activeAxis == X_AXIS)
-				m_activeAxis = X_AXIS | Y_AXIS | Z_AXIS;
+			if(_active_axis == X_AXIS)
+				_active_axis = X_AXIS | Y_AXIS | Z_AXIS;
 			else
-				m_activeAxis = X_AXIS;
+				_active_axis = X_AXIS;
 			break;
 
 		case Qt::Key_Y:
-			if(m_activeAxis == Y_AXIS)
-				m_activeAxis = X_AXIS | Y_AXIS | Z_AXIS;
+			if(_active_axis == Y_AXIS)
+				_active_axis = X_AXIS | Y_AXIS | Z_AXIS;
 			else
-				m_activeAxis = Y_AXIS;
+				_active_axis = Y_AXIS;
 			break;
 
 		case Qt::Key_Z:
-			if(m_activeAxis == Z_AXIS)
-				m_activeAxis = X_AXIS | Y_AXIS | Z_AXIS;
+			if(_active_axis == Z_AXIS)
+				_active_axis = X_AXIS | Y_AXIS | Z_AXIS;
 			else
-				m_activeAxis = Z_AXIS;
+				_active_axis = Z_AXIS;
 			break;
 
-		case Qt::Key_1:	m_tbSelVrts->click();	break;
-		case Qt::Key_2:	m_tbSelEdges->click();	break;
-		case Qt::Key_3:	m_tbSelFaces->click();	break;
-		case Qt::Key_4:	m_tbSelVols->click();	break;
+		case Qt::Key_1:	_tb_sel_vrts->click();	break;
+		case Qt::Key_2:	_tb_sel_edges->click();	break;
+		case Qt::Key_3:	_tb_sel_faces->click();	break;
+		case Qt::Key_4:	_tb_sel_vols->click();	break;
 
-		case Qt::Key_5: m_selModes->setCurrentIndex(0); break;
-		case Qt::Key_6: m_selModes->setCurrentIndex(1); break;
-		case Qt::Key_7: m_selModes->setCurrentIndex(2); break;
+		case Qt::Key_5: _sel_modes->setCurrentIndex(0); break;
+		case Qt::Key_6: _sel_modes->setCurrentIndex(1); break;
+		case Qt::Key_7: _sel_modes->setCurrentIndex(2); break;
 
 		case Qt::Key_Escape:
 			endMouseMoveAction(false);
 			break;
 
 		default:
-			m_activeModule->keyPressEvent(event);
+			_active_module->keyPressEvent(event);
 			break;
 	}
 
-	if(m_mouseMoveAction != MMA_DEFAULT)
+	if(_mouse_move_action != MMA_DEFAULT)
 		updateMouseMoveAction();
 
 	QMainWindow::keyReleaseEvent(event);
@@ -270,7 +270,7 @@ void MainWindow::keyPressEvent(QKeyEvent* event)
 // END QMainWindow events
 
 
-template <class TElem>
+template <typename TElem>
 void MainWindow::
 selectElement(LGObject* obj, TElem* elem, bool extendSelection)
 {
@@ -309,23 +309,23 @@ void MainWindow::view3dMousePressed(QMouseEvent *event)
 	vector3 from, to;
 	LGObject* obj = getActiveObject();
 
-	bool pointOnGeom = m_pView->get_ray_to_geometry(from, to, event->x(), event->y());
+	bool pointOnGeom = _p_view->get_ray_to_geometry(from, to, event->x(), event->y());
 
 	if(event->button() == Qt::RightButton){
 		if(selectSubset)
-			m_curSelectionMode = 0;
+			_cur_selection_mode = 0;
 		else
-			m_curSelectionMode = m_selectionMode;
+			_cur_selection_mode = _selection_mode;
 
-		switch(m_curSelectionMode){
+		switch(_cur_selection_mode){
 		case 0:{// click select
 			if(!obj)
 				return;
 
-			switch(m_selectionElement){
+			switch(_selection_element){
 				case 0:// vertices
 					{
-						Vertex* v = m_scene->get_clicked_vertex(obj, from, to);
+						Vertex* v = _scene->get_clicked_vertex(obj, from, to);
 						if(v){
 							int si = obj->subset_handler().get_subset_index(v);
 							if(selectSubset && (si != -1)){
@@ -338,14 +338,14 @@ void MainWindow::view3dMousePressed(QMouseEvent *event)
 								selectElement(obj, v, extendSelection);
 
 							if(si == -1)
-								m_sceneInspector->setActiveObject(m_sceneInspector->getActiveObjectIndex());
+								_scene_inspector->setActiveObject(_scene_inspector->getActiveObjectIndex());
 							else
-								m_sceneInspector->setActiveSubset(m_sceneInspector->getActiveObjectIndex(), si);
+								_scene_inspector->setActiveSubset(_scene_inspector->getActiveObjectIndex(), si);
 						}
 					}break;
 				case 1://edges
 					{
-						Edge* e = m_scene->get_clicked_edge(obj, from, to, pointOnGeom);
+						Edge* e = _scene->get_clicked_edge(obj, from, to, pointOnGeom);
 						if(e){
 							int si = obj->subset_handler().get_subset_index(e);
 							if(selectSubset && (si != -1)){
@@ -358,14 +358,14 @@ void MainWindow::view3dMousePressed(QMouseEvent *event)
 								selectElement(obj, e, extendSelection);
 
 							if(si == -1)
-								m_sceneInspector->setActiveObject(m_sceneInspector->getActiveObjectIndex());
+								_scene_inspector->setActiveObject(_scene_inspector->getActiveObjectIndex());
 							else
-								m_sceneInspector->setActiveSubset(m_sceneInspector->getActiveObjectIndex(), si);
+								_scene_inspector->setActiveSubset(_scene_inspector->getActiveObjectIndex(), si);
 						}
 					}break;
 				case 2://faces
 					{
-						Face* f = m_scene->get_clicked_face(obj, from, to);
+						Face* f = _scene->get_clicked_face(obj, from, to);
 						if(f){
 							int si = obj->subset_handler().get_subset_index(f);
 							if(selectSubset && (si != -1)){
@@ -378,14 +378,14 @@ void MainWindow::view3dMousePressed(QMouseEvent *event)
 								selectElement(obj, f, extendSelection);
 
 							if(si == -1)
-								m_sceneInspector->setActiveObject(m_sceneInspector->getActiveObjectIndex());
+								_scene_inspector->setActiveObject(_scene_inspector->getActiveObjectIndex());
 							else
-								m_sceneInspector->setActiveSubset(m_sceneInspector->getActiveObjectIndex(), si);
+								_scene_inspector->setActiveSubset(_scene_inspector->getActiveObjectIndex(), si);
 						}
 					}break;
 				case 3://volumes
 					{
-						Volume* v = m_scene->get_clicked_volume(obj, from, to);
+						Volume* v = _scene->get_clicked_volume(obj, from, to);
 						if(v){
 							int si = obj->subset_handler().get_subset_index(v);
 							if(selectSubset && (si != -1)){
@@ -398,9 +398,9 @@ void MainWindow::view3dMousePressed(QMouseEvent *event)
 								selectElement(obj, v, extendSelection);
 
 							if(si == -1)
-								m_sceneInspector->setActiveObject(m_sceneInspector->getActiveObjectIndex());
+								_scene_inspector->setActiveObject(_scene_inspector->getActiveObjectIndex());
 							else
-								m_sceneInspector->setActiveSubset(m_sceneInspector->getActiveObjectIndex(), si);
+								_scene_inspector->setActiveSubset(_scene_inspector->getActiveObjectIndex(), si);
 						}
 					}break;
 				}// end of element-switch
@@ -408,8 +408,8 @@ void MainWindow::view3dMousePressed(QMouseEvent *event)
 
 		case 1:
 		case 2:{// box-select
-				m_mouseDownPos = QPoint(event->x(), event->y());
-				m_pView->drawSelectionRect(true, event->x(), event->y(),
+				_mouse_down_pos = QPoint(event->x(), event->y());
+				_p_view->drawSelectionRect(true, event->x(), event->y(),
 										   event->x(), event->y());
 			}break;
 
@@ -419,14 +419,14 @@ void MainWindow::view3dMousePressed(QMouseEvent *event)
 
 void MainWindow::view3dMouseMoved(QMouseEvent *event)
 {
-	switch(m_mouseMoveAction){
+	switch(_mouse_move_action){
 		case MMA_DEFAULT:
-			if(m_curSelectionMode >= 1 && (event->buttons() & Qt::RightButton))
+			if(_cur_selection_mode >= 1 && (event->buttons() & Qt::RightButton))
 			{
 			//	draw the selection rect.
-				m_pView->drawSelectionRect(true, m_mouseDownPos.x(), m_mouseDownPos.y(),
+				_p_view->drawSelectionRect(true, _mouse_down_pos.x(), _mouse_down_pos.y(),
 									   event->x(), event->y());
-				m_pView->update();
+				_p_view->update();
 			}
 			break;
 	}
@@ -436,13 +436,13 @@ void MainWindow::view3dMouseReleased(QMouseEvent *event)
 {
 //	if box select is active and the right button was released,
 //	then we have to select all elements in the box.
-	if(m_curSelectionMode >= 1 && event->button() == Qt::RightButton)
+	if(_cur_selection_mode >= 1 && event->button() == Qt::RightButton)
 	{
-		m_pView->drawSelectionRect(false);
+		_p_view->drawSelectionRect(false);
 
 		LGObject* obj = getActiveObject();
 		if(!obj){
-			m_pView->update();
+			_p_view->update();
 			return;
 		}
 
@@ -456,18 +456,18 @@ void MainWindow::view3dMouseReleased(QMouseEvent *event)
 			sel.clear();
 
 		vector3 from, to;
-		m_pView->get_ray_to_geometry(from, to, event->x(), event->y());
+		_p_view->get_ray_to_geometry(from, to, event->x(), event->y());
 
-		float xMin = min(m_mouseDownPos.x(), event->x());
-		float xMax = max(m_mouseDownPos.x(), event->x());
-		float yMin = min(m_mouseDownPos.y(), event->y());
-		float yMax = max(m_mouseDownPos.y(), event->y());
+		float xMin = min(_mouse_down_pos.x(), event->x());
+		float xMax = max(_mouse_down_pos.x(), event->x());
+		float yMin = min(_mouse_down_pos.y(), event->y());
+		float yMax = max(_mouse_down_pos.y(), event->y());
 
-		switch(m_selectionElement){
+		switch(_selection_element){
 			case 0:// vertices
 			{
 				vector<Vertex*> vrts;
-				m_scene->get_vertices_in_rect(vrts, obj, xMin, yMin, xMax, yMax);
+				_scene->get_vertices_in_rect(vrts, obj, xMin, yMin, xMax, yMax);
 				for(size_t i = 0; i < vrts.size(); ++i)
 					sel.select(vrts[i]);
 			}break;
@@ -475,10 +475,10 @@ void MainWindow::view3dMouseReleased(QMouseEvent *event)
 			case 1://edges
 			{
 				vector<Edge*> edges;
-				if(m_curSelectionMode == 1)
-					m_scene->get_edges_in_rect_cut(edges, obj, xMin, yMin, xMax, yMax);
+				if(_cur_selection_mode == 1)
+					_scene->get_edges_in_rect_cut(edges, obj, xMin, yMin, xMax, yMax);
 				else
-					m_scene->get_edges_in_rect(edges, obj, xMin, yMin, xMax, yMax);
+					_scene->get_edges_in_rect(edges, obj, xMin, yMin, xMax, yMax);
 
 				for(size_t i = 0; i < edges.size(); ++i)
 					sel.select(edges[i]);
@@ -487,10 +487,10 @@ void MainWindow::view3dMouseReleased(QMouseEvent *event)
 			case 2://faces
 			{
 				vector<Face*> faces;
-				if(m_curSelectionMode == 1)
-					m_scene->get_faces_in_rect_cut(faces, obj, xMin, yMin, xMax, yMax);
+				if(_cur_selection_mode == 1)
+					_scene->get_faces_in_rect_cut(faces, obj, xMin, yMin, xMax, yMax);
 				else
-					m_scene->get_faces_in_rect(faces, obj, xMin, yMin, xMax, yMax);
+					_scene->get_faces_in_rect(faces, obj, xMin, yMin, xMax, yMax);
 
 				for(size_t i = 0; i < faces.size(); ++i)
 					sel.select(faces[i]);
@@ -499,10 +499,10 @@ void MainWindow::view3dMouseReleased(QMouseEvent *event)
 			case 3://volumes
 			{
 				vector<Volume*> vols;
-				if(m_curSelectionMode == 1)
-					m_scene->get_volumes_in_rect_cut(vols, obj, xMin, yMin, xMax, yMax);
+				if(_cur_selection_mode == 1)
+					_scene->get_volumes_in_rect_cut(vols, obj, xMin, yMin, xMax, yMax);
 				else
-					m_scene->get_volumes_in_rect(vols, obj, xMin, yMin, xMax, yMax);
+					_scene->get_volumes_in_rect(vols, obj, xMin, yMin, xMax, yMax);
 
 				for(size_t i = 0; i < vols.size(); ++i)
 					sel.select(vols[i]);
@@ -524,14 +524,14 @@ insertVertexAtScreenCoord(number x, number y)
 	if(LGObject* o = app::getActiveObject()){
 	//	place a new vertex
 		vector3 from, to;
-		if(!m_pView->get_ray_to_geometry(from, to, x, y)){
+		if(!_p_view->get_ray_to_geometry(from, to, x, y)){
 			// UG_LOG("dbg - from: " << from << endl);
 			// UG_LOG("dbg - to: " << to << endl);
 
 			vector3 dir;
 			VecSubtract(dir, to, from);
-			vector3 p = *m_pView->camera().get_to();
-			vector3 n = *m_pView->camera().get_dir();
+			vector3 p = *_p_view->camera().get_to();
+			vector3 n = *_p_view->camera().get_dir();
 			// UG_LOG("dbg - p: " << p << endl);
 			// UG_LOG("dbg - n: " << n << endl);
 			VecNormalize(n, n);
@@ -548,7 +548,7 @@ insertVertexAtScreenCoord(number x, number y)
 		if(si < 0) si = 0;
 
 	//	check if a vertex is close
-		const number snapDistSq = sq(GetOptions().drawPath.snapDistance);
+		const number snapDistSq = sq(GetOptions()._draw_path._snap_distance);
 		Vertex* vrt = nullptr;
 		Grid& g = o->grid();
 

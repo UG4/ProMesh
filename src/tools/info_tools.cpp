@@ -26,21 +26,20 @@
  */
 
 #include <vector>
-#include "app.h"
-#include "standard_tools.h"
+#include "app.hpp"
+#include "standard_tools.hpp"
 #include "tooltips.h"
 
 using namespace std;
 using namespace ug;
 
-class ToolPrintSelectionCenter : public ITool
-{
+class ToolPrintSelectionCenter : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 
-			ug::Grid& grid = obj->grid();
-			ug::Selector& sel = obj->selector();
-			Grid::VertexAttachmentAccessor<APosition> aaPos(grid, aPosition);
+			Grid& grid = obj->grid();
+			Selector& sel = obj->selector();
+			Grid::VertexAttachmentAccessor aaPos(grid, aPosition);
 
 			vector3 center;
 
@@ -53,15 +52,14 @@ class ToolPrintSelectionCenter : public ITool
 			}
 		}
 
-		const char* get_name()		{return "Print Selection Center";}
-		const char* get_tooltip()	{return TOOLTIP_PRINT_SELECTION_CENTER;}
-		const char* get_group()		{return "Info";}
+		const char* get_name() override {return "Print Selection Center";}
+		const char* get_tooltip() override {return TOOLTIP_PRINT_SELECTION_CENTER;}
+		const char* get_group() override {return "Info";}
 };
 
-class ToolPrintSelectionDirection : public ITool
-{
+class ToolPrintSelectionDirection : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 
 			ug::Selector& sel = obj->selector();
 			LGObject::position_accessor_t aaPos = obj->position_accessor();
@@ -83,8 +81,8 @@ class ToolPrintSelectionDirection : public ITool
 			}
 			
 			if(sel.num<Edge>() >= 1){
-				for(EdgeIterator eiter = sel.begin<Edge>();
-					eiter != sel.end<Edge>(); ++eiter)
+				for(auto eiter = sel.begin<Edge>();
+				    eiter != sel.end<Edge>(); ++eiter)
 				{
 					Edge* e = *eiter;
 					vector3 d;
@@ -102,15 +100,14 @@ class ToolPrintSelectionDirection : public ITool
 			}
 		}
 
-		const char* get_name()		{return "Print Selection Direction";}
-		const char* get_tooltip()	{return "Prints the direction of subsequently selected vertices.";}
-		const char* get_group()		{return "Info";}
+		const char* get_name() override {return "Print Selection Direction";}
+		const char* get_tooltip() override {return "Prints the direction of subsequently selected vertices.";}
+		const char* get_group() override {return "Info";}
 };
 
-class ToolPrintGeometryInfo : public ITool
-{
+class ToolPrintGeometryInfo : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 
 			ug::Grid& grid = obj->grid();
 			vector3 vMin, vMax;
@@ -131,19 +128,18 @@ class ToolPrintGeometryInfo : public ITool
 			UG_LOG(endl);
 		}
 
-		const char* get_name()		{return "Print Geometry Info";}
-		const char* get_tooltip()	{return TOOLTIP_PRINT_GEOMETRY_INFO;}
-		const char* get_group()		{return "Info";}
+		const char* get_name() override {return "Print Geometry Info";}
+		const char* get_tooltip() override {return TOOLTIP_PRINT_GEOMETRY_INFO;}
+		const char* get_group() override {return "Info";}
 };
 
-class ToolPrintFaceQuality : public ITool
-{
+class ToolPrintFaceQuality : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 			using namespace ug;
-			ug::Grid& grid = obj->grid();
-			ug::Selector& sel = obj->selector();
-			Grid::VertexAttachmentAccessor<APosition> aaPos(grid, aPosition);
+			Grid& grid = obj->grid();
+			Selector& sel = obj->selector();
+			Grid::VertexAttachmentAccessor aaPos(grid, aPosition);
 
 			UG_LOG("face qualities:\n");
 			for(FaceIterator iter = sel.begin<Face>(); iter != sel.end<Face>(); ++iter){
@@ -152,18 +148,17 @@ class ToolPrintFaceQuality : public ITool
 			UG_LOG(endl);
 		}
 
-		const char* get_name()		{return "Print Face Quality";}
-		const char* get_tooltip()	{return TOOLTIP_PRINT_FACE_QUALITY;}
-		const char* get_group()		{return "Info";}
+		const char* get_name() override {return "Print Face Quality";}
+		const char* get_tooltip() override {return TOOLTIP_PRINT_FACE_QUALITY;}
+		const char* get_group() override {return "Info";}
 };
 
-class ToolPrintSelectionInfo : public ITool
-{
+class ToolPrintSelectionInfo : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 			using namespace ug;
-			ug::Grid& grid = obj->grid();
-			ug::Selector& sel = obj->selector();
+			Grid& grid = obj->grid();
+			Selector& sel = obj->selector();
 			UG_LOG("Selection Info:\n");
 			PrintElementNumbers(sel.get_grid_objects());
 
@@ -179,13 +174,13 @@ class ToolPrintSelectionInfo : public ITool
 			UG_LOG(endl);
 		}
 
-		const char* get_name()		{return "Print Selection Info";}
-		const char* get_tooltip()	{return TOOLTIP_PRINT_SELECTION_INFO;}
-		const char* get_group()		{return "Info";}
+		const char* get_name() override {return "Print Selection Info";}
+		const char* get_tooltip() override {return TOOLTIP_PRINT_SELECTION_INFO;}
+		const char* get_group() override {return "Info";}
 };
 
 
-template <class TGeomObj>
+template <typename TGeomObj>
 static bool SubsetContainsSelected(SubsetHandler& sh, Selector& sel, int si)
 {
 	using GeomObjIter = typename geometry_traits<TGeomObj>::iterator;
@@ -200,13 +195,12 @@ static bool SubsetContainsSelected(SubsetHandler& sh, Selector& sel, int si)
 	return false;
 }
 
-class ToolPrintSelectionContainingSubsets : public ITool
-{
+class ToolPrintSelectionContainingSubsets : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 			using namespace ug;
-			ug::Selector& sel = obj->selector();
-			ug::SubsetHandler& sh = obj->subset_handler();
+			Selector& sel = obj->selector();
+			SubsetHandler& sh = obj->subset_handler();
 
 			UG_LOG("Selection containing subsets:");
 
@@ -232,20 +226,19 @@ class ToolPrintSelectionContainingSubsets : public ITool
 			UG_LOG(endl);
 		}
 
-		const char* get_name()		{return "Print Selection Containing Subsets";}
-		const char* get_tooltip()	{return TOOLTIP_PRINT_SELECTION_CONTAINING_SUBSETS;}
-		const char* get_group()		{return "Info";}
+		const char* get_name() override {return "Print Selection Containing Subsets";}
+		const char* get_tooltip() override {return TOOLTIP_PRINT_SELECTION_CONTAINING_SUBSETS;}
+		const char* get_group() override {return "Info";}
 };
 
 
-class ToolPrintVertexDistance : public ITool
-{
+class ToolPrintVertexDistance : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 			using namespace ug;
-			ug::Grid& grid = obj->grid();
-			ug::Selector& sel = obj->selector();
-			Grid::VertexAttachmentAccessor<APosition> aaPos(grid, aPosition);
+			Grid& grid = obj->grid();
+			Selector& sel = obj->selector();
+			Grid::VertexAttachmentAccessor aaPos(grid, aPosition);
 			UG_LOG("Vertex Distance:");
 
 			number max = 0;
@@ -260,13 +253,12 @@ class ToolPrintVertexDistance : public ITool
 			else{
 			//	iterate over all selected vertices
 			using VrtIter = vector<Vertex*>::iterator;
-				for(VrtIter baseIter = vrts.begin();
-					baseIter != vrts.end(); ++baseIter)
+				for(auto baseIter = vrts.begin(); baseIter != vrts.end(); ++baseIter)
 				{
 					vector3 basePos = aaPos[*baseIter];
 
 				//	iteate over all vertices between baseVrt and sel.end
-					VrtIter iter = baseIter;
+					auto iter = baseIter;
 					for(iter++; iter != vrts.end(); ++iter){
 						number dist = VecDistance(basePos, aaPos[*iter]);
 						if(dist > max)
@@ -280,20 +272,19 @@ class ToolPrintVertexDistance : public ITool
 			UG_LOG("    min = " << min << ",    max = " << max << "\n");
 		}
 
-		const char* get_name()		{return "Print Vertex Distance";}
-		const char* get_tooltip()	{return TOOLTIP_PRINT_VERTEX_DISTANCE;}
-		const char* get_group()		{return "Info";}
+		const char* get_name() override {return "Print Vertex Distance";}
+		const char* get_tooltip() override {return TOOLTIP_PRINT_VERTEX_DISTANCE;}
+		const char* get_group() override {return "Info";}
 };
 
 
-class ToolPrintLeastSquaresPlane: public ITool
-{
+class ToolPrintLeastSquaresPlane: public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 			using namespace ug;
-			ug::Grid& grid = obj->grid();
-			ug::Selector& sel = obj->selector();
-			Grid::VertexAttachmentAccessor<APosition> aaPos(grid, aPosition);
+			Grid& grid = obj->grid();
+			Selector& sel = obj->selector();
+			Grid::VertexAttachmentAccessor aaPos(grid, aPosition);
 
 			std::vector<Vertex*> vrts;
 			CollectVerticesTouchingSelection(vrts, sel);
@@ -322,9 +313,9 @@ class ToolPrintLeastSquaresPlane: public ITool
 			}
 		}
 
-		const char* get_name()		{return "Print Least Squares Plane";}
-		const char* get_tooltip()	{return TOOLTIP_PRINT_LEAST_SQUARES_PLANE;}
-		const char* get_group()		{return "Info";}
+		const char* get_name() override {return "Print Least Squares Plane";}
+		const char* get_tooltip() override {return TOOLTIP_PRINT_LEAST_SQUARES_PLANE;}
+		const char* get_group() override {return "Info";}
 };
 
 

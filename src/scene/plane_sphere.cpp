@@ -25,7 +25,7 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "plane_sphere.h"
+#include "plane_sphere.hpp"
 
 namespace ug
 {
@@ -44,7 +44,7 @@ RelativePositionIndicator PlaneSphereTest(const Plane& plane, const Sphere3& sph
 	{
 		if(d > sphere.get_radius())
 			return RPI_OUTSIDE;
-		else if(d == sphere.get_radius())
+		if(d == sphere.get_radius())
 			return RPI_OUTSIDE_TOUCHES;
 	}
 	else
@@ -52,7 +52,7 @@ RelativePositionIndicator PlaneSphereTest(const Plane& plane, const Sphere3& sph
 		d *= -1;
 		if(d > sphere.get_radius())
 			return RPI_INSIDE;
-		else if(d == sphere.get_radius())
+		if(d == sphere.get_radius())
 			return RPI_INSIDE_TOUCHES;
 	}
 
@@ -66,7 +66,7 @@ RelativePositionIndicator PlanePointTest(const Plane& plane, const vector3& poin
 
 	if(d < 0)
 		return RPI_INSIDE;
-	else if(d > 0)
+	if(d > 0)
 		return RPI_OUTSIDE;
 
 	return RPI_CUT;
@@ -79,4 +79,4 @@ number PlanePointDistance(const Plane& plane, const vector3& point)
 	return fabs(VecDot(v, plane.get_n()));
 }
 
-}//	end of namespace
+}

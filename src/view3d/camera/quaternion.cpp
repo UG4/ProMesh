@@ -25,18 +25,16 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "quaternion.h"
-#include "vec_math.h"
-#include "matrix44.h"
+#include "quaternion.hpp"
+#include "vec_math.hpp"
+#include "matrix44.hpp"
 
 namespace cam
 {
 
-static const float DELTA = 1e-6;     // error tolerance
+static constexpr float DELTA = 1e-6;     // error tolerance
 
-CQuaternion::CQuaternion()
-{
-}
+
 
 CQuaternion::CQuaternion(float nx, float ny, float nz, float nw)
 {
@@ -51,7 +49,7 @@ CQuaternion CQuaternion::inverse()
 	return (CQuaternion(-x, -y, -z, w) * (1.f / length_sqr()));
 }
 
-void CQuaternion::set_values(float angle, vector3& axis)
+void CQuaternion::set_values(float angle, Vector3& axis)
 {
 	float s = (float)sin(angle / 2.f);
 	float c = (float)cos(angle / 2.f);
@@ -81,9 +79,9 @@ void CQuaternion::set_angle_of_rotation(float angle)
 	w = (float) cos(angle / 2.f);
 }
 
-vector3 CQuaternion::axis_of_rotation()
+Vector3 CQuaternion::axis_of_rotation()
 {
-	return vector3(x, y, z);
+	return Vector3(x, y, z);
 }
 
 float CQuaternion::angle_of_rotation()
@@ -133,7 +131,7 @@ CQuaternion CQuaternion::operator * (const CQuaternion& q)
 
 
 
-void matrix_from_quaternion(matrix44* matOut, CQuaternion* quat)
+void matrix_from_quaternion(Matrix44* matOut, CQuaternion* quat)
 {
 
 	float wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
@@ -165,7 +163,7 @@ void matrix_from_quaternion(matrix44* matOut, CQuaternion* quat)
 
 }
 
-void quaternion_from_matrix(CQuaternion* quatOut, matrix44* mat)
+void quaternion_from_matrix(CQuaternion* quatOut, Matrix44* mat)
 {
 
   float  tr, s;
@@ -219,17 +217,17 @@ void quaternion_from_matrix(CQuaternion* quatOut, matrix44* mat)
   }
 }
 
-void quaternion_from_ball_points(CQuaternion* quatOut, vector3* vFrom, vector3* vTo)
+void quaternion_from_ball_points(CQuaternion* quatOut, Vector3* vFrom, Vector3* vTo)
 {
     float fDot = Vec3Dot(*vFrom, *vTo);
-    vector3 vPart;
+    Vector3 vPart;
     Vec3Cross(vPart, *vTo, *vFrom);
 
 	*quatOut = CQuaternion(vPart.x(), vPart.y(), vPart.z(), fDot);
 	quatOut->normalize();
 }
 
-void axis_from_quaternion(vector3* vXout, vector3* vYout, vector3* vZout, CQuaternion* quat)
+void axis_from_quaternion(Vector3* vXout, Vector3* vYout, Vector3* vZout, CQuaternion* quat)
 {
 	float wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
 
@@ -251,9 +249,9 @@ void axis_from_quaternion(vector3* vXout, vector3* vYout, vector3* vZout, CQuate
 	vZout->z() = 1.0 - (xx + yy);
 }
 
-void quaternion_from_axis(CQuaternion* quatOut, vector3* vX, vector3* vY, vector3* vZ)
+void quaternion_from_axis(CQuaternion* quatOut, Vector3* vX, Vector3* vY, Vector3* vZ)
 {
-  vector3* mat[3];
+  Vector3* mat[3];
   float  tr, s;
   float  q[4];
   int    i, j, k;

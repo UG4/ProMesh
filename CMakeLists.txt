@@ -23,7 +23,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU Lesser General Public License for more details.
 
-cmake_minimum_required(VERSION 2.6...3.20)
+cmake_minimum_required(VERSION 3.20...3.20)
 project(P_PROMESH4)
 
 set (CMAKE_CXX_STANDARD 17)
@@ -97,12 +97,12 @@ option(USE_WEBKIT "Enable or disable QtWebKit support. If enabled, ProMesh's hel
 
 # add flag for c language only
 function (add_c_flag flag)
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}" CACHE STRING "overriden flags!" FORCE)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}" CACHE STRING "overwriting flags!" FORCE)
 endfunction(add_c_flag)
 
 # add flag for c++ language only
 function (add_cpp_flag flag)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}" CACHE STRING "overriden flags!" FORCE)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}" CACHE STRING "overwriting flags!" FORCE)
 endfunction(add_cpp_flag)
 
 # add flag for c and c++ language
@@ -148,24 +148,27 @@ endif(USE_WEBKIT)
 add_definitions( -DBOOST_ALL_NO_LIB )
 include_directories(SYSTEM ${UG_ROOT_PATH}/externals/BoostForUG4)
 
-# Qt5 with OpenGL support is required.
+# Qt6 with OpenGL support is required.
 # in order to use a custom installation of QT, specify QT_CMAKE_PATH when running
 # cmake for the first time for your build (e.g. "...pathToQt/5.4/gcc_64/lib/cmake/")
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 if(QT_CMAKE_PATH)
-	FIND_PACKAGE(Qt5Widgets REQUIRED PATHS ${QT_CMAKE_PATH}/Qt5Widgets)
-	FIND_PACKAGE(Qt5OpenGL REQUIRED PATHS ${QT_CMAKE_PATH}/Qt5OpenGL)
+	message(INFO "QT_CMAKE_PATH is set (untested)")
+	FIND_PACKAGE(Qt6Widgets REQUIRED PATHS ${QT_CMAKE_PATH}/Qt6Widgets)
+	FIND_PACKAGE(Qt6OpenGL REQUIRED PATHS ${QT_CMAKE_PATH}/Qt6OpenGL)
 	if(USE_WEBKIT)
-		FIND_PACKAGE(Qt5WebKitWidgets REQUIRED PATHS ${QT_CMAKE_PATH}/Qt5WebKitWidgets)
+		FIND_PACKAGE(Qt6WebKitWidgets REQUIRED PATHS ${QT_CMAKE_PATH}/Qt6WebKitWidgets)
 	endif(USE_WEBKIT)
 else(QT_CMAKE_PATH)
-	FIND_PACKAGE(Qt5Widgets REQUIRED)
-	FIND_PACKAGE(Qt5OpenGL REQUIRED)
-	if(USE_WEBKIT)
-		FIND_PACKAGE(Qt5WebKitWidgets REQUIRED)
-	endif(USE_WEBKIT)
-endif(QT_CMAKE_PATH)
+	message(INFO "QT_CMAKE_PATH is not set")
+	find_package(Qt6 REQUIRED COMPONENTS Widgets OpenGL OpenGLWidgets)# WebEngineWidgets)
+	# FIND_PACKAGE(Qt6Widgets REQUIRED)
+	# FIND_PACKAGE(Qt6OpenGL REQUIRED)
+	# if(USE_WEBKIT)
+	# 	FIND_PACKAGE(Qt6WebKitWidgets REQUIRED)
+	# endif(USE_WEBKIT)
+endif()
 
 
 FIND_PACKAGE(OpenGL REQUIRED)
@@ -182,7 +185,7 @@ if(DEBUG)
 	message(STATUS "INFO: Debug mode. (Enable release-mode by defining -DDEBUG=OFF)")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 	add_definitions(-DUG_DEBUG)
-else(DEBUG)
+else()
 	message(STATUS "INFO: Release mode. (Enable debug-mode by defining -DDEBUG=ON)")
 	# Enable these flags for a fast ublas algebra
 	
@@ -191,24 +194,24 @@ else(DEBUG)
 	if(GENERATE_DEBUG_SYMBOLS)
 		message(STATUS "INFO: Generating debug symbols (-g) (Disable by defining -DGENERATE_DEBUG_SYMBOLS=OFF)")
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
-	endif(GENERATE_DEBUG_SYMBOLS)
+	endif()
 	remove_definitions(-DUG_DEBUG)
-endif(DEBUG)
+endif()
 
 if(DEBUG_LOGS)
 	add_definitions(-DUG_ENABLE_DEBUG_LOGS)
-endif(DEBUG_LOGS)
+endif()
 
 if(PROFILER)
 	add_definitions(-DUG_PROFILER)
 	add_definitions(-DUG_PROFILER_SHINY)
 	set(UG_PROFILER ON)
 	set(UG_PROFILER_SHINY ON)
-endif(PROFILER)
+endif()
 
 if(NOT UG_ROOT_PATH)
 	message(FATAL_ERROR "ERROR: You have to specify UG_ROOT_PATH! Add an option -DUG_ROOT_PATH=path-to-ug4")
-endif(NOT UG_ROOT_PATH)
+endif()
 
 message(STATUS "INFO: USE_WEBKIT: " ${USE_WEBKIT})
 
@@ -223,20 +226,21 @@ link_directories(${UG_ROOT_PATH}/lib)
 if(UNIX)
 	if(APPLE)
 		add_definitions(-DPROMESH_INCLUDE_OPENGL_GLU)
-	else(APPLE)
+	else()
 		add_definitions(-DPROMESH_INCLUDE_GL_GLU)
-	endif(APPLE)
+	endif()
 elseif(WIN32)
 	add_definitions(-DPROMESH_INCLUDE_GL_GLU)
-endif(UNIX)
+endif()
 
 
 # resources
 set(ProMeshRESOURCES	ProMesh.qrc
 						docs/html-resources.qrc)
-QT5_ADD_RESOURCES(ProMeshRESOURCES_RCC ${ProMeshRESOURCES})
+QT6_ADD_RESOURCES(ProMeshRESOURCES_RCC ${ProMeshRESOURCES})
 
-SET(allSources ${ProMeshSRC} ${ProMeshRESOURCES_RCC})
+SET(allSources ${ProMeshSRC} ${ProMeshRESOURCES_RCC}
+		src/compile/pragma.hpp)
 
 
 # Next block is for docugen
@@ -245,39 +249,38 @@ if(UNIX AND NOT CYGWIN)
 	add_definitions(-DUNIX)
 elseif(WIN32 OR CYGWIN)
 	add_definitions(-DWINDOWS)
-else(UNIX AND NOT CYGWIN)
+else()
 	message(STATUS "YOUR OS MAY NOT BE FULLY SUPPORTED (NOT UNIX???). File functions may be not working.")
 	add_definitions(-DUNIX)
-endif(UNIX AND NOT CYGWIN)
+endif()
 
 
 if(UNIX)
 	if(APPLE)
 		#SET(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
 		#SET(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
-		ADD_EXECUTABLE(ProMesh4 MACOSX_BUNDLE ${allSources})
-	else(APPLE)
-		ADD_EXECUTABLE(ProMesh4 ${allSources})
-	endif(APPLE)
-else(UNIX)
+		qt_add_executable(ProMesh4 MACOSX_BUNDLE ${allSources})
+	else()
+		qt_add_executable(ProMesh4 ${allSources}) # ADD_EXECUTABLE
+	endif()
+else()
 	if(MINGW)
 		# resource compilation for MINGW
 		ADD_CUSTOM_COMMAND( OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ProMeshIcon.o
 							COMMAND windres.exe -I${CMAKE_SOURCE_DIR}/deployment/data -i${CMAKE_SOURCE_DIR}/deployment/data/ProMeshIcon.rc 
                              -o ${CMAKE_CURRENT_BINARY_DIR}/ProMeshIcon.o )
-		ADD_EXECUTABLE(ProMesh4 WIN32 ${allSources} ProMeshIcon.o)
-	else(MINGW)
-		ADD_EXECUTABLE(ProMesh4 WIN32 ${allSources} ${CMAKE_SOURCE_DIR}/deployment/data/ProMeshIcon.rc)
-	endif(MINGW)
-endif(UNIX)
+		qt_add_executable(ProMesh4 WIN32 ${allSources} ProMeshIcon.o)
+	else()
+		qt_add_executable(ProMesh4 WIN32 ${allSources} ${CMAKE_SOURCE_DIR}/deployment/data/ProMeshIcon.rc)
+	endif()
+endif()
 
-set(PM_LIBS ${OPENGL_LIBRARIES} Qt5::OpenGL Qt5::Widgets grid_s tet)
+set(PM_LIBS ${OPENGL_LIBRARIES} Qt6::OpenGL Qt6::Widgets grid_s tet)
 
 if(USE_WEBKIT)
-	set(PM_LIBS ${PM_LIBS} Qt5::WebKitWidgets)
-endif(USE_WEBKIT)
+	set(PM_LIBS ${PM_LIBS} Qt6::WebKitWidgets)
+endif()
 
-TARGET_LINK_LIBRARIES(ProMesh4 ${PM_LIBS} ${Boost_LIBRARIES})
 
 if(WIN32)
 	set(tetgenFileName tetgen.exe)
@@ -291,4 +294,13 @@ add_custom_command(TARGET ProMesh4 PRE_BUILD
 add_custom_command(TARGET ProMesh4 PRE_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy
                    ${UG_ROOT_PATH}/bin/${tetgenFileName} $<TARGET_FILE_DIR:ProMesh4>/tools/${tetgenFileName})
+
+target_link_libraries(ProMesh4 PRIVATE ${PM_LIBS} ${Boost_LIBRARIES})
+target_link_libraries(ProMesh4 PRIVATE
+		Qt6::Widgets
+		Qt6::OpenGL
+		Qt6::OpenGLWidgets
+)
+
+target_include_directories(ProMesh4 PRIVATE /usr/include/qt6 /usr/include/qt6/QtOpenGLWidgets)
 

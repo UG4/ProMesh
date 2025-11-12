@@ -30,65 +30,62 @@
 #include <QLabel>
 #include <QFileDialog>
 #include <iostream>
-#include "file_widget.h"
-#include "app.h"
+#include "file_widget.hpp"
+#include "app.hpp"
 
 FileWidget::FileWidget(FileWidgetType fwt, QString filter, QWidget* parent) :
 	QWidget(parent),
-	m_type(fwt),
-	m_filter(filter)
+	_type(fwt),
+	_filter(filter)
 {
 //	create a grid layout
-	QHBoxLayout* layout = new QHBoxLayout(this);
+	auto* layout = new QHBoxLayout(this);
 	layout->setContentsMargins(0, 0, 0, 0);
 
 //	create a text-box and a browse button
-	m_lbl = new QLabel(tr("-- no file selected --"), this);
-	layout->addWidget(m_lbl);
+	_lbl = new QLabel(tr("-- no file selected --"), this);
+	layout->addWidget(_lbl);
 
-	QPushButton* btn = new QPushButton(tr("Browse ..."), this);
+	auto* btn = new QPushButton(tr("Browse ..."), this);
 	layout->addWidget(btn);
-	connect(btn, SIGNAL(clicked()), this, SLOT(browse()));
+	connect(btn, &QPushButton::clicked, this, &FileWidget::browse);
 }
 
-FileWidget::~FileWidget()
-{
 
-}
 
 const QString FileWidget::filename() const
 {
-	if(m_filenames.empty()){
+	if(_filenames.empty()){
 		return QString("");
 	}
-	return m_filenames.front();
+	return _filenames.front();
 }
 
 const QStringList& FileWidget::filenames() const
 {
-	return m_filenames;
+	return _filenames;
 }
 
 void FileWidget::browse()
 {
 	QString path = app::getMainWindow()->settings().value("FileWidget-path", ".").toString();
-	m_filenames.clear();
-	switch(m_type){
+	_filenames.clear();
+	switch(_type){
 		case FWT_OPEN:{
 			QString fileName = QFileDialog::getOpenFileName(
 								this,
 								tr("Open"),
 								path,
-								m_filter);
-			m_filenames.push_back(fileName);
+								_filter);
+			_filenames.push_back(fileName);
 		}break;
 
 		case FWT_OPEN_SEVERAL:{
-			m_filenames = QFileDialog::getOpenFileNames(
+			_filenames = QFileDialog::getOpenFileNames(
 								this,
 								tr("Open"),
 								path,
-								m_filter);
+								_filter);
 		}break;
 
 		case FWT_SAVE:{
@@ -99,6 +96,6 @@ void FileWidget::browse()
 	QString str = filename();
 	if(!str.isEmpty()){
 		app::getMainWindow()->settings().setValue("FileWidget-path", QFileInfo(str).absolutePath());
-		m_lbl->setText(str);
+		_lbl->setText(str);
 	}
 }

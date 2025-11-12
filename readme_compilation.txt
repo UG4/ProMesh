@@ -15,8 +15,9 @@ Installing 'tetgen' (as proposed above) is optional.
 Please have a look at Tetgen's licensing (www.tetgen.org).
 
 
-Please install Qt5, e.g. for Linux from:
+Please install Qt6, e.g. for Linux from:
     http://download.qt-project.org/official_releases/online_installers/qt-opensource-linux-x64-online.run
+    or with the system package manager
 
 or e.g. on Ubuntu simply by calling
 

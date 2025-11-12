@@ -26,16 +26,16 @@
  */
 
 #include <QtWidgets>
-#include "color_widget.h"
+#include "color_widget.hpp"
 
 ColorWidget::ColorWidget(QWidget* parent) : QFrame(parent)
 {
-	m_color = Qt::black;
+	_color = Qt::black;
 }
 
 void ColorWidget::setColor(const QColor& color)
 {
-	m_color = color;
+	_color = color;
 	update();
 	emit colorChanged(color);
 }
@@ -44,14 +44,13 @@ void ColorWidget::paintEvent(QPaintEvent* event)
 {
 	QFrame::paintEvent(event);
 	QPainter painter(this);
-	painter.setBrush(QBrush(m_color, Qt::SolidPattern));
+	painter.setBrush(QBrush(_color, Qt::SolidPattern));
 	painter.drawRect(rect());
 }
 
 void ColorWidget::mouseReleaseEvent(QMouseEvent* event)
 {
-	QColorDialog* editor = new QColorDialog(m_color, this);
-	connect(editor, SIGNAL(colorSelected(QColor)),
-			this, SLOT(setColor(QColor)));
+	auto editor = new QColorDialog(_color, this);
+	connect(editor, &QColorDialog::colorSelected, this, &ColorWidget::setColor);
 	editor->exec();
 }

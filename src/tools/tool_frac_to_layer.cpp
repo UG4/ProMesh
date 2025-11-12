@@ -25,53 +25,52 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "tool_frac_to_layer.h"
+#include "tool_frac_to_layer.hpp"
 
 FracToLayerWidget::
 FracToLayerWidget(const QString& name, QWidget* parent,
 				  ITool* tool) :
 	QWidget(parent)
 {
-	m_tool = tool;
-	m_object = nullptr;
+	_tool = tool;
+	_object = nullptr;
 	QString title = name;
 	title.append(": ");
 
 //	create the layouts
-	QVBoxLayout* vLayout = new QVBoxLayout(this);
+	auto* vLayout = new QVBoxLayout(this);
 
 
 //	add a checkbox that allows to choose whether we have to create degenerated fractures
-	m_cbCreateDegenerated = new QCheckBox(this);
-	m_cbCreateDegenerated->setText(tr("degenerated layers"));
-	m_cbCreateDegenerated->setChecked(false);
-	vLayout->addWidget(m_cbCreateDegenerated);
+	_cb_create_degenerated = new QCheckBox(this);
+	_cb_create_degenerated->setText(tr("degenerated layers"));
+	_cb_create_degenerated->setChecked(false);
+	vLayout->addWidget(_cb_create_degenerated);
 
 //	add a checkbox that allows to choose whether we expand fractures at inner boundaries
-	m_cbExpandOuterBounds = new QCheckBox(this);
-	m_cbExpandOuterBounds->setText(tr("expand outer boundaries"));
-	m_cbExpandOuterBounds->setChecked(true);
-	vLayout->addWidget(m_cbExpandOuterBounds);
+	_cb_expand_outer_bounds = new QCheckBox(this);
+	_cb_expand_outer_bounds->setText(tr("expand outer boundaries"));
+	_cb_expand_outer_bounds->setChecked(true);
+	vLayout->addWidget(_cb_expand_outer_bounds);
 
 //	create a hbox-layout for the add-button
 	auto* hAddLayout = new QHBoxLayout();
 	vLayout->addLayout(hAddLayout);
 
 	auto* btnAdd = new QPushButton(tr("add subset"), this);
-	connect(btnAdd, SIGNAL(clicked()), this, SLOT(addClicked()));
+	connect(btnAdd, &QPushButton::clicked, this, &FracToLayerWidget::addClicked);
 
-	m_qSubsetIndex = new QSpinBox(this);
-	m_qSubsetIndex->setRange(0, 1e+9);
-	m_qSubsetIndex->setValue(0);
-	m_qSubsetIndex->setSingleStep(1);
+	_q_subset_index = new QSpinBox(this);
+	_q_subset_index->setRange(0, 1e+9);
+	_q_subset_index->setValue(0);
+	_q_subset_index->setSingleStep(1);
 	hAddLayout->addWidget(btnAdd);
-	hAddLayout->addWidget(m_qSubsetIndex);
+	hAddLayout->addWidget(_q_subset_index);
 
 //	create a list box
-	m_listWidget = new QListWidget(this);
-	vLayout->addWidget(m_listWidget);
-	connect(m_listWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
-			this, SLOT(currentItemChanged(QListWidgetItem*,QListWidgetItem*)));
+	_list_widget = new QListWidget(this);
+	vLayout->addWidget(_list_widget);
+	connect(_list_widget, &QListWidget::currentItemChanged, this, &FracToLayerWidget::currentItemChanged);
 
 //	create the layout for the input boxes
 	QFormLayout* formLayout = new QFormLayout();
@@ -81,67 +80,66 @@ FracToLayerWidget(const QString& name, QWidget* parent,
 	vLayout->addLayout(formLayout);
 
 //	create the input boxes
-	m_qWidth = new QDoubleSpinBox(this);
-	m_qWidth->setValue(0.01);
-	m_qWidth->setDecimals(9);
-	m_qWidth->setRange(0, 1e+9);
-	m_qWidth->setSingleStep(0.01);
-	connect(m_qWidth, SIGNAL(valueChanged(double)), this, SLOT(widthChanged(double)));
-	formLayout->addRow(tr("layer-width:"), m_qWidth);
+	_q_width = new QDoubleSpinBox(this);
+	_q_width->setValue(0.01);
+	_q_width->setDecimals(9);
+	_q_width->setRange(0, 1e+9);
+	_q_width->setSingleStep(0.01);
+	connect(_q_width, &QDoubleSpinBox::valueChanged, this, &FracToLayerWidget::widthChanged);
+	formLayout->addRow(tr("layer-width:"), _q_width);
 
-	m_qNewSubset = new QSpinBox(this);
-	m_qNewSubset->setValue(0);
-	m_qNewSubset->setRange(0, 1e+9);
-	m_qNewSubset->setSingleStep(1);
-	formLayout->addRow(tr("new subset:"), m_qNewSubset);
-	connect(m_qNewSubset, SIGNAL(valueChanged(int)), this, SLOT(newSubsetIndexChanged(int)));
+	_q_new_subset = new QSpinBox(this);
+	_q_new_subset->setValue(0);
+	_q_new_subset->setRange(0, 1e+9);
+	_q_new_subset->setSingleStep(1);
+	formLayout->addRow(tr("new subset:"), _q_new_subset);
+	connect(_q_new_subset, &QSpinBox::valueChanged, this, &FracToLayerWidget::newSubsetIndexChanged);
 
 //	create ok and cancel buttons
-	QHBoxLayout* hDoneLayout = new QHBoxLayout();
+	auto* hDoneLayout = new QHBoxLayout();
 	vLayout->addLayout(hDoneLayout);
 
-	QPushButton* btnApply = new QPushButton(tr("Apply"), this);
-	connect(btnApply, SIGNAL(clicked()), this, SLOT(applyClicked()));
+	auto* btnApply = new QPushButton(tr("Apply"), this);
+	connect(btnApply, &QPushButton::clicked, this, &FracToLayerWidget::applyClicked);
 	hDoneLayout->addWidget(btnApply);
 
-	QPushButton* btnClear = new QPushButton(tr("Clear"), this);
-	connect(btnClear, SIGNAL(clicked()), this, SLOT(clearClicked()));
+	auto* btnClear = new QPushButton(tr("Clear"), this);
+	connect(btnClear, &QPushButton::clicked, this, &FracToLayerWidget::clearClicked);
 	hDoneLayout->addWidget(btnClear);
 
 	hDoneLayout->addStretch();
 }
 
-FracToLayerWidget::
-~FracToLayerWidget()	{}
+
 
 const FracToLayerWidget::SubsetEntryVec& FracToLayerWidget::
 entries()	const
-{return m_entries;}
+{return _entries;}
 
 size_t FracToLayerWidget::
 numEntries() const
-{return m_entries.size();}
+{return _entries.size();}
 
 const FracToLayerWidget::SubsetEntry& FracToLayerWidget::
 entry(size_t index) const
-{return m_entries.at(index);}
+{return _entries.at(index);}
 
 bool FracToLayerWidget::
 degenerated_fractures() const
-{return m_cbCreateDegenerated->isChecked();}
+{return _cb_create_degenerated->isChecked();}
 
 bool FracToLayerWidget::
 expand_outer_boundaries() const
-{return m_cbExpandOuterBounds->isChecked();}
+{return _cb_expand_outer_bounds->isChecked();}
 
 void FracToLayerWidget::
 addClicked()
 {
-	if(!m_object){
-		m_object = app::getActiveObject();
-		if(m_object){
+	if(!_object){
+		_object = app::getActiveObject();
+		if(_object){
 			QString title = this->windowTitle();
-			title.append(m_object->name());
+			title.append(_object->name());
 			this->setWindowTitle(title);
 		}
 		else{
@@ -153,20 +151,20 @@ addClicked()
 		}
 	}
 
-	if(m_object != app::getActiveObject()){
+	if(_object != app::getActiveObject()){
 		QMessageBox msg(this);
 		msg.setText(tr("WARNING: The active object has changed. Clear will be "
 						"performed before the subset is added."));
 		msg.exec();
 		clearClicked();
-		m_object = app::getActiveObject();
+		_object = app::getActiveObject();
 	}
 
 //	add a new entry - if it not already exists
-	int si = m_qSubsetIndex->value();
+	int si = _q_subset_index->value();
 
-	for(size_t i = 0; i < m_entries.size(); ++i){
-		if(m_entries[i].subsetIndex == si){
+	for(size_t i = 0; i < _entries.size(); ++i){
+		if(_entries[i].subsetIndex == si){
 			QMessageBox msg(this);
 			msg.setText(tr("WARNING: Entry already exists."));
 			msg.exec();
@@ -175,24 +173,24 @@ addClicked()
 	}
 
 //	make sure that the entry is valid
-	if((si < 0) || (si >= m_object->num_subsets())){
+	if((si < 0) || (si >= _object->num_subsets())){
 		QMessageBox msg(this);
 		msg.setText(tr("WARNING: Invalid subset index."));
 		msg.exec();
 		return;
 	}
 
-	m_entries.push_back(SubsetEntry(si, 0, 0));
+	_entries.emplace_back(si, 0, 0);
 	QString itemName = QString::number(si);
-	itemName.append(": ").append(m_object->get_subset_name(si));
-	QListWidgetItem*nItem = new QListWidgetItem(itemName, m_listWidget);
-	m_listWidget->setCurrentItem(nItem);
+	itemName.append(": ").append(_object->get_subset_name(si));
+	auto*nItem = new QListWidgetItem(itemName, _list_widget);
+	_list_widget->setCurrentItem(nItem);
 }
 
 void FracToLayerWidget::
 applyClicked()
 {
-	if(m_object != app::getActiveObject()){
+	if(_object != app::getActiveObject()){
 		QMessageBox msg(this);
 		msg.setText(tr("Sorry - the active object is not the same as the"
 				" one for which the subsets were added. Aborting."));
@@ -202,17 +200,17 @@ applyClicked()
 
 //	if degenerated is set to true, then all widths are set to 0
 	if(degenerated_fractures()){
-		for(size_t i = 0; i < m_entries.size(); ++i){
-			m_entries[i].width = 0;
+		for(size_t i = 0; i < _entries.size(); ++i){
+			_entries[i].width = 0;
 		}
 	}
 
 //	now run the tool
 	try{
-		m_tool->execute(m_object, this);
+		_tool->execute(_object, this);
 	}
 	catch(ug::UGError error){
-		UG_LOG("Execution of tool " << m_tool->get_name() << " failed with the following message:\n");
+		UG_LOG("Execution of tool " << _tool->get_name() << " failed with the following message:\n");
 		UG_LOG("  " << error.get_msg() << std::endl);
 	}
 }
@@ -220,9 +218,9 @@ applyClicked()
 void FracToLayerWidget::
 clearClicked()
 {
-	m_entries.clear();
-	m_listWidget->clear();
-	m_object = nullptr;
+	_entries.clear();
+	_list_widget->clear();
+	_object = nullptr;
 }
 
 void FracToLayerWidget::
@@ -230,25 +228,25 @@ currentItemChanged(QListWidgetItem* current, QListWidgetItem* previous)
 {
 //	update input windows
 //	get the current index
-	int curInd = m_listWidget->currentIndex().row();
-	if((curInd >= 0) && curInd < (int)m_entries.size()){
-		m_qWidth->setValue(m_entries[curInd].width);
-		m_qNewSubset->setValue(m_entries[curInd].newSubsetIndex);
+	int curInd = _list_widget->currentIndex().row();
+	if((curInd >= 0) && curInd < (int)_entries.size()){
+		_q_width->setValue(_entries[curInd].width);
+		_q_new_subset->setValue(_entries[curInd].newSubsetIndex);
 	}
 }
 
 void FracToLayerWidget::
 widthChanged(double width){
-	int curInd = m_listWidget->currentIndex().row();
-	if((curInd >= 0) && curInd < (int)m_entries.size()){
-		m_entries[curInd].width = width;
+	int curInd = _list_widget->currentIndex().row();
+	if((curInd >= 0) && curInd < (int)_entries.size()){
+		_entries[curInd].width = width;
 	}
 }
 
 void FracToLayerWidget::
 newSubsetIndexChanged(int newInd){
-	int curInd = m_listWidget->currentIndex().row();
-	if((curInd >= 0) && curInd < (int)m_entries.size()){
-		m_entries[curInd].newSubsetIndex = newInd;
+	int curInd = _list_widget->currentIndex().row();
+	if((curInd >= 0) && curInd < (int)_entries.size()){
+		_entries[curInd].newSubsetIndex = newInd;
 	}
 }

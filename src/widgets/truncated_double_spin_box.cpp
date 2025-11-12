@@ -25,16 +25,16 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "truncated_double_spin_box.h"
+#include "truncated_double_spin_box.hpp"
 
 TruncatedDoubleSpinBox::
 TruncatedDoubleSpinBox(QWidget* parent) :
 	QDoubleSpinBox(parent)
 {
 	connect (this,
-			 static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged),
+			 &QDoubleSpinBox::valueChanged,
 			 this,
-			 static_cast<void(TruncatedDoubleSpinBox::*)(double)>(&TruncatedDoubleSpinBox::valueChanged));
+			 &TruncatedDoubleSpinBox::valueChanged);
 
 	// connect (static_cast<QDoubleSpinBox*>(this),
 	// 		 SIGNAL(static_cast<void(QDoubleSpinBox::*)(double)>(&QDoubleSpinBox::valueChanged)),

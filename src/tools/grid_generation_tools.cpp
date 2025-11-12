@@ -27,16 +27,16 @@
 
 #include <vector>
 #include <fstream>
-#include "app.h"
-#include "standard_tools.h"
-#include "tools_util.h"
+#include "app.hpp"
+#include "standard_tools.hpp"
+#include "tools_util.hpp"
 #include "lib_grid/algorithms/remeshing/delaunay_triangulation.h"
 #include "tools/grid_generation_tools.h"
 #include "tooltips.h"
-#include "../scene/csg_object.h"
-#include "script_tools.h"
+#include "../scene/csg_object.hpp"
+#include "script_tools.hpp"
 #include "lib_grid/file_io/file_io_vtu.h"
-#include "externalTetgenCommands.h"
+#include "externalTetgenCommands.hpp"
 
 
 //#include "lib_discretization/spatial_discretization/disc_util/finite_volume_output.h"
@@ -44,8 +44,7 @@
 using namespace std;
 using namespace ug;
 
-class ToolNewMesh : public ITool
-{
+class ToolNewMesh : public ITool {
 	public:
 		void execute(LGObject* obj, QWidget* widget){
 			using namespace std;
@@ -64,14 +63,14 @@ class ToolNewMesh : public ITool
 			app::createEmptyObject(objName.toLocal8Bit().constData(), SOT_LG);
 		}
 
-		const char* get_name()		{return "New Mesh";}
-		const char* get_tooltip()	{return TOOLTIP_NEW_OBJECT;}
-		const char* get_group()		{return "Grid Generation";}
-		bool accepts_null_object_ptr()	{return true;}
+		const char* get_name() override {return "New Mesh";}
+		const char* get_tooltip() override {return TOOLTIP_NEW_OBJECT;}
+		const char* get_group() override {return "Grid Generation";}
+		bool accepts_null_object_ptr() override {return true;}
 
-		QWidget* get_dialog(QWidget* parent){
-			ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
-											IDB_APPLY | IDB_OK | IDB_CLOSE);
+		QWidget* get_dialog(QWidget* parent) override {
+			auto dlg = new ToolWidget(get_name(), parent, this,
+			                          IDB_APPLY | IDB_OK | IDB_CLOSE);
 		//	The name of the new mesh
 			dlg->addTextBox(tr("name:"), "new mesh");
 			return dlg;
@@ -79,14 +78,13 @@ class ToolNewMesh : public ITool
 };
 
 
-class ToolNewCSGObject : public ITool
-{
+class ToolNewCSGObject : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget* widget){
+		void execute(LGObject* obj, QWidget* widget) override {
 			using namespace std;
 			using namespace ug;
 
-			ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+			auto* dlg = dynamic_cast<ToolWidget*>(widget);
 
 		//	get parameters
 			QString objName = "new csg object";
@@ -99,14 +97,14 @@ class ToolNewCSGObject : public ITool
 			app::createEmptyObject(objName.toLocal8Bit().constData(), SOT_CSG);
 		}
 
-		const char* get_name()		{return "New CSG Object";}
-		const char* get_tooltip()	{return TOOLTIP_NEW_CSG_OBJECT;}
-		const char* get_group()		{return "Grid Generation";}
-		bool accepts_null_object_ptr()	{return true;}
+		const char* get_name() override {return "New CSG Object";}
+		const char* get_tooltip() override {return TOOLTIP_NEW_CSG_OBJECT;}
+		const char* get_group() override {return "Grid Generation";}
+		bool accepts_null_object_ptr() override {return true;}
 
-		QWidget* get_dialog(QWidget* parent){
-			ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
-											IDB_APPLY | IDB_OK | IDB_CLOSE);
+		QWidget* get_dialog(QWidget* parent) override {
+			auto dlg = new ToolWidget(get_name(), parent, this,
+			                          IDB_APPLY | IDB_OK | IDB_CLOSE);
 		//	The name of the new mesh
 			dlg->addTextBox(tr("name:"), "new csg object");
 			return dlg;
@@ -114,14 +112,13 @@ class ToolNewCSGObject : public ITool
 };
 
 
-class ToolNewMeshFromSelection : public ITool
-{
+class ToolNewMeshFromSelection : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget* widget){
+		void execute(LGObject* obj, QWidget* widget) override {
 			using namespace std;
 			using namespace ug;
 
-			ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+			auto* dlg = dynamic_cast<ToolWidget*>(widget);
 
 		//	get parameters
 			QString objName = "new mesh";
@@ -135,14 +132,14 @@ class ToolNewMeshFromSelection : public ITool
 			newObj->geometry_changed();
 		}
 
-		const char* get_name()		{return "New Mesh From Selection";}
-		const char* get_tooltip()	{return "Creates a new mesh from the selected elements of the active object";}
-		const char* get_group()		{return "Grid Generation";}
-		bool accepts_null_object_ptr()	{return false;}
+		const char* get_name() override {return "New Mesh From Selection";}
+		const char* get_tooltip() override {return "Creates a new mesh from the selected elements of the active object";}
+		const char* get_group() override {return "Grid Generation";}
+		bool accepts_null_object_ptr() override {return false;}
 
-		QWidget* get_dialog(QWidget* parent){
-			ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
-											IDB_APPLY | IDB_OK | IDB_CLOSE);
+		QWidget* get_dialog(QWidget* parent) override {
+			auto dlg = new ToolWidget(get_name(), parent, this,
+			                          IDB_APPLY | IDB_OK | IDB_CLOSE);
 		//	The name of the new mesh
 			dlg->addTextBox(tr("name:"), "new mesh");
 			return dlg;
@@ -150,14 +147,13 @@ class ToolNewMeshFromSelection : public ITool
 };
 
 /**	registers a callback to automatically update internal scene-object list.*/
-class ToolMergeMeshes : public ITool
-{
+class ToolMergeMeshes : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget* widget){
+		void execute(LGObject* obj, QWidget* widget) override {
 			using namespace std;
 			using namespace ug;
 
-			ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+			auto dlg = dynamic_cast<ToolWidget*>(widget);
 
 		//todo: This method makes problems, if new meshes are added while
 		//		the tool-dialog is opened.
@@ -278,13 +274,13 @@ class ToolMergeMeshes : public ITool
 			ug::PrintGridElementNumbers(mergedObj->grid());
 		}
 
-		const char* get_name()		{return "Merge Meshes";}
-		const char* get_tooltip()	{return TOOLTIP_MERGE_OBJECTS;}
-		const char* get_group()		{return "Grid Generation";}
+		const char* get_name() override {return "Merge Meshes";}
+		const char* get_tooltip() override {return TOOLTIP_MERGE_OBJECTS;}
+		const char* get_group() override {return "Grid Generation";}
 
-		QWidget* get_dialog(QWidget* parent){
-			ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
-											IDB_APPLY | IDB_OK | IDB_CLOSE);
+		QWidget* get_dialog(QWidget* parent) override {
+			auto dlg = new ToolWidget(get_name(), parent, this,
+			                          IDB_APPLY | IDB_OK | IDB_CLOSE);
 
 		//	The name of the new mesh
 			dlg->addTextBox(tr("name:"), "merged mesh");
@@ -302,16 +298,16 @@ class ToolMergeMeshes : public ITool
 			dlg->addCheckBox(tr("join subsets:"), false);
 
 		//	connect some signals of the scene to the refresh slot of the dialog
-			connect(scene, SIGNAL(object_added(ISceneObject*)), dlg, SLOT(refreshContents()));
-			connect(scene, SIGNAL(object_removed()), dlg, SLOT(refreshContents()));
-			connect(scene, SIGNAL(object_properties_changed(ISceneObject*)), dlg, SLOT(refreshContents()));
+			connect(scene, &LGScene::object_added, dlg, &ToolWidget::refreshContents);
+			connect(scene, &LGScene::object_removed, dlg, &ToolWidget::refreshContents);
+			connect(scene, &IScene::object_properties_changed, dlg, &ToolWidget::refreshContents);
 
 			return dlg;
 		}
 
 		virtual void refresh_dialog(QWidget* dialog)
 		{
-			ToolWidget* dlg = dynamic_cast<ToolWidget*>(dialog);
+			auto* dlg = dynamic_cast<ToolWidget*>(dialog);
 			if(!dlg)	UG_THROW("Only pass dialogs to a tool, which were created by the tool itself!");
 
 		//	push all names of current objects
@@ -325,287 +321,14 @@ class ToolMergeMeshes : public ITool
 		}
 };
 
-/*
-class ToolCreateDualGrid : public ITool
-{
-private:
-    enum
-    {
-       FV1GEOMETRY = 0,
-       HFV1GEOMETRY = 1
-    };
 
-public:
-        void execute(LGObject* obj, QWidget* widget){
-		ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
-            using namespace ug;
-
-            int iGeom = 0;
-            bool bCV, bSCV, bSCVF;
-
-            // check dialog
-            if(dlg){
-                iGeom = dlg->to_int(0);
-                bCV = dlg->to_bool(1);
-                bSCV = dlg->to_bool(2);
-                bSCVF = dlg->to_bool(3);
-            }
-            else
-            {
-                UG_LOG("No dialog\n");
-                return;
-            }
-
-            // Original Grid and SubsetHandler
-            Grid& grid = obj->grid();
-            grid.enable_options(GRIDOPT_FULL_INTERCONNECTION);
-            SubsetHandler& sh = obj->subset_handler();
-
-            ////////////////////////////////
-            // SCVF
-            ////////////////////////////////
-            if(bSCVF)
-            {
-                // Create empty dual grid
-                LGObject* dualObj = app::createEmptyLGObject("DualGrid-SCVF");
-                Grid& dualGrid = dualObj->grid();
-                SubsetHandler& dualSH = dualObj->subset_handler();
-
-                // Create Dual grid
-                if(grid.num<Volume>() > 0)
-                {
-                    switch(iGeom)
-                    {
-                    case FV1GEOMETRY: ug::CreateGridOfSubControlVolumeFaces<FV1Geometry, APosition>(dualSH, sh, aPosition); break;
-                    case HFV1GEOMETRY: ug::CreateGridOfSubControlVolumeFaces<HFV1Geometry, APosition>(dualSH, sh, aPosition); break;
-                    default: UG_LOG("Geometry Type not found, although selected. Ask programmer.\n"); return;
-                    }
-                }
-                else if (grid.num<Face>() > 0)
-                {
-                    // convert to 2d positions (FVGeometry depends on PositionCoordinates)
-                    grid.attach_to_vertices(aPosition2);
-                    dualGrid.attach_to_vertices(aPosition2);
-                    ConvertMathVectorAttachmentValues<Vertex>(grid, aPosition, aPosition2);
-
-                    switch(iGeom)
-                    {
-                    case FV1GEOMETRY: ug::CreateGridOfSubControlVolumeFaces<FV1Geometry, APosition2>(dualSH, sh, aPosition2); break;
-                    case HFV1GEOMETRY: ug::CreateGridOfSubControlVolumeFaces<HFV1Geometry, APosition2>(dualSH, sh, aPosition2); break;
-                    default: UG_LOG("Geometry Type not found, although selected. Ask programmer.\n"); return;
-                    }
-
-                    // convert back to 3d positions (ProMesh only handles 3d)
-                    ConvertMathVectorAttachmentValues<Vertex>(dualGrid, aPosition2, aPosition);
-                    grid.detach_from_vertices(aPosition2);
-                    dualGrid.detach_from_vertices(aPosition2);
-                }
-                else if (grid.num<Edge>() > 0)
-                {
-                    // convert to 1d positions (FVGeometry depends on PositionCoordinates)
-                    grid.attach_to_vertices(aPosition1);
-                    dualGrid.attach_to_vertices(aPosition1);
-                    ConvertMathVectorAttachmentValues<Vertex>(grid, aPosition, aPosition1);
-
-                    switch(iGeom)
-                    {
-                    case FV1GEOMETRY: ug::CreateGridOfSubControlVolumeFaces<FV1Geometry, APosition1>(dualSH, sh, aPosition1); break;
-                    case HFV1GEOMETRY: ug::CreateGridOfSubControlVolumeFaces<HFV1Geometry, APosition1>(dualSH, sh, aPosition1); break;
-                    default: UG_LOG("Geometry Type not found, although selected. Ask programmer.\n"); return;
-                    }
-
-                    // convert back to 3d positions (ProMesh only handles 3d)
-                    ConvertMathVectorAttachmentValues<Vertex>(dualGrid, aPosition1, aPosition);
-                    grid.detach_from_vertices(aPosition1);
-                    dualGrid.detach_from_vertices(aPosition1);
-                }
-                else
-                {
-                    UG_LOG("Grid does not contain elements, only points. Can not create Dual Grid.\n");
-                    return;
-                }
-
-                // assign subset colors
-                AssignSubsetColors(dualSH);
-
-                // update view
-                dualObj->geometry_changed();
-            }
-
-            ////////////////////////////////
-            // SCV
-            ////////////////////////////////
-            if(bSCV)
-            {
-                // Create empty dual grid
-                LGObject* dualObj = app::createEmptyLGObject("DualGrid-SCV");
-                Grid& dualGrid = dualObj->grid();
-                SubsetHandler& dualSH = dualObj->subset_handler();
-
-                // Create Dual grid
-                if(grid.num<Volume>() > 0)
-                {
-                    switch(iGeom)
-                    {
-                    case FV1GEOMETRY: ug::CreateGridOfSubControlVolumes<FV1Geometry, APosition>(dualSH, sh, aPosition); break;
-                    case HFV1GEOMETRY: ug::CreateGridOfSubControlVolumes<HFV1Geometry, APosition>(dualSH, sh, aPosition); break;
-                    default: UG_LOG("Geometry Type not found, although selected. Ask programmer.\n"); return;
-                    }
-                }
-                else if (grid.num<Face>() > 0)
-                {
-                    // convert to 2d positions (FVGeometry depends on PositionCoordinates)
-                    grid.attach_to_vertices(aPosition2);
-                    dualGrid.attach_to_vertices(aPosition2);
-                    ConvertMathVectorAttachmentValues<Vertex>(grid, aPosition, aPosition2);
-
-                    switch(iGeom)
-                    {
-                    case FV1GEOMETRY: ug::CreateGridOfSubControlVolumes<FV1Geometry, APosition2>(dualSH, sh, aPosition2); break;
-                    case HFV1GEOMETRY: ug::CreateGridOfSubControlVolumes<HFV1Geometry, APosition2>(dualSH, sh, aPosition2); break;
-                    default: UG_LOG("Geometry Type not found, although selected. Ask programmer.\n"); return;
-                    }
-
-                    // convert back to 3d positions (ProMesh only handles 3d)
-                    ConvertMathVectorAttachmentValues<Vertex>(dualGrid, aPosition2, aPosition);
-                    grid.detach_from_vertices(aPosition2);
-                    dualGrid.detach_from_vertices(aPosition2);
-                }
-                else if (grid.num<Edge>() > 0)
-                {
-                    // convert to 1d positions (FVGeometry depends on PositionCoordinates)
-                    grid.attach_to_vertices(aPosition1);
-                    dualGrid.attach_to_vertices(aPosition1);
-                    ConvertMathVectorAttachmentValues<Vertex>(grid, aPosition, aPosition1);
-
-                    switch(iGeom)
-                    {
-                    case FV1GEOMETRY: ug::CreateGridOfSubControlVolumes<FV1Geometry, APosition1>(dualSH, sh, aPosition1); break;
-                    case HFV1GEOMETRY: ug::CreateGridOfSubControlVolumes<HFV1Geometry, APosition1>(dualSH, sh, aPosition1); break;
-                    default: UG_LOG("Geometry Type not found, although selected. Ask programmer.\n"); return;
-                    }
-
-                    // convert back to 3d positions (ProMesh only handles 3d)
-                    ConvertMathVectorAttachmentValues<Vertex>(dualGrid, aPosition1, aPosition);
-                    grid.detach_from_vertices(aPosition1);
-                    dualGrid.detach_from_vertices(aPosition1);
-                }
-                else
-                {
-                    UG_LOG("Grid does not contain elements, only points. Can not create Dual Grid.\n");
-                    return;
-                }
-
-                // assign subset colors
-                AssignSubsetColors(dualSH);
-
-                // update view
-                dualObj->geometry_changed();
-            }
-
-            ////////////////////////////////
-            // CV
-            ////////////////////////////////
-            if(bCV)
-            {
-                // Create empty dual grid
-                LGObject* dualObj = app::createEmptyLGObject("DualGrid-CV");
-                Grid& dualGrid = dualObj->grid();
-                SubsetHandler& dualSH = dualObj->subset_handler();
-
-                // Create Dual grid
-                if(grid.num<Volume>() > 0)
-                {
-                    switch(iGeom)
-                    {
-                    case FV1GEOMETRY: ug::CreateGridOfControlVolumes<FV1Geometry, APosition>(dualSH, sh, aPosition); break;
-                    case HFV1GEOMETRY: ug::CreateGridOfControlVolumes<HFV1Geometry, APosition>(dualSH, sh, aPosition); break;
-                    default: UG_LOG("Geometry Type not found, although selected. Ask programmer.\n"); return;
-                    }
-                }
-                else if (grid.num<Face>() > 0)
-                {
-                    // convert to 2d positions (FVGeometry depends on PositionCoordinates)
-                    grid.attach_to_vertices(aPosition2);
-                    dualGrid.attach_to_vertices(aPosition2);
-                    ConvertMathVectorAttachmentValues<Vertex>(grid, aPosition, aPosition2);
-
-                    switch(iGeom)
-                    {
-                    case FV1GEOMETRY: ug::CreateGridOfControlVolumes<FV1Geometry, APosition2>(dualSH, sh, aPosition2); break;
-                    case HFV1GEOMETRY: ug::CreateGridOfControlVolumes<HFV1Geometry, APosition2>(dualSH, sh, aPosition2); break;
-                    default: UG_LOG("Geometry Type not found, although selected. Ask programmer.\n"); return;
-                    }
-
-                    // convert back to 3d positions (ProMesh only handles 3d)
-                    ConvertMathVectorAttachmentValues<Vertex>(dualGrid, aPosition2, aPosition);
-                    grid.detach_from_vertices(aPosition2);
-                    dualGrid.detach_from_vertices(aPosition2);
-                }
-                else if (grid.num<Edge>() > 0)
-                {
-                    // convert to 1d positions (FVGeometry depends on PositionCoordinates)
-                    grid.attach_to_vertices(aPosition1);
-                    dualGrid.attach_to_vertices(aPosition1);
-                    ConvertMathVectorAttachmentValues<Vertex>(grid, aPosition, aPosition1);
-
-                    switch(iGeom)
-                    {
-                    case FV1GEOMETRY: ug::CreateGridOfControlVolumes<FV1Geometry, APosition1>(dualSH, sh, aPosition1); break;
-                    case HFV1GEOMETRY: ug::CreateGridOfControlVolumes<HFV1Geometry, APosition1>(dualSH, sh, aPosition1); break;
-                    default: UG_LOG("Geometry Type not found, although selected. Ask programmer.\n"); return;
-                    }
-
-                    // convert back to 3d positions (ProMesh only handles 3d)
-                    ConvertMathVectorAttachmentValues<Vertex>(dualGrid, aPosition1, aPosition);
-                    grid.detach_from_vertices(aPosition1);
-                    dualGrid.detach_from_vertices(aPosition1);
-                }
-                else
-                {
-                    UG_LOG("Grid does not contain elements, only points. Can not create Dual Grid.\n");
-                    return;
-                }
-
-                // assign subset colors
-                AssignSubsetColors(dualSH);
-
-                // update view
-                dualObj->geometry_changed();
-            }
-
-
-
-        }
-
-        const char* get_name()		{return "Create Dual Grid";}
-        const char* get_tooltip()	{return TOOLTIP_CREATE_DUALGRID;}
-        const char* get_group()		{return "Grid Generation";}
-
-        ToolWidget* get_dialog(QWidget* parent){
-            ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
-                                            IDB_OK | IDB_CANCEL);
-            QStringList entries;
-            entries.push_back(tr("FV1Geometry"));
-            entries.push_back(tr("HFV1Geometry"));
-            dlg->addComboBox("Choose Finite Volume Type", entries, 0);
-
-            dlg->addCheckBox("Create control volumes:", true);
-            dlg->addCheckBox("Create sub control volumes:", true);
-            dlg->addCheckBox("Create sub control volume faces:", true);
-            return dlg;
-        }
- };
-*/
-
-class IdentifierVtuROI : public ITool
-{
+class IdentifierVtuROI : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget* widget){
+		void execute(LGObject* obj, QWidget* widget) override {
 			using namespace std;
 			using namespace ug;
 
-			ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+			auto* dlg = dynamic_cast<ToolWidget*>(widget);
 
 		//	get parameters
 			QString objName = "regions";
@@ -617,30 +340,28 @@ class IdentifierVtuROI : public ITool
 			ug::GridReaderVTU::setRegionOfInterestIdentifier(  objName.toLocal8Bit().constData() );
 		}
 
-		const char* get_name()		{return "Identify vtu ROI";}
-		const char* get_tooltip()	{return "identification of ROI name";}
-		const char* get_group()		{return "Grid Generation";}
-		bool accepts_null_object_ptr()	{return true;}
+		const char* get_name() override {return "Identify vtu ROI";}
+		const char* get_tooltip() override {return "identification of ROI name";}
+		const char* get_group() override {return "Grid Generation";}
+		bool accepts_null_object_ptr() override {return true;}
 
-		QWidget* get_dialog(QWidget* parent){
-			ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
-											IDB_APPLY | IDB_OK | IDB_CLOSE);
+		QWidget* get_dialog(QWidget* parent) override {
+			auto dlg = new ToolWidget(get_name(), parent, this,
+			                          IDB_APPLY | IDB_OK | IDB_CLOSE);
 		//	The name of the new mesh
 			dlg->addTextBox(tr("name:"), "regions");
 			return dlg;
 		}
 };
 
-class TetgenExternalCall : public ITool
-{
+class TetgenExternalCall : public ITool {
 	public:
 
-	void execute(LGObject* obj, QWidget* widget)
-	{
+	void execute(LGObject* obj, QWidget* widget) override {
 		using namespace std;
 		using namespace ug;
 
-		ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+		auto dlg = dynamic_cast<ToolWidget*>(widget);
 
 		//	get parameters
 		QString tetgenCall = externalCommands::globVarTetgenCall;
@@ -655,14 +376,13 @@ class TetgenExternalCall : public ITool
 
 	}
 
-	const char* get_name()		{return "Tetgen Call Command";}
-	const char* get_tooltip()	{return "Set the command for tetgen";}
-	const char* get_group()		{return "Grid Generation";}
-	bool accepts_null_object_ptr()	{return true;}
+	const char* get_name() override {return "Tetgen Call Command";}
+	const char* get_tooltip() override {return "Set the command for tetgen";}
+	const char* get_group() override {return "Grid Generation";}
+	bool accepts_null_object_ptr() override {return true;}
 
-	QWidget* get_dialog(QWidget* parent)
-	{
-		ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
+	QWidget* get_dialog(QWidget* parent) override {
+		auto *dlg = new ToolWidget(get_name(), parent, this,
 											IDB_APPLY | IDB_OK | IDB_CLOSE);
 
 		QString tetgenCall = externalCommands::globVarTetgenCall;
@@ -677,12 +397,9 @@ class TetgenExternalCall : public ITool
 void PreRegisterGridGenerationTools(ToolManager* toolMgr)
 {
 	toolMgr->register_tool(new ToolNewMesh);
-	// toolMgr->register_tool(new ToolNewCSGObject);
 	toolMgr->register_tool(new ToolNewMeshFromSelection);
 	toolMgr->register_tool(new ToolMergeMeshes);
-
 	toolMgr->register_tool(new IdentifierVtuROI);
-
 	toolMgr->register_tool(new TetgenExternalCall);
 }
 

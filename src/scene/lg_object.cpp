@@ -27,8 +27,8 @@
 
 #include <cstring>
 #include <string>
-#include "lg_object.h"
-#include "../options/options.h"
+#include "lg_object.hpp"
+#include "../options/options.hpp"
 #include "lib_grid/file_io/file_io.h"
 #include "lib_grid/file_io/file_io_art.h"
 #include "lib_grid/file_io/file_io_dump.h"
@@ -65,7 +65,7 @@ const char* LG_SUPPORTED_FILE_FORMATS_SAVE =
 
 LGObject* CreateLGObjectFromFile(const char* filename)
 {
-	LGObject* pObj = new LGObject;
+	auto* pObj = new LGObject;
 	if(LoadLGObjectFromFile(pObj, filename))
 		return pObj;
 
@@ -76,7 +76,7 @@ LGObject* CreateLGObjectFromFile(const char* filename)
 
 LGObject* CreateEmptyLGObject(const char* name)
 {
-    LGObject* obj = new LGObject;
+    auto* obj = new LGObject;
     obj->set_name(name);
     // Grid& grid = obj->grid();
     // grid.enable_options(GRIDOPT_STANDARD_INTERCONNECTION | FACEOPT_STORE_ASSOCIATED_VOLUMES);
@@ -90,7 +90,7 @@ bool LoadLGObjectFromFile(LGObject* pObjOut, const char* filename,
 
 	Grid& grid = pObjOut->grid();
 	SubsetHandler& sh = pObjOut->subset_handler();
-	pObjOut->m_fileName = filename;
+	pObjOut->_file_name = filename;
 
 	// grid.enable_options(GRIDOPT_STANDARD_INTERCONNECTION | FACEOPT_STORE_ASSOCIATED_VOLUMES);
 
@@ -171,7 +171,7 @@ void PerformLoadPostprocessing(LGObject* obj)
 {
 	PROFILE_FUNC();
 //	assign the name
-	std::string name = obj->m_fileName;
+	std::string name = obj->_file_name;
 	size_t slashPos = name.find_last_of('/');
 	if(slashPos == std::string::npos)
 		slashPos = name.find_last_of('\\');
@@ -203,7 +203,7 @@ bool ReloadLGObject(LGObject* obj)
 	obj->grid().clear_geometry();
 	obj->subset_handler().clear();
 	obj->clear_action_log();
-	if(!LoadLGObjectFromFile(obj, obj->m_fileName.c_str())){
+	if(!LoadLGObjectFromFile(obj, obj->_file_name.c_str())){
 		UG_LOG("Reload Failed!" << std::endl);
 		return false;
 	}
@@ -250,33 +250,32 @@ bool SaveLGObjectToFile(LGObject* pObj, const char* filename)
 LGObject::LGObject()
 {
 	init();
+	std::cout << "LGObject" << std::endl;
 }
 
 LGObject::LGObject(const char* name)
 {
 	init();
-	m_name = name;
+	_name = name;
+	std::cout << "LGObject:" << name<< std::endl;
 }
 
-LGObject::~LGObject()
-{
-//TODO: release the display list.
-}
+
 
 void LGObject::init()
 {
-	m_saveRequired = false;
+	_save_required = false;
 	
-	m_selectionChangedSinceLastUndoPoint = false;
+	_selection_changed_since_last_undo_point = false;
 
-	m_shFacesForVolRendering.set_supported_elements(SHE_FACE);
-	m_shFacesForVolRendering.assign_grid(m_grid);
+	_sh_faces_for_vol_rendering.set_supported_elements(SHE_FACE);
+	_sh_faces_for_vol_rendering.assign_grid(m_grid);
 
-	m_name = "default name";
-	m_bVisible = true;
+	_name = "default name";
+	_visible = true;
 	set_color(QColor(Qt::white));
-	m_elementMode = LGEM_VOLUME;
-	m_numInitializedSubsets = 0;
+	_element_mode = LGEM_VOLUME;
+	_num_initialized_subsets = 0;
 
 //	set the default subset-info
 	SubsetInfo defSI;
@@ -287,17 +286,17 @@ void LGObject::init()
 	defSI.subsetState = LGSS_VISIBLE | LGSS_INITIALIZED;
 	m_subsetHandler.set_default_subset_info(defSI);
 
-	m_undoHistory = UndoHistoryProvider::inst().create_undo_history();
-	m_undoHistory.set_suffix(".lgb");
+	_undo_history = UndoHistoryProvider::inst().create_undo_history();
+	_undo_history.set_suffix(".lgb");
 
-	m_transformType = TT_NONE;
-	m_selectionDisplayListIndex = -1;
+	_transform_type = TT_NONE;
+	_selection_display_list_index = -1;
 }
 
 void LGObject::visuals_changed(bool createUndoPoint)
 {
 //	set colors of new subsets
-	for(int i = m_numInitializedSubsets; i < m_subsetHandler.num_subsets(); ++i)
+	for(int i = _num_initialized_subsets; i < m_subsetHandler.num_subsets(); ++i)
 	{
 		SubsetInfo& si = m_subsetHandler.subset_info(i);
 	//	check whether the color is still uninitialized.
@@ -309,12 +308,12 @@ void LGObject::visuals_changed(bool createUndoPoint)
 			si.color.w() = 1.f;
 		}
 	}
-	m_numInitializedSubsets = m_subsetHandler.num_subsets();
+	_num_initialized_subsets = m_subsetHandler.num_subsets();
 
 //	add an entry to the history
 //	we have some situations in which we don't want to store undos.
 //	especially if we're currently transforming.
-	if(createUndoPoint && m_transformType == TT_NONE){
+	if(createUndoPoint && _transform_type == TT_NONE){
 		set_save_required(true);
 		create_undo_point();
 	}
@@ -329,7 +328,7 @@ void LGObject::marks_changed()
 
 void LGObject::selection_changed()
 {
-	m_selectionChangedSinceLastUndoPoint = true;
+	_selection_changed_since_last_undo_point = true;
 	ISceneObject::selection_changed();
 }
 
@@ -345,30 +344,30 @@ void LGObject::geometry_changed()
 void LGObject::add_indicator_point(float x, float y, float z,
 								   float r, float g, float b, float a)
 {
-	m_indicatorPoints.push_back(IndicatorPoint(x, y, z, r, g, b, a));
+	_indicator_points.emplace_back(x, y, z, r, g, b, a);
 }
 
 void LGObject::clear_indicator_points()
 {
-	m_indicatorPoints.clear();
+	_indicator_points.clear();
 }
 
 bool LGObject::get_indicator_point(size_t index, float& x, float& y, float& z,
 								   float& r, float& g, float& b, float& a)
 {
-	if(index >= m_indicatorPoints.size())
+	if(index >= _indicator_points.size())
 		return false;
 
-	IndicatorPoint& ip = m_indicatorPoints[index];
-	x = ip.x; y = ip.y; z = ip.z;
-	r = ip.r; g = ip.g; b = ip.b; a = ip.a;
+	IndicatorPoint& ip = _indicator_points[index];
+	x = ip._x; y = ip._y; z = ip._z;
+	r = ip._r; g = ip._g; b = ip._b; a = ip._a;
 
 	return true;
 }
 
 size_t LGObject::num_indicator_points()
 {
-	return m_indicatorPoints.size();
+	return _indicator_points.size();
 }
 
 bool LGObject::load_ugx(const char* filename)
@@ -408,10 +407,10 @@ bool LGObject::load_ugx(const char* filename)
 void LGObject::create_undo_point()
 {
 	PROFILE_FUNC();
-	m_selectionChangedSinceLastUndoPoint = false;
-	if(GetOptions().undo.enabled){
+	_selection_changed_since_last_undo_point = false;
+	if(GetOptions()._undo._enabled){
 		log_action ("-- >>> HISTORY ENTRY <<< --\n");
-		const char* filename = m_undoHistory.create_history_entry();
+		const char* filename = _undo_history.create_history_entry();
 		SaveLGObjectToFile(this, filename);
 	}
 	// UG_LOG("WARNING: NO UNDO POINT CREATED! THIS IS A DEBUG VERSION OF PROMESH!\n");
@@ -419,36 +418,36 @@ void LGObject::create_undo_point()
 
 void LGObject::create_undo_point_if_selection_changed()
 {
-	if(m_selectionChangedSinceLastUndoPoint)
+	if(_selection_changed_since_last_undo_point)
 		create_undo_point();
-	m_selectionChangedSinceLastUndoPoint = false;
+	_selection_changed_since_last_undo_point = false;
 }
 
 bool LGObject::undo()
 {
 	PROFILE_FUNC();
-	if(!GetOptions().undo.enabled){
+	if(!GetOptions()._undo._enabled){
 		UG_LOG("UNDO DISABLED!\n"
 			"If you want to activate them please do so in the Options panel (Options-undo)\n");
 		return true;
 	}
 
-	if(!m_undoHistory.can_undo())
+	if(!_undo_history.can_undo())
 		return false;
 
 	log_action("-- <<< UNDO (restore last history entry)<<< --\n");
 
 	create_undo_point_if_selection_changed();
 
-	const char* filename = m_undoHistory.undo();
+	const char* filename = _undo_history.undo();
 
 	m_subsetHandler.clear();
 	m_creaseHandler.clear();
 	m_selector.clear();
 	m_grid.clear_geometry();
-	string oldFileName = m_fileName;
+	string oldFileName = _file_name;
 	bool bLoadSuccessful = LoadLGObjectFromFile(this, filename, false);
-	m_fileName = oldFileName;
+	_file_name = oldFileName;
 	// bool bLoadSuccessful = load_ugx(filename);
 
 	CalculateFaceNormals(m_grid, m_grid.faces_begin(), m_grid.faces_end(), aPosition, aNormal);
@@ -463,20 +462,20 @@ bool LGObject::undo()
 bool LGObject::redo()
 {
 	PROFILE_FUNC();
-	if(!m_undoHistory.can_redo())
+	if(!_undo_history.can_redo())
 		return false;
 
-	m_selectionChangedSinceLastUndoPoint = false;
+	_selection_changed_since_last_undo_point = false;
 
-	const char* filename = m_undoHistory.redo();
+	const char* filename = _undo_history.redo();
 
 	m_subsetHandler.clear();
 	m_creaseHandler.clear();
 	m_selector.clear();
 	m_grid.clear_geometry();
-	string oldFileName = m_fileName;
+	string oldFileName = _file_name;
 	bool bLoadSuccessful = LoadLGObjectFromFile(this, filename, false);
-	m_fileName = oldFileName;
+	_file_name = oldFileName;
 
 	CalculateFaceNormals(m_grid, m_grid.faces_begin(), m_grid.faces_end(), aPosition, aNormal);
 	update_bounding_shapes();
@@ -501,28 +500,28 @@ void LGObject::set_num_display_lists(int num)
 	if(num > numOldLists)
 	{
 		for(int i = 0; i < num; ++i)
-			m_displayLists.push_back(glGenLists(1));
+			_display_lists.push_back(glGenLists(1));
 	}
 	else if(num < numOldLists)
 	{
 		for(int i = num; i < numOldLists; ++i)
 			glDeleteLists(get_display_list(i), 1);
-		m_displayLists.resize(num);
+		_display_lists.resize(num);
 	}
 
-	m_displayModes.resize(num, LGRM_DOUBLE_PASS_SHADED);
+	_display_modes.resize(num, LGRM_DOUBLE_PASS_SHADED);
 }
 
 void LGObject::update_bounding_shapes()
 {
 //	calculate mesh center and radius
 	Grid::VertexAttachmentAccessor<APosition> aaPos(m_grid, aPosition);
-	CalculateBoundingBox(m_boundBoxMin, m_boundBoxMax, m_grid.vertices_begin(), m_grid.vertices_end(), aaPos);
-	m_boundSphere.set_radius(VecDistance(m_boundBoxMin, m_boundBoxMax) / 2.f);
+	CalculateBoundingBox(_bound_box_min, _bound_box_max, m_grid.vertices_begin(), m_grid.vertices_end(), aaPos);
+	_bound_sphere.set_radius(VecDistance(_bound_box_min, _bound_box_max) / 2.f);
 	vector3 center;
-	VecAdd(center, m_boundBoxMin, m_boundBoxMax);
+	VecAdd(center, _bound_box_min, _bound_box_max);
 	VecScale(center, center, 0.5f);
-	m_boundSphere.set_center(center);
+	_bound_sphere.set_center(center);
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -614,62 +613,62 @@ void LGObject::init_subsets()
 void LGObject::init_transform()
 {
 //	collect all vertices which are involved in the transform
-	m_transformVertices.clear();
-	CollectVerticesTouchingSelection(m_transformVertices, m_selector);
+	_transform_vertices.clear();
+	CollectVerticesTouchingSelection(_transform_vertices, m_selector);
 
 //	copy all positions of those vertices to m_transformInitialPositions
 	Grid::VertexAttachmentAccessor<APosition> aaPos(m_grid, aPosition);
-	m_transformInitialPositions.resize(m_transformVertices.size());
+	_transform_initial_positions.resize(_transform_vertices.size());
 
-	for(size_t i = 0; i < m_transformVertices.size(); ++i)
-		m_transformInitialPositions[i] = aaPos[m_transformVertices[i]];
+	for(size_t i = 0; i < _transform_vertices.size(); ++i)
+		_transform_initial_positions[i] = aaPos[_transform_vertices[i]];
 
 //	calculate the center of those vertices
-	m_transformStart = CalculateBarycenter(m_transformVertices.begin(),
-										   m_transformVertices.end(), aaPos);
-	m_transformCur = m_transformStart;
-	m_transformCurScales = vector3(1.f, 1.f, 1.f);
+	_transform_start = CalculateBarycenter(_transform_vertices.begin(),
+										   _transform_vertices.end(), aaPos);
+	_transform_cur = _transform_start;
+	_transform_cur_scales = vector3(1.f, 1.f, 1.f);
 }
 
 void LGObject::begin_transform(TransformType tt)
 {
 //	if we currently are transforming, then first cancel the transform
-	if(m_transformType != TT_NONE)
+	if(_transform_type != TT_NONE)
 		end_transform(false);
 
 	create_undo_point_if_selection_changed();
 	
 //	set the transform type and initialize the transform
-	m_transformType = tt;
+	_transform_type = tt;
 	init_transform();
 }
 
 ug::vector3 LGObject::transform_center()
 {
-	return m_transformCur;
+	return _transform_cur;
 }
 
 void LGObject::grab(const ug::vector3& offset)
 {
-	if(m_transformType != TT_GRAB)
+	if(_transform_type != TT_GRAB)
 		return;
 
 	assert(m_transformVertices.size() == m_transformInitialPositions.size());
 
 //	Move the vertices according to the offset
 	Grid::VertexAttachmentAccessor<APosition> aaPos(m_grid, aPosition);
-	for(size_t i = 0; i < m_transformVertices.size(); ++i)
-		VecAdd(aaPos[m_transformVertices[i]], m_transformInitialPositions[i], offset);
+	for(size_t i = 0; i < _transform_vertices.size(); ++i)
+		VecAdd(aaPos[_transform_vertices[i]], _transform_initial_positions[i], offset);
 
-	VecAdd(m_transformCur, m_transformStart, offset);
+	VecAdd(_transform_cur, _transform_start, offset);
 
 //	the geometry has changed. We thus have to update them
 	geometry_changed();
 }
 
-void LGObject::scale(const ug::vector3& scaleFacs)
+void LGObject::scale(const ug::vector3& scale_facs)
 {
-	if(m_transformType != TT_SCALE)
+	if(_transform_type != TT_SCALE)
 		return;
 
 	assert(m_transformVertices.size() == m_transformInitialPositions.size());
@@ -677,36 +676,36 @@ void LGObject::scale(const ug::vector3& scaleFacs)
 //	Move the vertices according to the scaleFac
 	Grid::VertexAttachmentAccessor<APosition> aaPos(m_grid, aPosition);
 	vector3 d;
-	for(size_t i = 0; i < m_transformVertices.size(); ++i){
-		VecSubtract(d, m_transformInitialPositions[i], m_transformCur);
-		d.x() *= scaleFacs.x();
-		d.y() *= scaleFacs.y();
-		d.z() *= scaleFacs.z();
-		VecAdd(aaPos[m_transformVertices[i]], m_transformCur, d);
+	for(size_t i = 0; i < _transform_vertices.size(); ++i){
+		VecSubtract(d, _transform_initial_positions[i], _transform_cur);
+		d.x() *= scale_facs.x();
+		d.y() *= scale_facs.y();
+		d.z() *= scale_facs.z();
+		VecAdd(aaPos[_transform_vertices[i]], _transform_cur, d);
 	}
 
-	m_transformCurScales = scaleFacs;
+	_transform_cur_scales = scale_facs;
 
 //	the geometry has changed. We thus have to update them
 	geometry_changed();
 }
 
-void LGObject::end_transform(bool bApply)
+void LGObject::end_transform(bool apply)
 {
-	if((m_transformType != TT_NONE) && (!bApply)){
+	if((_transform_type != TT_NONE) && (!apply)){
 	//	UNDO TRANSFORM
 		assert(m_transformVertices.size() == m_transformInitialPositions.size());
 
 	//	We have to reset the vertices to their original positions
 		Grid::VertexAttachmentAccessor<APosition> aaPos(m_grid, aPosition);
-		for(size_t i = 0; i < m_transformVertices.size(); ++i)
-			aaPos[m_transformVertices[i]] = m_transformInitialPositions[i];
+		for(size_t i = 0; i < _transform_vertices.size(); ++i)
+			aaPos[_transform_vertices[i]] = _transform_initial_positions[i];
 	}
 	else{
-		switch (m_transformType) {
+		switch (_transform_type) {
 			case TT_GRAB: {
 				vector3 o;
-				VecSubtract (o, m_transformCur, m_transformStart);
+				VecSubtract (o, _transform_cur, _transform_start);
 				write_selection_to_action_log();
 				QString log = QString("Move (mesh, Vec3d(%1,%2,%3))\n")
 										.arg(o[0], 0, 'g', 12)
@@ -715,7 +714,7 @@ void LGObject::end_transform(bool bApply)
 				log_action (log);
 			} break;
 			case TT_SCALE: {
-				const vector3& s = m_transformCurScales;
+				const vector3& s = _transform_cur_scales;
 				write_selection_to_action_log();
 				QString log = QString("ScaleAroundCenter (mesh, Vec3d(%1,%2,%3))\n")
 										.arg(s[0], 0, 'g', 12)
@@ -728,7 +727,7 @@ void LGObject::end_transform(bool bApply)
 		}
 	}
 
-	m_transformType = TT_NONE;
+	_transform_type = TT_NONE;
 //	we call geometry_changed again, to generate an undo-entry
 //	(since transform type no is set to TT_NONE)
 	geometry_changed();
@@ -740,13 +739,13 @@ void LGObject::buffer_current_vertex_coordinates()
 	Grid& grid = this->grid();
 	position_accessor_t aaPos = position_accessor();
 
-	m_vertexCoordinateBuffer.clear();
-	m_vertexCoordinateBuffer.reserve(grid.num<Vertex>());
+	_vertex_coordinate_buffer.clear();
+	_vertex_coordinate_buffer.reserve(grid.num<Vertex>());
 
 	for(VertexIterator ivrt = grid.begin<Vertex>();
 		ivrt != grid.end<Vertex>(); ++ivrt)
 	{
-		m_vertexCoordinateBuffer.push_back(aaPos[*ivrt]);
+		_vertex_coordinate_buffer.push_back(aaPos[*ivrt]);
 	}
 }
 
@@ -756,13 +755,13 @@ void LGObject::restore_vertex_coordinates_from_buffer()
 	Grid& grid = this->grid();
 	position_accessor_t aaPos = position_accessor();
 
-	const size_t buflen = m_vertexCoordinateBuffer.size();
+	const size_t buflen = _vertex_coordinate_buffer.size();
 	size_t ibuf = 0;
 
 	for(VertexIterator ivrt = grid.begin<Vertex>();
 		(ivrt != grid.end<Vertex>()) && (ibuf < buflen); ++ivrt, ++ibuf)
 	{
-		aaPos[*ivrt] = m_vertexCoordinateBuffer[ibuf];
+		aaPos[*ivrt] = _vertex_coordinate_buffer[ibuf];
 	}
 
 	geometry_changed();
@@ -772,7 +771,7 @@ void LGObject::restore_vertex_coordinates_from_buffer()
 void LGObject::
 log_action(const QString& str)
 {
-	m_actionLog.append(str);
+	_action_log.append(str);
 	emit actionLogChanged(str);
 }
 
@@ -792,6 +791,6 @@ write_selection_to_action_log()
 void LGObject::
 clear_action_log()
 {
-	m_actionLog = "";
+	_action_log = "";
 	emit actionLogCleared();
 }

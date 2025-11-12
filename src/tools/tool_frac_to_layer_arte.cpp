@@ -25,7 +25,7 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "tool_frac_to_layer_arte.h"
+#include "tool_frac_to_layer_arte.hpp"
 
 FracToLayerWidgetArte::
 FracToLayerWidgetArte(const QString& name, QWidget* parent,
@@ -34,13 +34,13 @@ FracToLayerWidgetArte(const QString& name, QWidget* parent,
 {
 //	UG_LOG("construct FAA" << std::endl);
 
-	m_tool = tool;
-	m_object = nullptr;
+	_tool = tool;
+	_object = nullptr;
 	QString title = name;
 	title.append(": ");
 
 //	create the layouts
-	QVBoxLayout* vLayout = new QVBoxLayout(this);
+	auto* vLayout = new QVBoxLayout(this);
 
 //	UG_LOG("construct FA 1" << std::endl);
 
@@ -62,87 +62,86 @@ FracToLayerWidgetArte(const QString& name, QWidget* parent,
 //	vLayout->addWidget(m_cbExpandOuterBounds);
 
 	//	add a checkbox that allows to choose whether the diamonds should use only triangles
-	m_useTrianglesInDiamons = new QCheckBox(this);
+	_use_triangles_in_diamons = new QCheckBox(this);
 
 //	UG_LOG("construct FA X 1" << std::endl);
 
-	m_useTrianglesInDiamons->setText(tr("triangles in diamonds"));
+	_use_triangles_in_diamons->setText(tr("triangles in diamonds"));
 
 //	UG_LOG("construct FA X 2" << std::endl);
 
-	m_useTrianglesInDiamons->setChecked(false);
+	_use_triangles_in_diamons->setChecked(false);
 
 //	UG_LOG("construct FA X 3" << std::endl);
 
-	vLayout->addWidget(m_useTrianglesInDiamons);
+	vLayout->addWidget(_use_triangles_in_diamons);
 
 //	UG_LOG("construct FA 2" << std::endl);
 
 	//	add a checkbox that allows to choose whether we want to have diamonds
-	m_establishDiamonds = new QCheckBox(this);
-	m_establishDiamonds->setText(tr("establish diamonds"));
-	m_establishDiamonds->setChecked(true);
-	vLayout->addWidget(m_establishDiamonds);
+	_establish_diamonds = new QCheckBox(this);
+	_establish_diamonds->setText(tr("establish diamonds"));
+	_establish_diamonds->setChecked(true);
+	vLayout->addWidget(_establish_diamonds);
 //
 //	UG_LOG("construct FA 3" << std::endl);
 
 
 //	create a hbox-layout for the add-button
-	QHBoxLayout* hAddLayout = new QHBoxLayout();
+	auto* hAddLayout = new QHBoxLayout();
 	vLayout->addLayout(hAddLayout);
 
-	QPushButton* btnAdd = new QPushButton(tr("add subset"), this);
-	connect(btnAdd, SIGNAL(clicked()), this, SLOT(addClicked()));
+	auto* btnAdd = new QPushButton(tr("add subset"), this);
+	connect(btnAdd, &QPushButton::clicked, this, &FracToLayerWidgetArte::addClicked);
 
-	m_qSubsetIndex = new QSpinBox(this);
-	m_qSubsetIndex->setRange(0, 1e+9);
-	m_qSubsetIndex->setValue(0);
-	m_qSubsetIndex->setSingleStep(1);
+	_q_subset_index = new QSpinBox(this);
+	_q_subset_index->setRange(0, 1e+9);
+	_q_subset_index->setValue(0);
+	_q_subset_index->setSingleStep(1);
 	hAddLayout->addWidget(btnAdd);
-	hAddLayout->addWidget(m_qSubsetIndex);
+	hAddLayout->addWidget(_q_subset_index);
 
 //	UG_LOG("construct FA Spin" << std::endl);
 
 
 //	create a list box
-	m_listWidget = new QListWidget(this);
-	vLayout->addWidget(m_listWidget);
-	connect(m_listWidget, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
-			this, SLOT(currentItemChanged(QListWidgetItem*,QListWidgetItem*)));
+	_list_widget = new QListWidget(this);
+	vLayout->addWidget(_list_widget);
+	connect(_list_widget, &QListWidget::currentItemChanged, this, &FracToLayerWidgetArte::currentItemChanged);
 
 //	create the layout for the input boxes
-	QFormLayout* formLayout = new QFormLayout();
+	auto* formLayout = new QFormLayout();
 	formLayout->setSpacing(5);
 	formLayout->setHorizontalSpacing(10);
 	formLayout->setVerticalSpacing(8);
 	vLayout->addLayout(formLayout);
 
 //	create the input boxes
-	m_qWidth = new QDoubleSpinBox(this);
-	m_qWidth->setValue(0.01);
-	m_qWidth->setDecimals(9);
-	m_qWidth->setRange(0, 1e+9);
-	m_qWidth->setSingleStep(0.01);
-	connect(m_qWidth, SIGNAL(valueChanged(double)), this, SLOT(widthChanged(double)));
-	formLayout->addRow(tr("layer-width:"), m_qWidth);
+	_q_width = new QDoubleSpinBox(this);
+	_q_width->setValue(0.01);
+	_q_width->setDecimals(9);
+	_q_width->setRange(0, 1e+9);
+	_q_width->setSingleStep(0.01);
+	connect(_q_width, &QDoubleSpinBox::valueChanged, this, &FracToLayerWidgetArte::widthChanged);
+	formLayout->addRow(tr("layer-width:"), _q_width);
 
-	m_qNewSubset = new QSpinBox(this);
-	m_qNewSubset->setValue(0);
-	m_qNewSubset->setRange(0, 1e+9);
-	m_qNewSubset->setSingleStep(1);
-	formLayout->addRow(tr("new subset:"), m_qNewSubset);
-	connect(m_qNewSubset, SIGNAL(valueChanged(int)), this, SLOT(newSubsetIndexChanged(int)));
+	_q_new_subset = new QSpinBox(this);
+	_q_new_subset->setValue(0);
+	_q_new_subset->setRange(0, 1e+9);
+	_q_new_subset->setSingleStep(1);
+	formLayout->addRow(tr("new subset:"), _q_new_subset);
+	connect(_q_new_subset, &QSpinBox::valueChanged, this, &FracToLayerWidgetArte::newSubsetIndexChanged);
 
 //	create ok and cancel buttons
-	QHBoxLayout* hDoneLayout = new QHBoxLayout();
+	auto* hDoneLayout = new QHBoxLayout();
 	vLayout->addLayout(hDoneLayout);
 
-	QPushButton* btnApply = new QPushButton(tr("Apply"), this);
-	connect(btnApply, SIGNAL(clicked()), this, SLOT(applyClicked()));
+	auto btnApply = new QPushButton(tr("Apply"), this);
+	connect(btnApply, &QPushButton::clicked, this, &FracToLayerWidgetArte::applyClicked);
 	hDoneLayout->addWidget(btnApply);
 
-	QPushButton* btnClear = new QPushButton(tr("Clear"), this);
-	connect(btnClear, SIGNAL(clicked()), this, SLOT(clearClicked()));
+	auto* btnClear = new QPushButton(tr("Clear"), this);
+	connect(btnClear, &QPushButton::clicked, this, &FracToLayerWidgetArte::clearClicked);
 	hDoneLayout->addWidget(btnClear);
 
 	hDoneLayout->addStretch();
@@ -151,8 +150,6 @@ FracToLayerWidgetArte(const QString& name, QWidget* parent,
 
 }
 
-FracToLayerWidgetArte::
-~FracToLayerWidgetArte()	{}
 
 //const FracToLayerWidget::SubsetEntryVec& FracToLayerWidget::
 //entries()	const
@@ -180,12 +177,12 @@ expand_outer_boundaries() const
 
 bool FracToLayerWidgetArte::diamondsUseTriangles() const
 {
-	return m_useTrianglesInDiamons->isChecked();
+	return _use_triangles_in_diamons->isChecked();
 }
 
 bool FracToLayerWidgetArte::establishDiamonds() const
 {
-	return m_establishDiamonds->isChecked();
+	return _establish_diamonds->isChecked();
 }
 
 
@@ -247,7 +244,7 @@ bool FracToLayerWidgetArte::establishDiamonds() const
 void FracToLayerWidgetArte::
 applyClicked()
 {
-	if(m_object != app::getActiveObject()){
+	if(_object != app::getActiveObject()){
 		QMessageBox msg(this);
 		msg.setText(tr("Sorry - the active object is not the same as the"
 				" one for which the subsets were added. Aborting."));
@@ -264,10 +261,10 @@ applyClicked()
 
 //	now run the tool
 	try{
-		m_tool->execute(m_object, this);
+		_tool->execute(_object, this);
 	}
 	catch(ug::UGError error){
-		UG_LOG("Execution of tool " << m_tool->get_name() << " failed with the following message:\n");
+		UG_LOG("Execution of tool " << _tool->get_name() << " failed with the following message:\n");
 		UG_LOG("  " << error.get_msg() << std::endl);
 	}
 }

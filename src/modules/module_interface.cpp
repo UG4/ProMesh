@@ -23,56 +23,19 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "module_interface.h"
+#include "module_interface.hpp"
 
 IModule::
-IModule () :
-	QObject (),
-	m_parent (nullptr)
+IModule () : _parent (nullptr)
 {}
 
 IModule::
 IModule (QWidget* parent) :
 	QObject (parent),
-	m_parent (parent)
-{}
-
-IModule::
-~IModule ()
+	_parent (parent)
 {}
 
 
-void IModule::
-activate (SceneInspector* sceneInspector, LGScene* scene)
-{
-}
-
-void IModule::
-deactivate ()
-{
-}
-
-
-IModule::dock_list_t
-IModule::
-getDockWidgets()
-{
-	return std::vector<std::pair<Qt::DockWidgetArea, QDockWidget*> > ();
-}
-
-std::vector<QToolBar*>
-IModule::
-getToolBars()
-{
-	return std::vector<QToolBar*> ();
-}
-
-std::vector<QMenu*>
-IModule::
-getMenus()
-{
-	return std::vector<QMenu*>();
-}
 
 QMenu*
 IModule::

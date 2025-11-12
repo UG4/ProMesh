@@ -23,7 +23,7 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "qstring_util.h"
+#include "qstring_util.hpp"
 #include <iostream>
 
 using namespace std;
@@ -50,42 +50,4 @@ QByteArray To7BitAscii (const QString& qs)
 
 	return filtered;
 }
-
-
-// QByteArray FilterOutNonExtAscii (const QString& qs)
-// {
-// 	QByteArray bytes = qs.toUtf8();
-// 	QString latin;
-
-// 	for(int i = 0; i < bytes.size(); ++i){
-// 		cout << "<" << int(unsigned char(bytes.at(i)));
-// 		const char c = bytes.at(i);
-// 		char nc = c;
-// 		if((c & char(192)) == char(192)){//b11000000
-// 			nc = ' ';
-// 			++i;
-// 			cout << "," << int(unsigned char(bytes.at(i)));
-// 			if((c & char(224)) == char(224)){//b11100000
-// 				++i;
-// 				cout << "," << int(unsigned char(bytes.at(i)));
-// 				if((c & char(240)) == char(240)){//b11110000
-// 					++i;
-// 					cout << "," << int(unsigned char(bytes.at(i)));
-// 				}
-// 			}
-// 			else if(unsigned char(c) <= unsigned char(195)){ //195 = b11000011 (largest leading byte for extended ascii letters)
-// 				char c1 = bytes.at(i);
-// 				//	use lowest 2 bits of c and lowest 6 bits of bytes c1 to form ascii byte
-// 				nc = (c << 6) | (c1 & char(63));
-// 			}
-// 			cout << ">";
-// 		}
-
-// 		cout << " = '" << int(unsigned char(nc)) << "'" << endl;
-// 		latin.push_back(nc);
-// 	}
-
-// 	cout << endl;
-// 	return latin.toLocal8Bit();
-// }
 

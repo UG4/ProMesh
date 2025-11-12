@@ -24,7 +24,7 @@
  */
 
 #include <set>
-#include "csg_object.h"
+#include "csg_object.hpp"
 
 using namespace std;
 using namespace ug;
@@ -70,7 +70,7 @@ selection_changed()
 	}
 
 	sel.clear();
-	for(set<int>::iterator i = selSubs.begin(); i != selSubs.end(); ++i)
+	for(auto i = selSubs.begin(); i != selSubs.end(); ++i)
 	{
 		int si = *i;
 		if(si < 0)

@@ -25,76 +25,76 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "camera.h"
+#include "camera.hpp"
 
 namespace cam
 {
 
 CArcBall::CArcBall()
 {
-	MatIdentity(m_matRotation);
-	quaternion_from_matrix(&m_quatRotation, &m_matRotation);
-	m_bDrag = false;
+	MatIdentity(_mat_rotation);
+	quaternion_from_matrix(&_quat_rotation, &_mat_rotation);
+	_drag = false;
 }
 
-matrix44* CArcBall::get_rotation_matrix()
+Matrix44* CArcBall::get_rotation_matrix()
 {
-	if(m_bDrag)
-		matrix_from_quaternion(&m_matRotation, &m_quatRotation);
-	return &m_matRotation;
+	if(_drag)
+		matrix_from_quaternion(&_mat_rotation, &_quat_rotation);
+	return &_mat_rotation;
 }
 
 CQuaternion* CArcBall::get_rotation_quaternion()
 {
-	return &m_quatRotation;
+	return &_quat_rotation;
 }
 
 void CArcBall::set_rotation_quaternion(CQuaternion* pQuaternion)
 {
 	end_drag();
-	m_quatRotation = (*pQuaternion);
-	matrix_from_quaternion(&m_matRotation, &m_quatRotation);
+	_quat_rotation = (*pQuaternion);
+	matrix_from_quaternion(&_mat_rotation, &_quat_rotation);
 }
 
 void CArcBall::set_window(int nWidth, int nHeight, float fRadius, int OffsetX, int OffsetY)
 {
-	m_Screen = vector2((float)nWidth, (float)nHeight);
-	m_Offset = vector2((float)OffsetX, (float)OffsetY);
-	m_fRadius = fRadius;
+	_screen = Vector2((float)nWidth, (float)nHeight);
+	_offset = Vector2((float)OffsetX, (float)OffsetY);
+	_f_radius = fRadius;
 }
 
 void CArcBall::begin_drag(int x, int y)
 {
-	if(m_bDrag)
+	if(_drag)
 		end_drag();
 
-	m_quatDown = m_quatRotation;
-	m_vDown = get_ball_point_from_screen_coords(x, (int)m_Screen.y() - y);
+	_quat_down = _quat_rotation;
+	_v_down = get_ball_point_from_screen_coords(x, (int)_screen.y() - y);
 
-	m_bDrag = true;
+	_drag = true;
 }
 
 void CArcBall::drag_to(int x, int y)
 {
-	if(m_bDrag)
+	if(_drag)
 	{
-		vector3 v = get_ball_point_from_screen_coords(x, (int)m_Screen.y() - y);
-		m_quatRotation = m_quatDown * get_quat_from_ball_points(m_vDown, v);
+		Vector3 v = get_ball_point_from_screen_coords(x, (int)_screen.y() - y);
+		_quat_rotation = _quat_down * get_quat_from_ball_points(_v_down, v);
 	}
 }
 
 void CArcBall::end_drag()
 {
-	if(m_bDrag)
-		matrix_from_quaternion(&m_matRotation, &m_quatRotation);
-	m_bDrag = false;
+	if(_drag)
+		matrix_from_quaternion(&_mat_rotation, &_quat_rotation);
+	_drag = false;
 }
 
-vector3 CArcBall::get_ball_point_from_screen_coords(int nx, int ny)
+Vector3 CArcBall::get_ball_point_from_screen_coords(int nx, int ny)
 {
     // Scale to screen
-    float x   = ((float)nx - m_Offset.x() - m_Screen.x()/2.f) / (m_fRadius*m_Screen.x()/2.f);
-    float y   = ((float)ny - m_Offset.y() - m_Screen.y()/2.f) / (m_fRadius*m_Screen.y()/2.f);
+    float x   = ((float)nx - _offset.x() - _screen.x()/2.f) / (_f_radius*_screen.x()/2.f);
+    float y   = ((float)ny - _offset.y() - _screen.y()/2.f) / (_f_radius*_screen.y()/2.f);
 
     float z   = 0.0f;
     float mag = x*x + y*y;
@@ -109,13 +109,13 @@ vector3 CArcBall::get_ball_point_from_screen_coords(int nx, int ny)
         z = sqrtf( 1.0f - mag );
 
     // Return vector
-    return vector3( x, y, z );
+    return Vector3( x, y, z );
 }
 
-CQuaternion CArcBall::get_quat_from_ball_points(vector3& vFrom, vector3& vTo)
+CQuaternion CArcBall::get_quat_from_ball_points(Vector3& vFrom, Vector3& vTo)
 {
     float fDot = Vec3Dot(vFrom, vTo);
-    vector3 vPart;
+    Vector3 vPart;
     Vec3Cross(vPart, vTo, vFrom);
 
 	CQuaternion quat(vPart.x(), vPart.y(), vPart.z(), fDot);

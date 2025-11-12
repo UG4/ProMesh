@@ -25,37 +25,16 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include <QtWidgets>
-#include <vector>
-#include "app.h"
-#include "standard_tools.h"
+#include "app.hpp"
+#include "standard_tools.hpp"
 
 using namespace std;
 using namespace ug;
-
-/*
-//TMP: test a lua-call
-	lua_State* L = script::GetLuaState();
-
-	luabind::call_function<void>(L, "mark_crease_elements", &pObj->grid(),
-							&pObj->crease_handler(), 50.f);
-
-	lua_getglobal(L, "mark_crease_elements");
-	lua_pushlightuserdata(L, &pObj->grid());
-	lua_pushlightuserdata(L, &pObj->crease_handler());
-	lua_pushnumber(L, 50);
-	if(lua_pcall(L, 3, 0, 0) != 0){
-		cout << "ERROR: calling of lua function failed: " << lua_tostring(L, -1) << endl;
-		lua_pop(L, 1);
-	}
-*/
-
 
 
 
 void RegisterStandardTools(ToolManager* toolMgr)
 {
-
 	toolMgr->set_group_icon("Camera", ":images/tool_camera.png");
 	toolMgr->set_group_icon("Grid Generation", ":images/tool_geometry_generation.png");
 	toolMgr->set_group_icon("Coordinate Transform", ":images/tool_transform.png");
@@ -65,7 +44,6 @@ void RegisterStandardTools(ToolManager* toolMgr)
 	toolMgr->set_group_icon("Info", ":images/tool_info.png");
 	toolMgr->set_group_icon("Scripts", ":images/tool_scripts.png");
 
-//	camera
 	RegisterCameraTools(toolMgr);
 	PreRegisterGridGenerationTools(toolMgr);
 	RegisterInfoTools(toolMgr);
@@ -76,9 +54,6 @@ void RegisterStandardTools(ToolManager* toolMgr)
 	RegisterCoordinateTransformTools(toolMgr);
 	RegisterFracToLayerTools(toolMgr);
 	RegisterScriptTools(toolMgr);
-
-// //	remeshing | topology
-// 	RegisterTopologyTools(toolMgr);
 
 	PostRegisterGridGenerationTools(toolMgr);
 }

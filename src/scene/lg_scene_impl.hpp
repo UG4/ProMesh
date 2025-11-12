@@ -28,27 +28,26 @@
 #ifndef __H__UG__lg_scene_impl__
 #define __H__UG__lg_scene_impl__
 
-#include "lg_scene.h"
 
-template <class TIterator>
+template <typename TIterator>
 void LGScene::
 hide_elements(LGObject* obj, TIterator elemsBegin, TIterator elemsEnd)
 {
 	using namespace ug;
 	using TElem = typename PtrToValueType<typename TIterator::value_type>::base_type;
-	Grid::AttachmentAccessor<TElem, ABool> aaHidden(obj->grid(), m_aHidden);
+	Grid::AttachmentAccessor<TElem, ABool> aaHidden(obj->grid(), _a_hidden);
 
 	for(TIterator iter = elemsBegin; iter != elemsEnd; ++iter){
 		aaHidden[*iter] = true;
 	}
 }
 
-template <class TElem>
+template <typename TElem>
 void LGScene::
 unhide_elements(LGObject* obj)
 {
 	using namespace ug;
-	Grid::AttachmentAccessor<TElem, ABool> aaHidden(obj->grid(), m_aHidden);
+	Grid::AttachmentAccessor<TElem, ABool> aaHidden(obj->grid(), _a_hidden);
 	SetAttachmentValues(aaHidden, obj->grid().begin<TElem>(),
 						obj->grid().end<TElem>(), false);
 }

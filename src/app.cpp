@@ -28,8 +28,8 @@
 #include <QApplication>
 #include <QFileInfo>
 #include <QTextStream>
-#include "app.h"
-#include "util/file_util.h"
+#include "app.hpp"
+#include "util/file_util.hpp"
 #include "common/math/ugmath.h"
 
 namespace app{

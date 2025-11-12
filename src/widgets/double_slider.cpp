@@ -28,54 +28,51 @@
 #include <algorithm>
 #include <QSlider>
 #include <QHBoxLayout>
-#include "double_slider.h"
+#include "double_slider.hpp"
 
 DoubleSlider::
 DoubleSlider(QWidget* parent) :
 	QWidget(parent),
-	m_value(0),
-	m_min(0),
-	m_max(1),
-	m_resolution(10000),
-	m_singleStep(0.1)
+	_value(0),
+	_min(0),
+	_max(1),
+	_resolution(10000),
+	_single_step(0.1)
 {
-	m_slider = new QSlider(Qt::Horizontal, this);
-	m_slider->setRange(0, (int)m_resolution);
-	m_slider->setValue(0);
-	setSingleStep(m_singleStep);
+	_slider = new QSlider(Qt::Horizontal, this);
+	_slider->setRange(0, (int)_resolution);
+	_slider->setValue(0);
+	setSingleStep(_single_step);
 
-	QHBoxLayout* l = new QHBoxLayout(this);
+	auto* l = new QHBoxLayout(this);
 	l->setSpacing(0);
 	l->setContentsMargins(0, 0, 0, 0);
-	l->addWidget(m_slider);
+	l->addWidget(_slider);
 
-	connect(m_slider, SIGNAL(valueChanged(int)), this, SLOT(sliderValueChanged(int)));
+	connect(_slider, &QSlider::valueChanged, this, &DoubleSlider::sliderValueChanged);
 }
-
-DoubleSlider::
-~DoubleSlider()	{}
 
 void DoubleSlider::
 setValue(double val)
 {
-	m_value = val;
-	if(m_value < m_min)
-		m_value = m_min;
-	else if(m_value > m_max)
-		m_value = m_max;
+	_value = val;
+	if(_value < _min)
+		_value = _min;
+	else if(_value > _max)
+		_value = _max;
 
-	if(m_max <= m_min)
-		m_slider->setSliderPosition(0);
+	if(_max <= _min)
+		_slider->setSliderPosition(0);
 	else{
-		m_slider->setSliderPosition((int)(m_resolution * (m_value - m_min)
-													   / (m_max - m_min)));
+		_slider->setSliderPosition((int)(_resolution * (_value - _min)
+													   / (_max - _min)));
 	}
 }
 
 double DoubleSlider::
 value() const
 {
-	return m_value;
+	return _value;
 }
 
 void DoubleSlider::
@@ -84,46 +81,46 @@ setSingleStep(double singleStep)
 	if(singleStep < 0)
 		singleStep = 0;
 
-	m_singleStep = singleStep;
+	_single_step = singleStep;
 
 //	calculate percentage of range and set single-step property of
 //	underlying QSlider accordingly.
 	double p;
-	if(m_max <= m_min)
+	if(_max <= _min)
 		p = 0.1;
 	else
-		p = m_singleStep / (m_max - m_min);
-	m_slider->setSingleStep(std::max<int>((int)(p * m_resolution), 1));
+		p = _single_step / (_max - _min);
+	_slider->setSingleStep(std::max<int>((int)(p * _resolution), 1));
 }
 
 double DoubleSlider::
 singleStep() const
 {
-	return m_singleStep;
+	return _single_step;
 }
 
 
 void DoubleSlider::
 setRange(double min, double max)
 {
-	m_min = min;
-	m_max = max;
-	if(m_max < m_min)
-		m_max = m_min;
-	setSingleStep(m_singleStep);
-	setValue(m_value);
+	_min = min;
+	_max = max;
+	if(_max < _min)
+		_max = _min;
+	setSingleStep(_single_step);
+	setValue(_value);
 }
 
 double DoubleSlider::
 minimum() const
 {
-	return m_min;
+	return _min;
 }
 
 double DoubleSlider::
 maximum() const
 {
-	return m_max;
+	return _max;
 }
 
 
@@ -132,17 +129,17 @@ setResolution(int resolution)
 {
 	if(resolution < 0)
 		resolution = 0;
-	m_resolution = resolution;
-	setSingleStep(m_singleStep);
-	setValue(m_value);
+	_resolution = resolution;
+	setSingleStep(_single_step);
+	setValue(_value);
 }
 
 
 void DoubleSlider::
 sliderValueChanged(int value)
 {
-	double p = (double)(value - m_slider->minimum()) /
-			   (double)(m_slider->maximum() - m_slider->minimum());
-	m_value = m_min + p * (m_max - m_min);
-	emit valueChanged(m_value);
+	double p = (double)(value - _slider->minimum()) /
+			   (double)(_slider->maximum() - _slider->minimum());
+	_value = _min + p * (_max - _min);
+	emit valueChanged(_value);
 }

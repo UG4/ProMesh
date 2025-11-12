@@ -26,12 +26,12 @@
  */
 
 #include <cmath>
-#include "matrix44.h"
+#include "matrix44.hpp"
 
 namespace cam
 {
 
-matrix44::matrix44( float m00, float m01, float m02, float m03,
+Matrix44::Matrix44( float m00, float m01, float m02, float m03,
 			float m10, float m11, float m12, float m13,
 			float m20, float m21, float m22, float m23,
 			float m30, float m31, float m32, float m33)
@@ -42,7 +42,7 @@ matrix44::matrix44( float m00, float m01, float m02, float m03,
 	_30 = m30; _31 = m31; _32 = m32; _33 = m33;
 }
 
-void matrix44::assign(const matrix44& mat)
+void Matrix44::assign(const Matrix44& mat)
 {
 	for(int i = 0; i < 4; ++i)
 	{
@@ -51,7 +51,7 @@ void matrix44::assign(const matrix44& mat)
 	}
 }
 
-void MatIdentity(matrix44& mat)
+void MatIdentity(Matrix44& mat)
 {
 	for(int i = 0; i < 4; ++i)
 	{
@@ -61,7 +61,7 @@ void MatIdentity(matrix44& mat)
 	}
 }
 
-void MatTranslation(matrix44& matOut, float x, float y, float z)
+void MatTranslation(Matrix44& matOut, float x, float y, float z)
 {
 	MatIdentity(matOut);
 	matOut[3][0] = x;
@@ -69,9 +69,9 @@ void MatTranslation(matrix44& matOut, float x, float y, float z)
 	matOut[3][2] = z;
 }
 
-void MatMultiply(matrix44& matOut, matrix44& mat1, matrix44& mat2)
+void MatMultiply(Matrix44& matOut, Matrix44& mat1, Matrix44& mat2)
 {
-	matrix44 tMat;
+	Matrix44 tMat;
 	for(int i = 0; i < 4; ++i)
 	{
 		for(int j = 0; j < 4; ++j)
@@ -85,7 +85,7 @@ void MatMultiply(matrix44& matOut, matrix44& mat1, matrix44& mat2)
 	matOut = tMat;
 }
 
-void MatRotateRadX(matrix44& matOut, float rad)
+void MatRotateRadX(Matrix44& matOut, float rad)
 {
 	float sinA, cosA;
 
@@ -103,7 +103,7 @@ void MatRotateRadX(matrix44& matOut, float rad)
 	matOut[3][3] = 1.0F;
 }
 
-void MatRotateRadY(matrix44& matOut, float rad)
+void MatRotateRadY(Matrix44& matOut, float rad)
 {
 	float sinA, cosA;
 
@@ -121,7 +121,7 @@ void MatRotateRadY(matrix44& matOut, float rad)
 	matOut[3][3] = 1.0F;
 }
 
-void MatRotateRadZ(matrix44& matOut, float rad)
+void MatRotateRadZ(Matrix44& matOut, float rad)
 {
 	float sinA, cosA;
 
@@ -139,7 +139,7 @@ void MatRotateRadZ(matrix44& matOut, float rad)
 	matOut[3][3] = 1.0F;
 }
 
-void MatTranspose(matrix44& matOut, matrix44& mat)
+void MatTranspose(Matrix44& matOut, Matrix44& mat)
 {
 	for(int i = 0; i < 4; ++i)
 	{

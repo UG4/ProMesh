@@ -26,70 +26,69 @@
  */
 
 #include <QtWidgets>
-#include "truncated_double_spin_box.h"
-#include "coordinates_widget.h"
+#include "truncated_double_spin_box.hpp"
+#include "coordinates_widget.hpp"
 
 CoordinatesWidget::
 CoordinatesWidget(const QString& name, QWidget* parent,
-				  ITool* tool, bool applyOnChange,
-				  bool showApplyButton) :
+				  ITool* tool, bool apply_on_change,
+				  bool show_apply_button) :
 	QFrame(parent),
-	m_applyOnChange(applyOnChange),
-	m_bRefreshingCoords(false)
+	_apply_on_change(apply_on_change),
+	_refreshing_coords(false)
 {
-	m_tool = tool;
-	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+	_tool = tool;
+	setFrameStyle(StyledPanel | Sunken);
 
-	QVBoxLayout* vLayout = new QVBoxLayout(this);
-	vLayout->setSpacing(2);
+	auto v_layout = new QVBoxLayout(this);
+	v_layout->setSpacing(2);
 
-	QFormLayout* formLayout = new QFormLayout();
-	formLayout->setSpacing(5);
-	formLayout->setHorizontalSpacing(10);
-	formLayout->setVerticalSpacing(8);
-	vLayout->addLayout(formLayout);
+	auto* form_layout = new QFormLayout();
+	form_layout->setSpacing(5);
+	form_layout->setHorizontalSpacing(10);
+	form_layout->setVerticalSpacing(8);
+	v_layout->addLayout(form_layout);
 
-	vLayout->addSpacing(15);
+	v_layout->addSpacing(15);
 
 //	input boxes
-	m_x = new TruncatedDoubleSpinBox(this);
-	m_x->setLocale(QLocale(tr("C")));
-	m_x->setValue(0);
-	m_x->setDecimals(9);
-	m_x->setRange(-1e+9, 1e+9);
-	m_x->setSingleStep(1.);
-	connect(m_x, SIGNAL(valueChanged(double)), this, SLOT(valueChanged(double)));
-	formLayout->addRow(tr("x:"), m_x);
+	_x = new TruncatedDoubleSpinBox(this);
+	_x->setLocale(QLocale(tr("C")));
+	_x->setValue(0);
+	_x->setDecimals(9);
+	_x->setRange(-1e+9, 1e+9);
+	_x->setSingleStep(1.);
+	connect(_x, &TruncatedDoubleSpinBox::valueChanged, this, &CoordinatesWidget::valueChanged); // valueChanged(double
+	form_layout->addRow(tr("x:"), _x);
 
-	m_y = new TruncatedDoubleSpinBox(this);
-	m_y->setLocale(QLocale(tr("C")));
-	m_y->setValue(0);
-	m_y->setDecimals(9);
-	m_y->setRange(-1e+9, 1e+9);
-	m_y->setSingleStep(1.);
-	connect(m_y, SIGNAL(valueChanged(double)), this, SLOT(valueChanged(double)));
-	formLayout->addRow(tr("y:"), m_y);
+	_y = new TruncatedDoubleSpinBox(this);
+	_y->setLocale(QLocale(tr("C")));
+	_y->setValue(0);
+	_y->setDecimals(9);
+	_y->setRange(-1e+9, 1e+9);
+	_y->setSingleStep(1.);
+	connect(_y, &TruncatedDoubleSpinBox::valueChanged, this, &CoordinatesWidget::valueChanged);// valueChanged(double
+	form_layout->addRow(tr("y:"), _y);
 
-	m_z = new TruncatedDoubleSpinBox(this);
-	m_z->setLocale(QLocale(tr("C")));
-	m_z->setValue(0);
-	m_z->setDecimals(9);
-	m_z->setRange(-1e+9, 1e+9);
-	m_z->setSingleStep(1.);
-	connect(m_z, SIGNAL(valueChanged(double)), this, SLOT(valueChanged(double)));
-	formLayout->addRow(tr("z:"), m_z);
+	_z = new TruncatedDoubleSpinBox(this);
+	_z->setLocale(QLocale(tr("C")));
+	_z->setValue(0);
+	_z->setDecimals(9);
+	_z->setRange(-1e+9, 1e+9);
+	_z->setSingleStep(1.);
+	connect(_z, &TruncatedDoubleSpinBox::valueChanged, this, &CoordinatesWidget::valueChanged); // valueChanged(double)
+	form_layout->addRow(tr("z:"), _z);
 
-	m_lineEdit = new QLineEdit(this);
-	m_lineEdit->setText(tr("0 0 0"));
-	connect(m_lineEdit, SIGNAL(textEdited(const QString&)),
-			this, SLOT(textEdited(const QString&)));
-	formLayout->addRow(tr("text input:"), m_lineEdit);
+	_line_edit = new QLineEdit(this);
+	_line_edit->setText(tr("0 0 0"));
+	connect(_line_edit, &QLineEdit::textEdited,this, &CoordinatesWidget::textEdited); // textEdited(const QString)
+	form_layout->addRow(tr("text input:"), _line_edit);
 
 //	create apply, ok and cancel buttons
-	if(showApplyButton){
-		QPushButton* btn = new QPushButton(tr("Apply"), this);
-		vLayout->addWidget(btn, 0, Qt::AlignLeft);
-		connect(btn, SIGNAL(clicked()), this, SLOT(apply()));
+	if(show_apply_button){
+		auto* btn = new QPushButton(tr("Apply"), this);
+		v_layout->addWidget(btn, 0, Qt::AlignLeft);
+		connect(btn, &QPushButton::clicked, this, &CoordinatesWidget::apply);
 	}
 }
 
@@ -97,60 +96,60 @@ void CoordinatesWidget::
 set_coords(double x, double y, double z)
 {
 //todo store default coords for cancel
-	m_bRefreshingCoords = true;
-	m_x->setValue(x);
-	m_y->setValue(y);
-	m_z->setValue(z);
+	_refreshing_coords = true;
+	_x->setValue(x);
+	_y->setValue(y);
+	_z->setValue(z);
 	std::stringstream ss;
 	ss << x << " " << y << " " << z;
-	m_lineEdit->setText(ss.str().c_str());
-	m_bRefreshingCoords = false;
+	_line_edit->setText(ss.str().c_str());
+	_refreshing_coords = false;
 }
 
-double CoordinatesWidget::x() const	{return m_x->value();}
-double CoordinatesWidget::y() const	{return m_y->value();}
-double CoordinatesWidget::z() const	{return m_z->value();}
+double CoordinatesWidget::x() const	{return _x->value();}
+double CoordinatesWidget::y() const	{return _y->value();}
+double CoordinatesWidget::z() const	{return _z->value();}
 
 void CoordinatesWidget::
 valueChanged(double)
 {
 //	if we're not refreshing the value from the text box,
 //	we'll have to update text box
-	if(m_bRefreshingCoords)
+	if(_refreshing_coords)
 		return;
 
-	m_bRefreshingCoords = true;
+	_refreshing_coords = true;
 
 	std::stringstream ss;
-	ss << m_x->value() << " " << m_y->value() << " " << m_z->value();
+	ss << _x->value() << " " << _y->value() << " " << _z->value();
 
-	m_lineEdit->setText(ss.str().c_str());
+	_line_edit->setText(ss.str().c_str());
 
-	if(m_applyOnChange)
+	if(_apply_on_change)
 		apply();
 
-	m_bRefreshingCoords = false;
+	_refreshing_coords = false;
 }
 
 void CoordinatesWidget::
-textEdited(const QString& newText)
+textEdited(const QString& new_text)
 {
 //	only refresh coordinates if we're not already doing it.
-	if(m_bRefreshingCoords)
+	if(_refreshing_coords)
 		return;
 
-	m_bRefreshingCoords = true;
+	_refreshing_coords = true;
 
 //	parse the coordinates
-	std::stringstream ss(m_lineEdit->text().toStdString());
+	std::stringstream ss(_line_edit->text().toStdString());
 	double val;
-	int coordCounter = 0;
+	int coord_counter = 0;
 	while(!ss.eof()){
 	//	we'll ignore ' ', ',', '(', ')' '/'
-		int nextChar = ss.peek();
-		if(nextChar == ',' || nextChar == '('
-		  || nextChar == ')' || nextChar == '/'
-		  || nextChar == ' ')
+		int next_char = ss.peek();
+		if(next_char == ',' || next_char == '('
+		  || next_char == ')' || next_char == '/'
+		  || next_char == ' ')
 		{
 			ss.ignore(1);
 			continue;
@@ -159,30 +158,30 @@ textEdited(const QString& newText)
 		ss >> val;
 		if(ss.fail())
 			break;
-		switch(coordCounter){
-			case 0:	m_x->setValue(val); break;
-			case 1:	m_y->setValue(val); break;
-			case 2:	m_z->setValue(val); break;
+		switch(coord_counter){
+			case 0:	_x->setValue(val); break;
+			case 1:	_y->setValue(val); break;
+			case 2:	_z->setValue(val); break;
 		}
-		++coordCounter;
+		++coord_counter;
 	}
 
-	if(m_applyOnChange)
+	if(_apply_on_change)
 		apply();
 
-	m_bRefreshingCoords = false;
+	_refreshing_coords = false;
 }
 
 void CoordinatesWidget::
 apply()
 {
 	LGObject* obj = app::getActiveObject();
-	if(m_tool && obj){
+	if(_tool && obj){
 		try{
-			m_tool->execute(obj, this);
+			_tool->execute(obj, this);
 		}
 		catch(ug::UGError error){
-			UG_LOG("Execution of tool " << m_tool->get_name() << " failed with the following message:\n");
+			UG_LOG("Execution of tool " << _tool->get_name() << " failed with the following message:\n");
 			UG_LOG("  " << error.get_msg() << std::endl);
 		}
 	}

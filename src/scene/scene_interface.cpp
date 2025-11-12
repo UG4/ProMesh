@@ -25,7 +25,7 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "scene_interface.h"
+#include "scene_interface.hpp"
 
 void ISceneObject::geometry_changed()
 {

@@ -30,12 +30,12 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <typeinfo>
-#include "projector_widget.h"
+#include "projector_widget.hpp"
 #include "promesh_plugin.h"
-#include "../scene/lg_scene.h"
+#include "../scene/lg_scene.hpp"
 
-#include "tooldlg_oarchive.h"
-#include "tooldlg_iarchive.h"
+#include "tooldlg_oarchive.hpp"
+#include "tooldlg_iarchive.hpp"
 #include "common/boost_serialization_routines.h"
 #include "common/util/archivar.h"
 #include "common/util/factory.h"
@@ -48,40 +48,42 @@ static ug::Factory<ug::RefinementProjector, ug::ProjectorTypes>	projFactory;
 ProjectorWidget::
 ProjectorWidget (QWidget* parent) :
 	QFrame(parent),
-	m_curContent(nullptr),
-	m_activeObject(nullptr),
-	m_activeSubsetIndex(-1)
+	_cur_content(nullptr),
+	_active_object(nullptr),
+	_active_subset_index(-1)
 {
-	m_vlayout = new QVBoxLayout(this);
+	_vlayout = new QVBoxLayout(this);
 
-	QHBoxLayout* hbox = new QHBoxLayout();
-	m_vlayout->addLayout(hbox);
+	auto* hbox = new QHBoxLayout();
+	_vlayout->addLayout(hbox);
 
 	hbox->addWidget(new QLabel(tr("type:")));
-	m_typeBox = new QComboBox(this);
-	hbox->addWidget(m_typeBox);
+	_type_box = new QComboBox(this);
+	hbox->addWidget(_type_box);
 	hbox->addStretch(2);
 
-	m_typeBox->addItem(QString("none"));
+	_type_box->addItem(QString("none"));
 	for(size_t iproj = 0; iproj < projFactory.num_classes(); ++iproj){
-		m_typeBox->addItem(QString(projFactory.class_name(iproj).c_str()));
+		_type_box->addItem(QString(projFactory.class_name(iproj).c_str()));
 	}
 
 	setEnabled(false);
 
-	connect(m_typeBox, SIGNAL(currentIndexChanged(const QString&)),
-			this, SLOT(projectorTypeChanged(const QString&)));
+	connect(_type_box, &QComboBox::currentIndexChanged, this, [this](int index) {
+	QString text = _type_box->itemText(index);
+	projectorTypeChanged(text);
+});
+
+
+
+
 }
 
-ProjectorWidget::
-~ProjectorWidget ()
-{
-}
 
 void ProjectorWidget::
 objectToBeRemoved(ISceneObject* pObj)
 {
-	if(pObj == static_cast<ISceneObject*>(m_activeObject))
+	if(pObj == static_cast<ISceneObject*>(_active_object))
 		setActiveSubset(nullptr, -1);
 }
 
@@ -91,13 +93,13 @@ changeEvent(QEvent* evt)
 	QFrame::changeEvent(evt);
 	if(evt->type() == QEvent::EnabledChange){
 		if(isEnabled()){
-			m_typeBox->setVisible(true);
+			_type_box->setVisible(true);
 		}
 		else{
-			m_typeBox->setVisible(false);
-			if(m_curContent)
-				delete m_curContent;
-			m_curContent = nullptr;
+			_type_box->setVisible(false);
+			if(_cur_content)
+				delete _cur_content;
+			_cur_content = nullptr;
 		}
 	}
 }
@@ -106,53 +108,53 @@ changeEvent(QEvent* evt)
 void ProjectorWidget::
 setActiveSubset(ISceneObject* obj, int subsetIndex)
 {
-	m_activeObject = dynamic_cast<LGObject*>(obj);
-	m_activeSubsetIndex = subsetIndex;
-	if(m_activeObject && m_activeSubsetIndex >= 0){
+	_active_object = dynamic_cast<LGObject*>(obj);
+	_active_subset_index = subsetIndex;
+	if(_active_object && _active_subset_index >= 0){
 		setEnabled(true);
 		ug::SPRefinementProjector proj =
-				m_activeObject->projection_handler().projector(subsetIndex);
+				_active_object->projection_handler().projector(subsetIndex);
 
 		if(proj.valid()){
 			QString itemText = QString(projFactory.class_name(*proj).c_str());
-			int newIndex = m_typeBox->findText(itemText);
-			if(newIndex != m_typeBox->currentIndex())
-				m_typeBox->setCurrentIndex(newIndex);
+			int newIndex = _type_box->findText(itemText);
+			if(newIndex != _type_box->currentIndex())
+				_type_box->setCurrentIndex(newIndex);
 			else
 				update_content(proj.get());
 		}
-		else if(m_typeBox->currentIndex() != 0){
-			m_typeBox->setCurrentIndex(0);
+		else if(_type_box->currentIndex() != 0){
+			_type_box->setCurrentIndex(0);
 		}
 	}
 	else{
 		setEnabled(false);
-		if(m_curContent)
-			delete m_curContent;
-		m_curContent = nullptr;
+		if(_cur_content)
+			delete _cur_content;
+		_cur_content = nullptr;
 	}
 }
 
 void ProjectorWidget::
 projectorTypeChanged(const QString &text)
 {
-	if(!m_activeObject || m_activeSubsetIndex < 0)
+	if(!_active_object || _active_subset_index < 0)
 		return;
 
 	std::string projName = text.toStdString();
 	if(projName.compare("none") == 0){
-		m_activeObject->projection_handler()
-			.set_projector(m_activeSubsetIndex, ug::SPRefinementProjector());
+		_active_object->projection_handler()
+			.set_projector(_active_subset_index, ug::SPRefinementProjector());
 		update_content(nullptr);
 	}
 	else{
 	//	if the current projector for the active subset has a different name, create a new one
 		ug::SPRefinementProjector curProj =
-				m_activeObject->projection_handler().projector(m_activeSubsetIndex);
+				_active_object->projection_handler().projector(_active_subset_index);
 		if(curProj.invalid() || projFactory.class_name(*curProj) != projName){
 			ug::SPRefinementProjector proj = projFactory.create(projName);
-			proj->set_geometry(m_activeObject->geometry());
-			m_activeObject->projection_handler().set_projector(m_activeSubsetIndex, proj);
+			proj->set_geometry(_active_object->geometry());
+			_active_object->projection_handler().set_projector(_active_subset_index, proj);
 			// UG_LOG("created projector: " << typeid(*proj).name() << std::endl);
 			update_content(proj.get());
 		}
@@ -165,29 +167,29 @@ void ProjectorWidget::
 update_content(ug::RefinementProjector* proj)
 {
 	if(!proj){
-		if(m_curContent){
-			delete m_curContent;
-			m_curContent = nullptr;
+		if(_cur_content){
+			delete _cur_content;
+			_cur_content = nullptr;
 		}
 		return;
 	}
 
-	static ug::Archivar <tooldlg_oarchive,
+	static ug::Archivar <ToolDlg_Oarchive,
 						 ug::RefinementProjector,
 						 ug::ProjectorTypes>
 				archivar;
 
-	tooldlg_oarchive oa(this);
+	ToolDlg_Oarchive oa(this);
 	oa.set_expand_properties(true);
 	
 	archivar.archive(oa, *proj, "properties");
 
 	QWidget* newContent = oa.widget();
 
-	if(m_curContent)
-		delete m_curContent;
-	m_curContent = newContent;
-	m_vlayout->addWidget(m_curContent);
+	if(_cur_content)
+		delete _cur_content;
+	_cur_content = newContent;
+	_vlayout->addWidget(_cur_content);
 
 //	connect change-signals of all tool-widgets to contentChanged
 	QList<ToolWidget*> toolWidgets = newContent->findChildren<ToolWidget*>();
@@ -195,23 +197,23 @@ update_content(ug::RefinementProjector* proj)
 		iter!= toolWidgets.end(); ++iter)
 	{
 		ToolWidget* tw = *iter;
-		connect(tw, SIGNAL(valueChanged(int)), this, SLOT(valueChanged()));
+		connect(tw, &ToolWidget::valueChanged, this, &ProjectorWidget::valueChanged);
 	}
 }
 
 void ProjectorWidget::
 valueChanged ()
 {
-	if(m_curContent && m_activeObject){
-		static ug::Archivar <tooldlg_iarchive,
+	if(_cur_content && _active_object){
+		static ug::Archivar <ToolDlg_Iarchive,
 							 ug::RefinementProjector,
 							 ug::ProjectorTypes>
 				archivar;
 
 		ug::SPRefinementProjector proj =
-				m_activeObject->projection_handler().projector(m_activeSubsetIndex);
+				_active_object->projection_handler().projector(_active_subset_index);
 
-		tooldlg_iarchive ia(m_curContent);
+		ToolDlg_Iarchive ia(_cur_content);
 		archivar.archive(ia, *proj);
 	}
 }

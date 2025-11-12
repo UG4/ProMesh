@@ -29,7 +29,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <sstream>
-#include "matrix_widget.h"
+#include "matrix_widget.hpp"
 
 
 LineEdit_ClearBeforeDrop::
@@ -52,39 +52,38 @@ MatrixWidget(
 		int numCols,
 		QWidget* parent,
 		const char** labels,
-		bool stretchValues) :
-	QWidget(parent),
-	m_numRows(numRows),
-	m_numCols(numCols),
-	m_lineEdit(nullptr),
-	m_bRefreshingCoords(false)
+		bool stretchValues) : QWidget(parent),
+	_num_rows(numRows),
+	_num_cols(numCols),
+	_line_edit(nullptr),
+	_refreshing_coords(false)
 {
 //	create a grid layout
-	m_grid = new QGridLayout(this);
-	m_grid->setSpacing(0);
-	m_grid->setContentsMargins(0, 0, 0, 0);
+	_grid = new QGridLayout(this);
+	_grid->setSpacing(0);
+	_grid->setContentsMargins(0, 0, 0, 0);
 
 	const bool useLabels = labels || numCols == 1;
 	int colOffset = useLabels ? 1 : 0;
 	Qt::Alignment spinBoxAlignment = useLabels ? Qt::AlignLeft : Qt::AlignCenter;
 
 	if(useLabels && stretchValues)
-		m_grid->setColumnStretch(1, 1);
+		_grid->setColumnStretch(1, 1);
 
 //	create the spin boxes
 	for(int col = 0; col < numCols; ++col){
 		for(int row = 0; row < numRows; ++row){
 			if(labels && col == 0){
-				QLabel* lbl = new QLabel(QString(labels[row]).append(" "), this);
-				m_grid->addWidget(lbl, row, 0, Qt::AlignRight);
+				auto* lbl = new QLabel(QString(labels[row]).append(" "), this);
+				_grid->addWidget(lbl, row, 0, Qt::AlignRight);
 			}
-			TruncatedDoubleSpinBox* box = new TruncatedDoubleSpinBox(this);
+			auto* box = new TruncatedDoubleSpinBox(this);
 			box->setDecimals(9);
 			box->setRange(-1.e+12, 1.e+12);
 			box->setLocale(QLocale(tr("C")));
 			box->setSingleStep(0.1);
 			if(numCols == 1){
-				connect(box, SIGNAL(valueChanged(double)), this, SLOT(valueChanged(double)));
+				connect(box, QOverload<double>::of(&TruncatedDoubleSpinBox::valueChanged), this, QOverload<double>::of(&MatrixWidget::valueChanged));
 			}
 			else
 				box->setAlignment(Qt::AlignCenter);
@@ -95,9 +94,9 @@ MatrixWidget(
 				box->setValue(0);
 
 
-			m_grid->addWidget(box, row, col + colOffset, spinBoxAlignment);
+			_grid->addWidget(box, row, col + colOffset, spinBoxAlignment);
 
-			m_spinBoxes.push_back(box);
+			_spin_boxes.push_back(box);
 		}
 	}
 
@@ -106,24 +105,19 @@ MatrixWidget(
 		for(int i = 1; i < numRows; ++i)
 			txt.append(" 0");
 
-		m_lineEdit = new LineEdit_ClearBeforeDrop(this);
-		m_lineEdit->setText(txt);
-		if(!stretchValues && !m_spinBoxes.empty())
-			m_lineEdit->setFixedWidth(m_spinBoxes.front()->width());
+		_line_edit = new LineEdit_ClearBeforeDrop(this);
+		_line_edit->setText(txt);
+		if(!stretchValues && !_spin_boxes.empty())
+			_line_edit->setFixedWidth(_spin_boxes.front()->width());
 		else{
-			m_lineEdit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+			_line_edit->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 		}
 
-		connect(m_lineEdit, SIGNAL(textEdited(const QString&)),
-				this, SLOT(textEdited(const QString&)));
+		connect(_line_edit, &LineEdit_ClearBeforeDrop::textEdited, this, &MatrixWidget::textEdited);
 
-		m_grid->addWidget(new QLabel(tr("text "), this), numRows, 0, Qt::AlignRight);
-		m_grid->addWidget(m_lineEdit, numRows, 1, Qt::AlignLeft);
+		_grid->addWidget(new QLabel(tr("text "), this), numRows, 0, Qt::AlignRight);
+		_grid->addWidget(_line_edit, numRows, 1, Qt::AlignLeft);
 	}
-}
-
-MatrixWidget::~MatrixWidget()
-{
 }
 
 double MatrixWidget::value(int row, int col) const
@@ -136,22 +130,22 @@ double MatrixWidget::value(int row, int col) const
 
 void MatrixWidget::set_value(int row, int col, double value)
 {
-	if(m_bRefreshingCoords)
+	if(_refreshing_coords)
 		return;
 
-	m_bRefreshingCoords = true;
+	_refreshing_coords = true;
 	TruncatedDoubleSpinBox* box = get_spin_box(row, col);
 	if(box){
 		box->setValue(value);
 		update_text();
 	}
-	m_bRefreshingCoords = false;
+	_refreshing_coords = false;
 }
 
 TruncatedDoubleSpinBox* MatrixWidget::get_spin_box(int row, int col) const
 {
-	if(row >= 0 && row < m_numRows && col >= 0 && col < m_numCols){
-		return m_spinBoxes[col * m_numRows + row];
+	if(row >= 0 && row < _num_rows && col >= 0 && col < _num_cols){
+		return _spin_boxes[col * _num_rows + row];
 	}
 	return nullptr;
 }
@@ -161,28 +155,28 @@ valueChanged(double)
 {
 //	if we're not refreshing the value from the text box,
 //	we'll have to update text box
-	if(m_bRefreshingCoords)
+	if(_refreshing_coords)
 		return;
 
-	m_bRefreshingCoords = true;
+	_refreshing_coords = true;
 
 	update_text();
 
 	emit valueChanged();
-	m_bRefreshingCoords = false;
+	_refreshing_coords = false;
 }
 
 void MatrixWidget::
 textEdited(const QString& newText)
 {
 //	only refresh coordinates if we're not already doing it.
-	if(m_bRefreshingCoords)
+	if(_refreshing_coords)
 		return;
 
-	m_bRefreshingCoords = true;
+	_refreshing_coords = true;
 
 //	parse the coordinates
-	std::stringstream ss(m_lineEdit->text().toStdString());
+	std::stringstream ss(_line_edit->text().toStdString());
 	double val;
 	size_t coordCounter = 0;
 	while(!ss.eof()){
@@ -200,25 +194,25 @@ textEdited(const QString& newText)
 		if(ss.fail())
 			break;
 
-		if(coordCounter < m_spinBoxes.size())
-			m_spinBoxes[coordCounter]->setValue(val);
+		if(coordCounter < _spin_boxes.size())
+			_spin_boxes[coordCounter]->setValue(val);
 
 		++coordCounter;
 	}
 
 	emit valueChanged();
-	m_bRefreshingCoords = false;
+	_refreshing_coords = false;
 }
 
 void MatrixWidget::
 update_text()
 {
 	std::stringstream ss;
-	for(size_t i = 0; i < m_spinBoxes.size(); ++i){
-		ss << m_spinBoxes[i]->cleanText().toStdString();
-		if(i + 1 < m_spinBoxes.size())
+	for(size_t i = 0; i < _spin_boxes.size(); ++i){
+		ss << _spin_boxes[i]->cleanText().toStdString();
+		if(i + 1 < _spin_boxes.size())
 			ss << " ";
 	}
 
-	m_lineEdit->setText(ss.str().c_str());
+	_line_edit->setText(ss.str().c_str());
 }

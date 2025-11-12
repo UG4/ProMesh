@@ -30,7 +30,7 @@
 //	at some point in the near future.
 ////////////////////////////////////////////////////////////////////////
 
-#include "lg_include.h"
+#include "lg_include.hpp"
 
 namespace ug
 {
@@ -145,7 +145,7 @@ bool ClipFace(Face* f, const Sphere3& boundingSphere, Plane& clipPlane,
 
 ////////////////////////////////////////////////////////////////////////
 //	ClipVolume
-bool ClipVolume(Volume* v, const ug::Sphere3& boundingSphere, ug::Plane& clipPlane,
+bool ClipVolume(Volume* v, const Sphere3& boundingSphere, Plane& clipPlane,
 				Grid::VertexAttachmentAccessor<APosition>& aaPos)
 {
 	RelativePositionIndicator rpi = PlaneSphereTest(clipPlane, boundingSphere);

@@ -25,20 +25,19 @@
 
 #include <limits>
 #include <QFile>
-#include <QByteArray>
-#include "util/file_util.h"
-#include "scripting.h"
+#include "util/file_util.hpp"
+#include "scripting.hpp"
 
 using namespace std;
 using namespace ug;
 
 
-static SPLuaShell			g_luaShell;
+static SPLuaShell g_luaShell;
 
 
-template <class T>
+template <typename T>
 static T ToNumber(const std::string& str){
-	std::istringstream istr(str.c_str());
+	std::istringstream istr(str);
 	istr.imbue(std::locale("C"));
 	T num = 0;
 	istr >> num;
@@ -60,26 +59,26 @@ void SetScriptDefaultVariables (SPLuaShell luaShell, const char* scriptContent)
 	ScriptDeclarations decls;
 	ParseScriptDeclarations (decls, scriptContent);
 
-	for(size_t i = 0; i < decls.inputs.size(); ++i){
-		ScriptParameter& param = decls.inputs[i];
+	for(size_t i = 0; i < decls._inputs.size(); ++i){
+		ScriptParameter& param = decls._inputs[i];
 
-		switch(param.val.type()) {
+		switch(param._val.type()) {
 			case Variant::VT_BOOL:
-				luaShell->set (param.varName.c_str(), param.val.to_bool());
+				luaShell->set (param._var_name.c_str(), param._val.to_bool());
 				break;
 			case Variant::VT_INT:
-				luaShell->set (param.varName.c_str(), param.val.to_int());
+				luaShell->set (param._var_name.c_str(), param._val.to_int());
 				break;
 			case Variant::VT_SIZE_T:
-				luaShell->set (param.varName.c_str(), param.val.to_size_t());
+				luaShell->set (param._var_name.c_str(), param._val.to_size_t());
 				break;
 			case Variant::VT_FLOAT:
 			case Variant::VT_DOUBLE:
-				luaShell->set (param.varName.c_str(), param.val.to_double());
+				luaShell->set (param._var_name.c_str(), param._val.to_double());
 				break;
 			case Variant::VT_STDSTRING:
 			case Variant::VT_CSTRING:
-				luaShell->set (param.varName.c_str(), param.val.to_c_string());
+				luaShell->set (param._var_name.c_str(), param._val.to_c_string());
 				break;
 		}
 	}
@@ -90,8 +89,8 @@ void ParseScriptDeclarations (ScriptDeclarations& declsOut,
                               const char* scriptContent)
 {
 	ScriptDeclarations& decls = declsOut;
-	decls.name = "";
-	decls.inputs.clear();
+	decls._name = "";
+	decls._inputs.clear();
 	std::stringstream in(scriptContent);
 
 	string line;
@@ -120,89 +119,89 @@ void ParseScriptDeclarations (ScriptDeclarations& declsOut,
 		
 
 		if(tokens[0].compare("--pm-declare-name") == 0){
-			decls.name = tokens[1];
+			decls._name = tokens[1];
 		}
 		else if(tokens[0].compare("--pm-declare-input") == 0){
 			TokenizeTrimString(tokens[1], paramTokens, '|');
 			ScriptParameter param;
 			if(paramTokens.size() >= 3){
-				param.varName = paramTokens[0];
-				param.argName = paramTokens[1];
-				param.typeName = ToLower(paramTokens[2]);
+				param._var_name = paramTokens[0];
+				param._arg_name = paramTokens[1];
+				param._type_name = ToLower(paramTokens[2]);
 				if(paramTokens.size() > 3)
-					param.options = paramTokens[3];
+					param._options = paramTokens[3];
 			}
-			decls.inputs.push_back(param);
+			decls._inputs.push_back(param);
 		}
 	}
 
 //	parse options
 	std::vector<string> options;
-	for(size_t iinput = 0; iinput < decls.inputs.size(); ++iinput)
+	for(size_t iinput = 0; iinput < decls._inputs.size(); ++iinput)
 	{
-		ScriptParameter& param = decls.inputs[iinput];
+		ScriptParameter& param = decls._inputs[iinput];
 
 		options.clear();
-		if(!param.options.empty()){
-			TokenizeTrimString(param.options, options, ';');
+		if(!param._options.empty()){
+			TokenizeTrimString(param._options, options, ';');
 		}
-		if((param.typeName == "double") || (param.typeName == "float")){
-			param.val = double(0);
-			param.min = -numeric_limits<double>::max();
-			param.max = numeric_limits<double>::max();
-			param.step = double(1);
-			param.digits = 9;
+		if((param._type_name == "double") || (param._type_name == "float")){
+			param._val = 0;
+			param._min = -numeric_limits<double>::max();
+			param._max = numeric_limits<double>::max();
+			param._step = 1;
+			param._digits = 9;
 			if(!options.empty()){
 				for(size_t iopt = 0; iopt < options.size(); ++iopt){
 					TokenizeTrimString(options[iopt], tokens, '=');
 					if(tokens.size() == 2){
 						if(tokens[0] == "min")
-							param.min = ToNumber<double>(tokens[1]);
+							param._min = ToNumber<double>(tokens[1]);
 						else if(tokens[0] == "max")
-							param.max = ToNumber<double>(tokens[1]);
+							param._max = ToNumber<double>(tokens[1]);
 						else if(tokens[0] == "val")
-							param.val = ToNumber<double>(tokens[1]);
+							param._val = ToNumber<double>(tokens[1]);
 						else if(tokens[0] == "step")
-							param.step = ToNumber<double>(tokens[1]);
+							param._step = ToNumber<double>(tokens[1]);
 						else if(tokens[0] == "digits")
-							param.digits = ToNumber<double>(tokens[1]);
+							param._digits = ToNumber<double>(tokens[1]);
 					}
 					else{
 						UG_LOG("Invalid option '" << options[iopt] << "' in paramter '"
-							   << param.argName << std::endl);
+							   << param._arg_name << std::endl);
 					}
 				}
 			}
 		}
 
-		else if((param.typeName == "int") || (param.typeName == "integer")){
-			param.val = int(0);
-			param.min = -numeric_limits<int>::max();
-			param.max = numeric_limits<int>::max();
-			param.step = int(1);
+		else if((param._type_name == "int") || (param._type_name == "integer")){
+			param._val = 0;
+			param._min = -numeric_limits<int>::max();
+			param._max = numeric_limits<int>::max();
+			param._step = 1;
 			if(!options.empty()){
 				for(size_t iopt = 0; iopt < options.size(); ++iopt){
 					TokenizeTrimString(options[iopt], tokens, '=');
 					if(tokens.size() == 2){
 						if(tokens[0] == "min")
-							param.min = ToNumber<int>(tokens[1]);
+							param._min = ToNumber<int>(tokens[1]);
 						else if(tokens[0] == "max")
-							param.max = ToNumber<int>(tokens[1]);
+							param._max = ToNumber<int>(tokens[1]);
 						else if(tokens[0] == "val")
-							param.val = ToNumber<int>(tokens[1]);
+							param._val = ToNumber<int>(tokens[1]);
 						else if(tokens[0] == "step")
-							param.step = ToNumber<int>(tokens[1]);
+							param._step = ToNumber<int>(tokens[1]);
 					}
 					else{
 						UG_LOG("Invalid option '" << options[iopt] << "' in paramter '"
-							   << param.argName << std::endl);
+							   << param._arg_name << std::endl);
 					}
 				}
 			}
 		}
 
-		else if((param.typeName == "bool") || (param.typeName == "boolean")){
-			param.val = false;
+		else if((param._type_name == "bool") || (param._type_name == "boolean")){
+			param._val = false;
 			if(!options.empty()){
 				for(size_t iopt = 0; iopt < options.size(); ++iopt){
 					TokenizeTrimString(options[iopt], tokens, '=');
@@ -210,30 +209,30 @@ void ParseScriptDeclarations (ScriptDeclarations& declsOut,
 						if(tokens[0] == "val"){
 							string tmp = ToLower(tokens[1]);
 							if((tmp == "true") || (tmp == "1"))
-								param.val = true;
+								param._val = true;
 						}
 					}
 					else{
 						UG_LOG("Invalid option '" << options[iopt] << "' in paramter '"
-							   << param.argName << std::endl);
+							   << param._arg_name << std::endl);
 					}
 				}
 			}
 		}
 
-		else if(param.typeName == "string"){
-			param.val = "";
+		else if(param._type_name == "string"){
+			param._val = "";
 			if(!options.empty()){
 				for(size_t iopt = 0; iopt < options.size(); ++iopt){
 					TokenizeTrimString(options[iopt], tokens, '=');
 					if(tokens.size() == 2){
 						if(tokens[0] == "val"){
-							param.val = tokens[1];
+							param._val = tokens[1];
 						}
 					}
 					else{
 						UG_LOG("Invalid option '" << options[iopt] << "' in paramter '"
-							   << param.argName << std::endl);
+							   << param._arg_name << std::endl);
 					}
 				}
 			}
@@ -243,9 +242,6 @@ void ParseScriptDeclarations (ScriptDeclarations& declsOut,
 
 void ExecuteScript (const char* scriptContent, ug::promesh::Mesh* mesh)
 {
-	// cout << "SCRIPT CONTENT >>>>>\n";
-	// cout << scriptContent << endl;
-	// cout << "<<<<< SCRIPT CONTENT\n";
 
 	SPLuaShell luaShell = GetDefaultLuaShell();
 		

@@ -30,30 +30,30 @@
 #include <QDesktopServices>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
-#include "main_window.h"
-#include "view3d/view3d.h"
-#include "scene/lg_scene.h"
-#include "scene/csg_object.h"
-#include "scene_inspector.h"
-#include "scene_item_model.h"
-#include "QDebugStream.h"
+#include "main_window.hpp"
+#include "view3d/view3d.hpp"
+#include "scene/lg_scene.hpp"
+#include "scene/csg_object.hpp"
+#include "scene_inspector.hpp"
+#include "scene_item_model.hpp"
+#include "QDebugStream.hpp"
 #include "lib_grid/lib_grid.h"
 #include "lib_grid/file_io/file_io_ug.h"
 #include "lib_grid/file_io/file_io_ugx.h"
 #include "lib_grid/file_io/file_io_lgb.h"
-#include "undo.h"
-#include "app.h"
-#include "widgets/coordinates_widget.h"
+#include "undo.hpp"
+#include "app.hpp"
+#include "widgets/coordinates_widget.hpp"
 #include "common/util/file_util.h"
 #include "bridge/bridge.h"
 #include "common/util/path_provider.h"
 #include "common/util/plugin_util.h"
-#include "options/options.h"
-#include "util/file_util.h"
-#include "modules/mesh_module.h"
-#include "widgets/property_widget.h"
-#include "widgets/truncated_double_spin_box.h"
-#include "widgets/widget_list.h"
+#include "options/options.hpp"
+#include "util/file_util.hpp"
+#include "modules/mesh_module.hpp"
+#include "widgets/property_widget.hpp"
+#include "widgets/truncated_double_spin_box.hpp"
+#include "widgets/widget_list.hpp"
 
 #ifdef PROMESH_USE_WEBKIT
 	#include "widgets/help_browser.h"
@@ -74,20 +74,20 @@ using namespace ug;
 ////////////////////////////////////////////////////////////////////////
 //	constructor
 MainWindow::MainWindow() :
-	m_activeModule (nullptr),
-	m_settings(),
-	m_selectionElement(0),
-	m_selectionMode(0),
-	m_curSelectionMode(-1),
-	m_elementModeListIndex(3),
-	m_mouseMoveAction(MMA_DEFAULT),
-	m_activeAxis(X_AXIS | Y_AXIS | Z_AXIS),
-	m_activeObject(nullptr),
-	m_actionLogSender(nullptr),
+	_active_module (nullptr),
+	_settings(),
+	_selection_element(0),
+	_selection_mode(0),
+	_cur_selection_mode(-1),
+	_element_mode_list_index(3),
+	_mouse_move_action(MMA_DEFAULT),
+	_active_axis(X_AXIS | Y_AXIS | Z_AXIS),
+	_active_object(nullptr),
+	_action_log_sender(nullptr),
 	#ifdef PROMESH_USE_WEBKIT
 		m_helpBrowser(nullptr),
 	#endif
-	m_dlgAbout(nullptr)
+	_dlg_about(nullptr)
 {
 }
 
@@ -99,81 +99,76 @@ void MainWindow::init()
 
 
 //	create view and scene
-	m_pView = new View3D;
-	setCentralWidget(m_pView);
-	connect(m_pView, SIGNAL(mousePressed(QMouseEvent*)),
-			this, SLOT(view3dMousePressed(QMouseEvent*)));
-	connect(m_pView, SIGNAL(mouseMoved(QMouseEvent*)),
-			this, SLOT(view3dMouseMoved(QMouseEvent*)));
-	connect(m_pView, SIGNAL(mouseReleased(QMouseEvent*)),
-			this, SLOT(view3dMouseReleased(QMouseEvent*)));
-	connect(m_pView, SIGNAL(keyReleased(QKeyEvent*)),
-			this, SLOT(view3dKeyReleased(QKeyEvent*)));
+	_p_view = new View3D;
+	setCentralWidget(_p_view);
+	connect(_p_view, &View3D::mousePressed, this, &MainWindow::view3dMousePressed);
+	connect(_p_view, &View3D::mouseMoved, this, &MainWindow::view3dMouseMoved);
+	connect(_p_view, &View3D::mouseReleased, this, &MainWindow::view3dMouseReleased);
+	connect(_p_view, &View3D::keyReleased, this, &MainWindow::view3dKeyReleased);
 
-	m_scene = new LGScene;
+	_scene = new LGScene;
 
-	m_pView->set_renderer(m_scene);
-	connect(m_scene, SIGNAL(visuals_updated()),
-			m_pView, SLOT(update()));
+	_p_view->set_renderer(_scene);
+	connect(_scene, &IScene::visuals_updated, _p_view, static_cast<void (View3D::*)()>(&View3D::update));
 
 
 	setTabPosition(Qt::BottomDockWidgetArea, QTabWidget::West);
 //	create the log widget
-	m_pLog = new QDockWidget(tr("log"), this);
-	m_pLog->setFeatures(QDockWidget::NoDockWidgetFeatures);
-	m_pLog->setObjectName(tr("log"));
+	_p_log = new QDockWidget(tr("log"), this);
+	_p_log->setFeatures(QDockWidget::NoDockWidgetFeatures);
+	_p_log->setObjectName(tr("log"));
 
 	QFont logFont("unknown");
 	logFont.setStyleHint(QFont::Monospace);
 	logFont.setPointSize(10);
-	m_pLogText = new QPlainTextEdit(m_pLog);
-	m_pLogText->setReadOnly(true);
-	m_pLogText->setUndoRedoEnabled(false);
-	m_pLogText->setWordWrapMode(QTextOption::NoWrap);
-	m_pLogText->setFont(logFont);
-	m_pLog->setWidget(m_pLogText);
+	_p_log_text = new QPlainTextEdit(_p_log);
+	_p_log_text->setReadOnly(true);
+	_p_log_text->setUndoRedoEnabled(false);
+	_p_log_text->setWordWrapMode(QTextOption::NoWrap);
+	_p_log_text->setFont(logFont);
+	_p_log->setWidget(_p_log_text);
 
-	addDockWidget(Qt::BottomDockWidgetArea, m_pLog);
+	addDockWidget(Qt::BottomDockWidgetArea, _p_log);
 
 //	action log dock
-	QDockWidget* actionLogDock = new QDockWidget(tr("actions"), this);
+	auto actionLogDock = new QDockWidget(tr("actions"), this);
 	actionLogDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
 	actionLogDock->setObjectName(tr("actionLog"));
 
-	m_actionLog = new QPlainTextEdit(actionLogDock);
-	m_actionLog->setReadOnly(true);
-	m_actionLog->setUndoRedoEnabled(false);
-	m_actionLog->setWordWrapMode(QTextOption::NoWrap);
-	m_actionLog->setFont(logFont);
-	actionLogDock->setWidget(m_actionLog);
+	_action_log = new QPlainTextEdit(actionLogDock);
+	_action_log->setReadOnly(true);
+	_action_log->setUndoRedoEnabled(false);
+	_action_log->setWordWrapMode(QTextOption::NoWrap);
+	_action_log->setFont(logFont);
+	actionLogDock->setWidget(_action_log);
 	addDockWidget(Qt::BottomDockWidgetArea, actionLogDock);
-	tabifyDockWidget(m_pLog, actionLogDock);
+	tabifyDockWidget(_p_log, actionLogDock);
 
 //	option dock
-	QDockWidget* optionDock = new QDockWidget(tr("options"), this);
+	auto* optionDock = new QDockWidget(tr("options"), this);
 	optionDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
 	optionDock->setObjectName(tr("options"));
-	m_optWidget = new PropertyWidget(optionDock);
-	connect(m_optWidget, SIGNAL(valueChanged()), this, SLOT(optionsChanged()));
-	optionDock->setWidget(m_optWidget);
+	_opt_widget = new PropertyWidget(optionDock);
+	connect(_opt_widget, &PropertyWidget::valueChanged, this, &MainWindow::optionsChanged);
+	optionDock->setWidget(_opt_widget);
 	loadOptions();
 	tabifyDockWidget(actionLogDock, optionDock);
 
 //	redirect cout
-	Q_DebugStream* pDebugStream = new Q_DebugStream(GetLogAssistant().logger(), m_pLogText);
+	auto* pDebugStream = new Q_DebugStream(GetLogAssistant().logger(), _p_log_text);
 	pDebugStream->enable_file_output(app::UserDataDir().path() + QString("/log.txt"));
 
 	UG_LOG(GetFileContent(":/resources/greetings.txt").toStdString() << endl);
 
 
 	try{
-		ug::bridge::InitBridge();
-		if(!ug::LoadPlugins(ug::PathProvider::get_path(PLUGIN_PATH).c_str(), "ug4/", ug::bridge::GetUGRegistry()))
+		bridge::InitBridge();
+		if(!LoadPlugins(PathProvider::get_path(PLUGIN_PATH).c_str(), "ug4/", bridge::GetUGRegistry()))
 		{
 			UG_LOG("ERROR during initialization of plugins: LoadPlugins failed!\n");
 		}
 	}
-	catch(ug::UGError& err){
+	catch(UGError& err){
 		UG_LOG("ERROR during initialization of ug::bridge:\n");
 		for(size_t i = 0; i < err.num_msg(); ++i){
 			UG_LOG("  " << err.get_msg(i) << std::endl);
@@ -182,137 +177,138 @@ void MainWindow::init()
 
 
 //	file-menu
-	m_actNew = new QAction(tr("&New"), this);
-	m_actNew->setIcon(QIcon(":images/filenew.png"));
-	m_actNew->setShortcut(tr("Ctrl+N"));
-	m_actNew->setToolTip(tr("Create a new empty geometry-object."));
-	connect(m_actNew, SIGNAL(triggered()), this, SLOT(newGeometry()));
+	_action_new = new QAction(tr("&New"), this);
+	_action_new->setIcon(QIcon(":images/filenew.png"));
+	_action_new->setShortcut(tr("Ctrl+N"));
+	_action_new->setToolTip(tr("Create a new empty geometry-object."));
+	connect(_action_new, &QAction::triggered, this, &MainWindow::newGeometry);
 
-	m_actOpen = new QAction(tr("&Open"), this);
-	m_actOpen->setIcon(QIcon(":images/fileopen.png"));
-	m_actOpen->setShortcut(tr("Ctrl+O"));
-	m_actOpen->setToolTip(tr("Load a geometry from file."));
-	connect(m_actOpen, SIGNAL(triggered()), this, SLOT(openFile()));
+	_action_open = new QAction(tr("&Open"), this);
+	_action_open->setIcon(QIcon(":images/fileopen.png"));
+	_action_open->setShortcut(tr("Ctrl+O"));
+	_action_open->setToolTip(tr("Load a geometry from file."));
+	connect(_action_open, &QAction::triggered, this, &MainWindow::openFile);
 
-	m_actLoadIntoMesh = new QAction(tr("&Load Into Mesh"), this);
-	m_actLoadIntoMesh->setIcon(QIcon(":images/fileopen.png"));
-	m_actLoadIntoMesh->setShortcut(tr("Ctrl+L"));
-	m_actLoadIntoMesh->setToolTip(tr("Load geometries from file and add it to the current mesh."));
-	connect(m_actLoadIntoMesh, SIGNAL(triggered()), this, SLOT(loadIntoMesh()));
+	_action_loac_into_mesh = new QAction(tr("&Load Into Mesh"), this);
+	_action_loac_into_mesh->setIcon(QIcon(":images/fileopen.png"));
+	_action_loac_into_mesh->setShortcut(tr("Ctrl+L"));
+	_action_loac_into_mesh->setToolTip(tr("Load geometries from file and add it to the current mesh."));
+	connect(_action_loac_into_mesh, &QAction::triggered, this, &MainWindow::loadIntoMesh);
 
-	m_actReload = new QAction(tr("&Reload"), this);
+	_action_reload = new QAction(tr("&Reload"), this);
 	//m_actReload->setIcon(QIcon(":images/fileopen.png"));
-	m_actReload->setShortcut(tr("F5"));
-	m_actReload->setToolTip(tr("Reloads the active geometry."));
-	connect(m_actReload, SIGNAL(triggered()), this, SLOT(reloadActiveGeometry()));
+	_action_reload->setShortcut(tr("F5"));
+	_action_reload->setToolTip(tr("Reloads the active geometry."));
+	connect(_action_reload, &QAction::triggered, this, &MainWindow::reloadActiveGeometry);
 
-	m_actReloadAll = new QAction(tr("Reload &All"), this);
+	_action_reload_all = new QAction(tr("Reload &All"), this);
 	//m_actReloadAll->setIcon(QIcon(":images/fileopen.png"));
-	m_actReloadAll->setShortcut(tr("Ctrl+F5"));
-	m_actReloadAll->setToolTip(tr("Reloads all geometries."));
-	connect(m_actReloadAll, SIGNAL(triggered()), this, SLOT(reloadAllGeometries()));
+	_action_reload_all->setShortcut(tr("Ctrl+F5"));
+	_action_reload_all->setToolTip(tr("Reloads all geometries."));
+	connect(_action_reload_all, &QAction::triggered, this, &MainWindow::reloadAllGeometries);
 
-	m_actSave = new QAction(tr("&Save"), this);
-	m_actSave->setIcon(QIcon(":images/filesave.png"));
-	m_actSave->setShortcut(tr("Ctrl+S"));
-	m_actSave->setToolTip(tr("Saves a geometry to a file."));
-	connect(m_actSave, SIGNAL(triggered()), this, SLOT(saveToFile()));
+	_action_save = new QAction(tr("&Save"), this);
+	_action_save->setIcon(QIcon(":images/filesave.png"));
+	_action_save->setShortcut(tr("Ctrl+S"));
+	_action_save->setToolTip(tr("Saves a geometry to a file."));
+	connect(_action_save, &QAction::triggered, this, &MainWindow::saveToFile);
 
-	m_actErase = new QAction(tr("&Erase"), this);
-	m_actErase->setIcon(QIcon(":images/erase.png"));
-	m_actErase->setShortcut(tr("Ctrl+E"));
-	m_actErase->setToolTip(tr("erases the selected geometry from the scene."));
-	connect(m_actErase, SIGNAL(triggered()), this, SLOT(eraseActiveSceneObject()));
+	_action_erase = new QAction(tr("&Erase"), this);
+	_action_erase->setIcon(QIcon(":images/erase.png"));
+	_action_erase->setShortcut(tr("Ctrl+E"));
+	_action_erase->setToolTip(tr("erases the selected geometry from the scene."));
+	connect(_action_erase, &QAction::triggered, this, &MainWindow::eraseActiveSceneObject);
 
-	m_actExportUG3 = new QAction(tr("Export to ug3"), this);
-	m_actExportUG3->setToolTip(tr("Exports the geometry to ug3 lgm / ng format."));
-	connect(m_actExportUG3, SIGNAL(triggered()), this, SLOT(exportToUG3()));
+	// todo remove deprecated
+	_action_export_ug3 = new QAction(tr("Export to ug3"), this);
+	_action_export_ug3->setToolTip(tr("Exports the geometry to ug3 lgm / ng format."));
+	connect(_action_export_ug3, &QAction::triggered, this, &MainWindow::exportToUG3);
 
-	m_actQuit = new QAction(tr("Quit"), this);
-	connect(m_actQuit, SIGNAL(triggered()), this, SLOT(quit()));
+	_action_quit = new QAction(tr("Quit"), this);
+	connect(_action_quit, &QAction::triggered, this, &MainWindow::quit);
 
-	m_fileMenu = new QMenu("&File", menuBar());
-	m_fileMenu->addAction(m_actNew);
-	m_fileMenu->addAction(m_actOpen);
-	m_fileMenu->addAction(m_actLoadIntoMesh);
-	m_fileMenu->addAction(m_actReload);
-	m_fileMenu->addAction(m_actReloadAll);
-	m_fileMenu->addAction(m_actSave);
-	m_fileMenu->addAction(m_actErase);
-	m_fileMenu->addSeparator();
-	m_fileMenu->addAction(m_actExportUG3);
-	m_fileMenu->addSeparator();
-	m_fileMenu->addAction(m_actQuit);
+	_menu_file = new QMenu("&File", menuBar());
+	_menu_file->addAction(_action_new);
+	_menu_file->addAction(_action_open);
+	_menu_file->addAction(_action_loac_into_mesh);
+	_menu_file->addAction(_action_reload);
+	_menu_file->addAction(_action_reload_all);
+	_menu_file->addAction(_action_save);
+	_menu_file->addAction(_action_erase);
+	_menu_file->addSeparator();
+	_menu_file->addAction(_action_export_ug3);
+	_menu_file->addSeparator();
+	_menu_file->addAction(_action_quit);
 
 
 //	help menu
-	m_actHelp = new QAction(tr("&User Manual"), this);
-	m_actHelp->setShortcut(tr("Ctrl+U"));
-	connect(m_actHelp, SIGNAL(triggered()), this, SLOT(showHelp()));
+	_action_help = new QAction(tr("&User Manual"), this);
+	_action_help->setShortcut(tr("Ctrl+U"));
+	connect(_action_help, &QAction::triggered, this, &MainWindow::showHelp);
 
-	m_actJumpToScriptReference = new QAction(tr("Script and Tools Reference"), this);
-	connect(m_actJumpToScriptReference, SIGNAL(triggered()), this, SLOT(showScriptReference()));
+	_action_jump_to_script_reference = new QAction(tr("Script and Tools Reference"), this);
+	connect(_action_jump_to_script_reference, &QAction::triggered, this, &MainWindow::showScriptReference);
 
-	m_actLicense = new QAction(tr("License"), this);
-	connect(m_actLicense, SIGNAL(triggered()), this, SLOT(showLicense()));
+	_action_license = new QAction(tr("License"), this);
+	connect(_action_license, &QAction::triggered, this, &MainWindow::showLicense);
 
-	m_actControls = new QAction(tr("Controls"), this);
-	connect(m_actControls, SIGNAL(triggered()), this, SLOT(showControls()));
+	_action_controls = new QAction(tr("Controls"), this);
+	connect(_action_controls, &QAction::triggered, this, &MainWindow::showControls);
 
-	m_actShortcuts = new QAction(tr("Shortcuts"), this);
-	connect(m_actShortcuts, SIGNAL(triggered()), this, SLOT(showShortcuts()));
+	_action_shortcuts = new QAction(tr("Shortcuts"), this);
+	connect(_action_shortcuts, &QAction::triggered, this, &MainWindow::showShortcuts);
 
-	m_actRecentChanges = new QAction(tr("Recent Changes"), this);
-	connect(m_actRecentChanges, SIGNAL(triggered()), this, SLOT(showRecentChanges()));
+	_action_recent_changes = new QAction(tr("Recent Changes"), this);
+	connect(_action_recent_changes, &QAction::triggered, this, &MainWindow::showRecentChanges);
 
-	m_actShowAbout = new QAction(tr("About"), this);
-	connect(m_actShowAbout, SIGNAL(triggered()), this, SLOT(showAbout()));
+	_action_show_about = new QAction(tr("About"), this);
+	connect(_action_show_about, &QAction::triggered, this, &MainWindow::showAbout);
 
-	m_actShowContact = new QAction(tr("Contact"), this);
-	connect(m_actShowContact, SIGNAL(triggered()), this, SLOT(showContact()));
+	_action_show_contact = new QAction(tr("Contact"), this);
+	connect(_action_show_contact, &QAction::triggered, this, &MainWindow::showContact);
 
 
-	m_helpMenu = new QMenu("&Help", menuBar());
-	m_helpMenu->addAction(m_actHelp);
-	m_helpMenu->addSeparator();
-	m_helpMenu->addAction(m_actControls);
-	m_helpMenu->addAction(m_actShortcuts);
-	m_helpMenu->addAction(m_actJumpToScriptReference);
-	m_helpMenu->addAction(m_actRecentChanges);
-	m_helpMenu->addAction(m_actLicense);
-	m_helpMenu->addAction(m_actShowAbout);
-	m_helpMenu->addAction(m_actShowContact);
+	_menu_help = new QMenu("&Help", menuBar());
+	_menu_help->addAction(_action_help);
+	_menu_help->addSeparator();
+	_menu_help->addAction(_action_controls);
+	_menu_help->addAction(_action_shortcuts);
+	_menu_help->addAction(_action_jump_to_script_reference);
+	_menu_help->addAction(_action_recent_changes);
+	_menu_help->addAction(_action_license);
+	_menu_help->addAction(_action_show_about);
+	_menu_help->addAction(_action_show_contact);
 
 
 //	create a tool bar for file handling
 	QToolBar* fileToolBar = addToolBar(tr("&File"));
 	fileToolBar->setObjectName(tr("file_toolbar"));
-	fileToolBar->addAction(m_actNew);
-	fileToolBar->addAction(m_actOpen);
-	fileToolBar->addAction(m_actSave);
-	fileToolBar->addAction(m_actErase);
+	fileToolBar->addAction(_action_new);
+	fileToolBar->addAction(_action_open);
+	fileToolBar->addAction(_action_save);
+	fileToolBar->addAction(_action_erase);
 
 //	undo
-	QAction* actUndo = new QAction(tr("Undo"), fileToolBar);
+	auto* actUndo = new QAction(tr("Undo"), fileToolBar);
 	actUndo->setIcon(QIcon(":images/editundo.png"));
 	actUndo->setShortcut(tr("Ctrl+Z"));
 	actUndo->setToolTip(tr("undo"));
 	fileToolBar->addAction(actUndo);
-	connect(actUndo, SIGNAL(triggered()), this, SLOT(undo()));
+	connect(actUndo, &QAction::triggered, this, &MainWindow::undo);
 
 //	redo
-	QAction* actRedo = new QAction(tr("Redo"), fileToolBar);
+	auto actRedo = new QAction(tr("Redo"), fileToolBar);
 	actRedo->setIcon(QIcon(":images/editredo.png"));
 	actRedo->setShortcut(tr("Ctrl+Z"));
 	actRedo->setToolTip(tr("redo"));
 	fileToolBar->addAction(actRedo);
-	connect(actRedo, SIGNAL(triggered()), this, SLOT(redo()));
+	connect(actRedo, &QAction::triggered, this, &MainWindow::redo);
 
 //	create a tool bar for visibility
 	createVisibilityToolbar();
 
 //	create the file dialog.
-	m_dlgGeometryFiles = new QFileDialog(this);
+	_dlg_geometry_files = new QFileDialog(this);
 
 
 //////// DOCK WIDGETS
@@ -320,21 +316,19 @@ void MainWindow::init()
 	setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
 
 //	create the scene inspector
-	QDockWidget* pSceneInspectorDock = new QDockWidget(tr("Scene Inspector"), this);
+	auto* pSceneInspectorDock = new QDockWidget(tr("Scene Inspector"), this);
 	pSceneInspectorDock->setFeatures(QDockWidget::NoDockWidgetFeatures);
 	pSceneInspectorDock->setObjectName(tr("scene_inspector_dock"));
-	m_sceneInspector = new SceneInspector(pSceneInspectorDock);
-	m_sceneInspector->setObjectName(tr("scene_inspector"));
-	m_sceneInspector->setScene(m_scene);
+	_scene_inspector = new SceneInspector(pSceneInspectorDock);
+	_scene_inspector->setObjectName(tr("scene_inspector"));
+	_scene_inspector->setScene(_scene);
 
-	pSceneInspectorDock->setWidget(m_sceneInspector);
+	pSceneInspectorDock->setWidget(_scene_inspector);
 	addDockWidget(Qt::RightDockWidgetArea, pSceneInspectorDock);
 
-	connect(m_sceneInspector, SIGNAL(mouseClicked(QMouseEvent*)),
-			this, SLOT(sceneInspectorClicked(QMouseEvent*)));
+	connect(_scene_inspector, &SceneInspector::mouseClicked, this, &MainWindow::sceneInspectorClicked);
 
-	connect(m_sceneInspector, SIGNAL(objectChanged(ISceneObject*)),
-			this, SLOT(refreshActionLog(ISceneObject*)));
+	connect(_scene_inspector, &SceneInspector::objectChanged, this, &MainWindow::refreshActionLog);
 
 	populateMenuBar ();
 	activateModule(new MeshModule(this));
@@ -343,7 +337,7 @@ void MainWindow::init()
 	move(settings().value("mainWindow/pos", QPoint(10, 10)).toPoint());
 	restoreState(settings().value("mainWindow/windowState").toByteArray());
 
-	m_pLog->raise();
+	_p_log->raise();
 	
 //	init the status bar
 	// statusBar()->show();
@@ -363,14 +357,12 @@ void MainWindow::check_options() const
 {
 	const opts::Options& o = GetOptions();
 
-	if(!o.undo.enabled) {
+	if(!o._undo._enabled) {
 		UG_LOG("OPTIONS WARNING: Undo is disabled!\n");
 	}
 }
 
-MainWindow::~MainWindow()
-{
-}
+
 
 QToolBar* MainWindow::createVisibilityToolbar()
 {
@@ -378,12 +370,12 @@ QToolBar* MainWindow::createVisibilityToolbar()
 	visToolBar->setObjectName(tr("visibility_toolbar"));
 
 //	layer for front:
-	QLabel* lblFront = new QLabel(visToolBar);
+	auto* lblFront = new QLabel(visToolBar);
 	lblFront->setText(tr(" front: "));
 	visToolBar->addWidget(lblFront);
 
 //	combo-box for front-render mode.
-	QComboBox* visFront = new QComboBox(visToolBar);
+	auto* visFront = new QComboBox(visToolBar);
 	visToolBar->addWidget(visFront);
 	visFront->addItem(tr("none"));
 	visFront->addItem(tr("wire"));
@@ -391,8 +383,7 @@ QToolBar* MainWindow::createVisibilityToolbar()
 	visFront->addItem(tr("solid + wire"));
 
 //	connect signals and slots
-	connect(visFront, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(frontDrawModeChanged(int)));
+	connect(visFront, &QComboBox::currentIndexChanged, this, &MainWindow::frontDrawModeChanged);
 
 //	init the value
 	visFront->setCurrentIndex(3);
@@ -401,12 +392,12 @@ QToolBar* MainWindow::createVisibilityToolbar()
 	visToolBar->addSeparator();
 
 //	layer for back:
-	QLabel* lblBack = new QLabel(visToolBar);
+	auto* lblBack = new QLabel(visToolBar);
 	lblBack->setText(tr(" back: "));
 	visToolBar->addWidget(lblBack);
 
 //	combo-box for front-render mode.
-	QComboBox* visBack = new QComboBox(visToolBar);
+	auto* visBack = new QComboBox(visToolBar);
 	visToolBar->addWidget(visBack);
 	visBack->addItem(tr("none"));
 	visBack->addItem(tr("wire"));
@@ -414,8 +405,7 @@ QToolBar* MainWindow::createVisibilityToolbar()
 	visBack->addItem(tr("solid + wire"));
 
 //	connect signals and slots
-	connect(visBack, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(backDrawModeChanged(int)));
+	connect(visBack, &QComboBox::currentIndexChanged, this, &MainWindow::backDrawModeChanged);
 
 //	init the value
 	visBack->setCurrentIndex(3);
@@ -434,49 +424,44 @@ QToolBar* MainWindow::createVisibilityToolbar()
 	m_elementModeListIndex = 3;
 
 //	connect signals and slots
-	connect(elemMode, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(elementDrawModeChanged(int)));
+	connect(elemMode, SIGNAL(currentIndexChanged(int)), this, &MainWindow::elementDrawModeChanged(int)));
 */
 	visToolBar->addSeparator();
-	m_tbRenderVrts = new QToolButton(visToolBar);
-	m_tbRenderVrts->setIcon(QIcon(":images/icon_render_vertices.png"));
-	m_tbRenderVrts->setCheckable(true);
-	m_tbRenderVrts->setChecked(true);
-	m_tbRenderVrts->setAutoExclusive(false);
-	m_tbRenderVrts->setToolTip(tr("render vertices"));
-	visToolBar->addWidget(m_tbRenderVrts);
-	connect(m_tbRenderVrts, SIGNAL(toggled(bool)),
-			this, SLOT(elementDrawModeChanged()));
+	_tb_render_vrts = new QToolButton(visToolBar);
+	_tb_render_vrts->setIcon(QIcon(":images/icon_render_vertices.png"));
+	_tb_render_vrts->setCheckable(true);
+	_tb_render_vrts->setChecked(true);
+	_tb_render_vrts->setAutoExclusive(false);
+	_tb_render_vrts->setToolTip(tr("render vertices"));
+	visToolBar->addWidget(_tb_render_vrts);
+	connect(_tb_render_vrts, &QToolButton::toggled, this, &MainWindow::elementDrawModeChanged);
 
-	m_tbRenderEdges = new QToolButton(visToolBar);
-	m_tbRenderEdges->setIcon(QIcon(":images/icon_render_edges.png"));
-	m_tbRenderEdges->setCheckable(true);
-	m_tbRenderEdges->setChecked(true);
-	m_tbRenderEdges->setAutoExclusive(false);
-	m_tbRenderEdges->setToolTip(tr("render edges"));
-	visToolBar->addWidget(m_tbRenderEdges);
-	connect(m_tbRenderEdges, SIGNAL(toggled(bool)),
-			this, SLOT(elementDrawModeChanged()));
+	_tb_render_edges = new QToolButton(visToolBar);
+	_tb_render_edges->setIcon(QIcon(":images/icon_render_edges.png"));
+	_tb_render_edges->setCheckable(true);
+	_tb_render_edges->setChecked(true);
+	_tb_render_edges->setAutoExclusive(false);
+	_tb_render_edges->setToolTip(tr("render edges"));
+	visToolBar->addWidget(_tb_render_edges);
+	connect(_tb_render_edges, &QToolButton::toggled, this, &MainWindow::elementDrawModeChanged);
 
-	m_tbRenderFaces = new QToolButton(visToolBar);
-	m_tbRenderFaces->setIcon(QIcon(":images/icon_render_faces.png"));
-	m_tbRenderFaces->setCheckable(true);
-	m_tbRenderFaces->setChecked(true);
-	m_tbRenderFaces->setAutoExclusive(false);
-	m_tbRenderFaces->setToolTip(tr("render faces"));
-	visToolBar->addWidget(m_tbRenderFaces);
-	connect(m_tbRenderFaces, SIGNAL(toggled(bool)),
-			this, SLOT(elementDrawModeChanged()));
+	_tb_render_faces = new QToolButton(visToolBar);
+	_tb_render_faces->setIcon(QIcon(":images/icon_render_faces.png"));
+	_tb_render_faces->setCheckable(true);
+	_tb_render_faces->setChecked(true);
+	_tb_render_faces->setAutoExclusive(false);
+	_tb_render_faces->setToolTip(tr("render faces"));
+	visToolBar->addWidget(_tb_render_faces);
+	connect(_tb_render_faces, &QToolButton::toggled, this, &MainWindow::elementDrawModeChanged);
 
-	m_tbRenderVols = new QToolButton(visToolBar);
-	m_tbRenderVols->setIcon(QIcon(":images/icon_render_volumes.png"));
-	m_tbRenderVols->setCheckable(true);
-	m_tbRenderVols->setChecked(true);
-	m_tbRenderVols->setAutoExclusive(false);
-	m_tbRenderVols->setToolTip(tr("render volumes"));
-	visToolBar->addWidget(m_tbRenderVols);
-	connect(m_tbRenderVols, SIGNAL(toggled(bool)),
-			this, SLOT(elementDrawModeChanged()));
+	_tb_render_vols = new QToolButton(visToolBar);
+	_tb_render_vols->setIcon(QIcon(":images/icon_render_volumes.png"));
+	_tb_render_vols->setCheckable(true);
+	_tb_render_vols->setChecked(true);
+	_tb_render_vols->setAutoExclusive(false);
+	_tb_render_vols->setToolTip(tr("render volumes"));
+	visToolBar->addWidget(_tb_render_vols);
+	connect(_tb_render_vols, &QToolButton::toggled, this, &MainWindow::elementDrawModeChanged);
 
 
 //	add a combo-box for the selection elements
@@ -490,67 +475,61 @@ QToolBar* MainWindow::createVisibilityToolbar()
 	selElems->addItem(tr("select volumes"));
 
 //	connect signals and slots
-	connect(selElems, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(selectionElementChanged(int)));
+	connect(selElems, &QComboBox::currentIndexChanged, this, &MainWindow::selectionElementChanged(int)));
 
 //	init the value
 	selElems->setCurrentIndex(0);
 */
 
 	visToolBar->addSeparator();
-	m_tbSelVrts = new QToolButton(visToolBar);
-	m_tbSelVrts->setIcon(QIcon(":images/icon_vertices.png"));
-	m_tbSelVrts->setCheckable(true);
-	m_tbSelVrts->setAutoExclusive(true);
-	m_tbSelVrts->setToolTip(tr("select vertices"));
-	visToolBar->addWidget(m_tbSelVrts);
-	connect(m_tbSelVrts, SIGNAL(toggled(bool)),
-			this, SLOT(selectionElementChanged(bool)));
+	_tb_sel_vrts = new QToolButton(visToolBar);
+	_tb_sel_vrts->setIcon(QIcon(":images/icon_vertices.png"));
+	_tb_sel_vrts->setCheckable(true);
+	_tb_sel_vrts->setAutoExclusive(true);
+	_tb_sel_vrts->setToolTip(tr("select vertices"));
+	visToolBar->addWidget(_tb_sel_vrts);
+	connect(_tb_sel_vrts, &QToolButton::toggled, this, static_cast<void (MainWindow::*)(int)>(&MainWindow::selectionElementChanged));
 
-	m_tbSelEdges = new QToolButton(visToolBar);
-	m_tbSelEdges->setIcon(QIcon(":images/icon_edges.png"));
-	m_tbSelEdges->setCheckable(true);
-	m_tbSelEdges->setAutoExclusive(true);
-	m_tbSelEdges->setToolTip(tr("select edges"));
-	visToolBar->addWidget(m_tbSelEdges);
-	connect(m_tbSelEdges, SIGNAL(toggled(bool)),
-			this, SLOT(selectionElementChanged(bool)));
+	_tb_sel_edges = new QToolButton(visToolBar);
+	_tb_sel_edges->setIcon(QIcon(":images/icon_edges.png"));
+	_tb_sel_edges->setCheckable(true);
+	_tb_sel_edges->setAutoExclusive(true);
+	_tb_sel_edges->setToolTip(tr("select edges"));
+	visToolBar->addWidget(_tb_sel_edges);
+	connect(_tb_sel_edges, &QToolButton::toggled, this, static_cast<void (MainWindow::*)(int)>(&MainWindow::selectionElementChanged));
 
-	m_tbSelFaces = new QToolButton(visToolBar);
-	m_tbSelFaces->setIcon(QIcon(":images/icon_faces.png"));
-	m_tbSelFaces->setCheckable(true);
-	m_tbSelFaces->setAutoExclusive(true);
-	m_tbSelFaces->setToolTip(tr("select faces"));
-	visToolBar->addWidget(m_tbSelFaces);
-	connect(m_tbSelFaces, SIGNAL(toggled(bool)),
-			this, SLOT(selectionElementChanged(bool)));
+	_tb_sel_faces = new QToolButton(visToolBar);
+	_tb_sel_faces->setIcon(QIcon(":images/icon_faces.png"));
+	_tb_sel_faces->setCheckable(true);
+	_tb_sel_faces->setAutoExclusive(true);
+	_tb_sel_faces->setToolTip(tr("select faces"));
+	visToolBar->addWidget(_tb_sel_faces);
+	connect(_tb_sel_faces, &QToolButton::toggled, this, static_cast<void (MainWindow::*)(int)>(&MainWindow::selectionElementChanged));
 
-	m_tbSelVols = new QToolButton(visToolBar);
-	m_tbSelVols->setIcon(QIcon(":images/icon_volumes.png"));
-	m_tbSelVols->setCheckable(true);
-	m_tbSelVols->setAutoExclusive(true);
-	m_tbSelVols->setToolTip(tr("select volumes"));
-	visToolBar->addWidget(m_tbSelVols);
-	connect(m_tbSelVols, SIGNAL(toggled(bool)),
-			this, SLOT(selectionElementChanged(bool)));
+	_tb_sel_vols = new QToolButton(visToolBar);
+	_tb_sel_vols->setIcon(QIcon(":images/icon_volumes.png"));
+	_tb_sel_vols->setCheckable(true);
+	_tb_sel_vols->setAutoExclusive(true);
+	_tb_sel_vols->setToolTip(tr("select volumes"));
+	visToolBar->addWidget(_tb_sel_vols);
+	connect(_tb_sel_vols, &QToolButton::toggled, this,static_cast<void (MainWindow::*)(int)>(&MainWindow::selectionElementChanged));
 
-	if(!m_tbSelVrts->isChecked())
-		m_tbSelVrts->toggle();
+	if(!_tb_sel_vrts->isChecked())
+		_tb_sel_vrts->toggle();
 
 //	add a combo-box for the selection modes
 	visToolBar->addSeparator();
-	m_selModes = new QComboBox(visToolBar);
-	visToolBar->addWidget(m_selModes);
-	m_selModes->addItem(QIcon(":images/icon_click_select.png"), tr(""));
-	m_selModes->addItem(QIcon(":images/icon_box_select_cut.png"), tr(""));
-	m_selModes->addItem(QIcon(":images/icon_box_select.png"), tr(""));
+	_sel_modes = new QComboBox(visToolBar);
+	visToolBar->addWidget(_sel_modes);
+	_sel_modes->addItem(QIcon(":images/icon_click_select.png"), tr(""));
+	_sel_modes->addItem(QIcon(":images/icon_box_select_cut.png"), tr(""));
+	_sel_modes->addItem(QIcon(":images/icon_box_select.png"), tr(""));
 
 //	connect signals and slots
-	connect(m_selModes, SIGNAL(currentIndexChanged(int)),
-			this, SLOT(selectionModeChanged(int)));
+	connect(_sel_modes, &QComboBox::currentIndexChanged, this, &MainWindow::selectionModeChanged);
 
 //	init the value
-	m_selModes->setCurrentIndex(0);
+	_sel_modes->setCurrentIndex(0);
 
 
 
@@ -558,69 +537,65 @@ QToolBar* MainWindow::createVisibilityToolbar()
 	visToolBar->addSeparator();
 
 //	layer for color:
-	QLabel* lblColor = new QLabel(visToolBar);
+	auto* lblColor = new QLabel(visToolBar);
 	lblColor->setText(tr(" bg-color: "));
 	visToolBar->addWidget(lblColor);
 
-	m_bgColor = new ColorWidget(visToolBar);
-	visToolBar->addWidget(m_bgColor);
-	connect(m_bgColor, SIGNAL(colorChanged(QColor)),
-			this, SLOT(backgroundColorChanged(QColor)));
+	_bg_color = new ColorWidget(visToolBar);
+	visToolBar->addWidget(_bg_color);
+	connect(_bg_color, &ColorWidget::colorChanged, this, &MainWindow::backgroundColorChanged);
 
-	m_bgColor->setFixedWidth(24);
-	m_bgColor->setFixedHeight(24);
+	_bg_color->setFixedWidth(24);
+	_bg_color->setFixedHeight(24);
 
 	QString strDefColor("#666666");
 	if(settings().contains("bg-color")){
 		QVariant value = settings().value("bg-color", strDefColor);
-		m_bgColor->setColor(QColor(value.toString()));
+		_bg_color->setColor(QColor(value.toString()));
 	}
 	else
-		m_bgColor->setColor(QColor(strDefColor));
+		_bg_color->setColor(QColor(strDefColor));
 
 
 	//	world scale
 	visToolBar->addSeparator();
 	visToolBar->addWidget(new QLabel(tr(" View-scale")));
 	visToolBar->addWidget(new QLabel(tr(" x:")));
-	m_viewScaleX = new TruncatedDoubleSpinBox(visToolBar);
-	m_viewScaleX->setValue(1);
-	m_viewScaleX->setSingleStep(0.1);
-	m_viewScaleX->setMinimum(-1.e6);
-	m_viewScaleX->setMaximum(1.e6);
-	m_viewScaleX->setFixedWidth(32);
-	connect(m_viewScaleX, SIGNAL(valueChanged(double)),
-	        this, SLOT(viewScaleXChanged(double)));
-	visToolBar->addWidget(m_viewScaleX);
+	_view_scale_x = new TruncatedDoubleSpinBox(visToolBar);
+	_view_scale_x->setValue(1);
+	_view_scale_x->setSingleStep(0.1);
+	_view_scale_x->setMinimum(-1.e6);
+	_view_scale_x->setMaximum(1.e6);
+	_view_scale_x->setFixedWidth(32);
+	connect(_view_scale_x, &TruncatedDoubleSpinBox::valueChanged, this, &MainWindow::viewScaleXChanged);
+	visToolBar->addWidget(_view_scale_x);
 
 	visToolBar->addWidget(new QLabel(tr(" y:")));
-	m_viewScaleY = new TruncatedDoubleSpinBox(visToolBar);
-	m_viewScaleY->setValue(1);
-	m_viewScaleY->setSingleStep(0.1);
-	m_viewScaleY->setMinimum(-1.e6);
-	m_viewScaleY->setMaximum(1.e6);
-	m_viewScaleY->setFixedWidth(32);
-	connect(m_viewScaleY, SIGNAL(valueChanged(double)),
-	        this, SLOT(viewScaleYChanged(double)));
-	visToolBar->addWidget(m_viewScaleY);
+	_view_scale_y = new TruncatedDoubleSpinBox(visToolBar);
+	_view_scale_y->setValue(1);
+	_view_scale_y->setSingleStep(0.1);
+	_view_scale_y->setMinimum(-1.e6);
+	_view_scale_y->setMaximum(1.e6);
+	_view_scale_y->setFixedWidth(32);
+	connect(_view_scale_y, &TruncatedDoubleSpinBox::valueChanged, this, &MainWindow::viewScaleYChanged);
+	visToolBar->addWidget(_view_scale_y);
 
 	visToolBar->addWidget(new QLabel(tr(" z:")));
-	m_viewScaleZ = new TruncatedDoubleSpinBox(visToolBar);
-	m_viewScaleZ->setValue(1);
-	m_viewScaleZ->setSingleStep(0.1);
-	m_viewScaleZ->setMinimum(-1.e6);
-	m_viewScaleZ->setMaximum(1.e6);
-	m_viewScaleZ->setFixedWidth(32);
-	connect(m_viewScaleZ, SIGNAL(valueChanged(double)),
-	        this, SLOT(viewScaleZChanged(double)));
-	visToolBar->addWidget(m_viewScaleZ);
+	_view_scale_z = new TruncatedDoubleSpinBox(visToolBar);
+	_view_scale_z->setValue(1);
+	_view_scale_z->setSingleStep(0.1);
+	_view_scale_z->setMinimum(-1.e6);
+	_view_scale_z->setMaximum(1.e6);
+	_view_scale_z->setFixedWidth(32);
+	connect(_view_scale_z, &TruncatedDoubleSpinBox::valueChanged, this, &MainWindow::viewScaleZChanged);
+	visToolBar->addWidget(_view_scale_z);
 
 	return visToolBar;
 }
 
 uint MainWindow::getLGElementMode()
 {
-	switch(m_elementModeListIndex){
+	switch(_element_mode_list_index){
 		case 0: return LGEM_VERTEX;
 		case 1: return LGEM_EDGE;
 		case 2: return LGEM_FACE;
@@ -638,9 +613,9 @@ bool MainWindow::load_grid_from_file(const char* filename)
 	//	add it to the scene
 		if(pObj)
 		{
-			const bool bFirstLoad = m_scene->num_objects() == 0;
+			const bool bFirstLoad = _scene->num_objects() == 0;
 			pObj->set_element_mode(getLGElementMode());
-			int index = m_scene->add_object(pObj);
+			int index = _scene->add_object(pObj);
 			if(index != -1)
 			{
 				setActiveObject(index);
@@ -648,8 +623,8 @@ bool MainWindow::load_grid_from_file(const char* filename)
 			//	if this is the first object loaded, we will focus it.
 				if(bFirstLoad)
 				{
-					ug::Sphere3 s = pObj->get_bounding_sphere();
-					m_pView->fly_to(cam::vector3(s.get_center().x(),
+					Sphere3 s = pObj->get_bounding_sphere();
+					_p_view->fly_to(cam::Vector3(s.get_center().x(),
 													s.get_center().y(),
 													s.get_center().z()),
 									s.get_radius() * 3.f);
@@ -691,7 +666,7 @@ LGObject* MainWindow::create_empty_object(const char* name, SceneObjectType sot)
     pObj->set_element_mode(getLGElementMode());
 
 //	add it to the scene
-	int index = m_scene->add_object(pObj);
+	int index = _scene->add_object(pObj);
 	if(index != -1)
 		setActiveObject(index);
 
@@ -701,7 +676,7 @@ LGObject* MainWindow::create_empty_object(const char* name, SceneObjectType sot)
 
 bool MainWindow::save_object_to_file(ISceneObject* obj, const char* filename)
 {
-	LGObject* lgobj = dynamic_cast<LGObject*>(obj);
+	auto* lgobj = dynamic_cast<LGObject*>(obj);
 	if(lgobj){
 		try{
 			lgobj->set_save_required(false);
@@ -796,9 +771,9 @@ int MainWindow::loadIntoMesh()
 	if(pObj)
 	{
 		PerformLoadPostprocessing(pObj);
-		const bool bFirstLoad = m_scene->num_objects() == 0;
+		const bool bFirstLoad = _scene->num_objects() == 0;
 		pObj->set_element_mode(getLGElementMode());
-		int index = m_scene->add_object(pObj);
+		int index = _scene->add_object(pObj);
 		if(index != -1)
 		{
 			setActiveObject(index);
@@ -806,8 +781,8 @@ int MainWindow::loadIntoMesh()
 		//	if this is the first object loaded, we will focus it.
 			if(bFirstLoad)
 			{
-				ug::Sphere3 s = pObj->get_bounding_sphere();
-				m_pView->fly_to(cam::vector3(s.get_center().x(),
+				Sphere3 s = pObj->get_bounding_sphere();
+				_p_view->fly_to(cam::Vector3(s.get_center().x(),
 												s.get_center().y(),
 												s.get_center().z()),
 								s.get_radius() * 3.f);
@@ -849,7 +824,7 @@ bool MainWindow::reloadAllGeometries()
 bool MainWindow::saveToFile()
 {
 	bool saveFailed = false;
-	ISceneObject* obj = m_sceneInspector->getActiveObject();
+	ISceneObject* obj = _scene_inspector->getActiveObject();
 	if(obj)
 	{
 		QString path = settings().value("file-path", ".").toString();
@@ -870,7 +845,7 @@ bool MainWindow::saveToFile()
 			else{
 				obj->set_name(QFileInfo(fileName).baseName().toLocal8Bit().constData());
 				obj->visuals_changed();
-				LGObject* lgobj = dynamic_cast<LGObject*>(obj);
+				auto* lgobj = dynamic_cast<LGObject*>(obj);
 				if(lgobj)
 					lgobj->set_save_required(false);
 			}
@@ -900,7 +875,7 @@ bool MainWindow::exportToUG3()
 {
 	bool saveFailed = false;
 
-	LGObject* obj = dynamic_cast<LGObject*>(m_sceneInspector->getActiveObject());
+	auto obj = dynamic_cast<LGObject*>(_scene_inspector->getActiveObject());
 	if(obj)
 	{
 
@@ -977,16 +952,16 @@ bool MainWindow::exportToUG3()
 void MainWindow::eraseActiveSceneObject()
 {
 //	get the active object from the scene-inspector
-	ISceneObject* obj = m_sceneInspector->getActiveObject();
+	ISceneObject* obj = _scene_inspector->getActiveObject();
 	if(obj)
 	{
 	//	get the objects index and erase it from the scene
-		int index = m_scene->get_object_index(obj);
+		int index = _scene->get_object_index(obj);
 		if(index >= 0)
 		{
 			bool performErase = true;
 
-			LGObject* lgobj = dynamic_cast<LGObject*>(obj);
+			auto lgobj = dynamic_cast<LGObject*>(obj);
 
 			if(!lgobj || lgobj->save_required()){
 				QString msg = QString("Erase '").append(obj->name()).append("'?\n").
@@ -998,13 +973,13 @@ void MainWindow::eraseActiveSceneObject()
 			}
 
 			if(performErase){
-				if(lgobj == m_actionLogSender)
-					m_actionLogSender = nullptr;
+				if(lgobj == _action_log_sender)
+					_action_log_sender = nullptr;
 
 			//	perform erase
-				m_scene->erase_object(index);
+				_scene->erase_object(index);
 			//	select the next object
-				if(index < m_scene->num_objects())
+				if(index < _scene->num_objects())
 					setActiveObject(index);
 				else if(index > 0)
 					setActiveObject(index - 1);
@@ -1015,14 +990,14 @@ void MainWindow::eraseActiveSceneObject()
 
 LGObject* MainWindow::getActiveObject()
 {
-	return dynamic_cast<LGObject*>(m_sceneInspector->getActiveObject());
+	return dynamic_cast<LGObject*>(_scene_inspector->getActiveObject());
 }
 
 void MainWindow::setActiveObject(int index)
 {
-	m_sceneInspector->setActiveObject(index);
-	if(getActiveObject() != m_activeObject){
-		m_activeObject = getActiveObject();
+	_scene_inspector->setActiveObject(index);
+	if(getActiveObject() != _active_object){
+		_active_object = getActiveObject();
 		emit activeObjectChanged();
 	}
 }
@@ -1111,71 +1086,61 @@ void MainWindow::showContact()
 
 void MainWindow::frontDrawModeChanged(int newMode)
 {
-	m_scene->set_draw_mode_front(newMode);
+	_scene->set_draw_mode_front(newMode);
 }
 
 void MainWindow::backDrawModeChanged(int newMode)
 {
-	m_scene->set_draw_mode_back(newMode);
+	_scene->set_draw_mode_back(newMode);
 }
 
 void MainWindow::backgroundColorChanged(const QColor& color)
 {
-	m_pView->set_background_color(color);
+	_p_view->set_background_color(color);
 	settings().setValue("bg-color", color.name());
 }
 
 void MainWindow::selectionElementChanged(int newElement)
 {
-	m_selectionElement = newElement;
+	_selection_element = newElement;
 }
 
 void MainWindow::selectionElementChanged(bool)
 {
-	if(m_tbSelVrts->isChecked())
-		m_selectionElement = 0;
-	else if(m_tbSelEdges->isChecked())
-		m_selectionElement = 1;
-	else if(m_tbSelFaces->isChecked())
-		m_selectionElement = 2;
-	else if(m_tbSelVols->isChecked())
-		m_selectionElement = 3;
+	if(_tb_sel_vrts->isChecked())
+		_selection_element = 0;
+	else if(_tb_sel_edges->isChecked())
+		_selection_element = 1;
+	else if(_tb_sel_faces->isChecked())
+		_selection_element = 2;
+	else if(_tb_sel_vols->isChecked())
+		_selection_element = 3;
 }
 
 void MainWindow::selectionModeChanged(int newMode)
 {
-	m_selectionMode = newMode;
+	_selection_mode = newMode;
 }
 
 void MainWindow::elementDrawModeChanged()
 {
-/*
-	m_elementModeListIndex = newMode;
-//	update rendering mode in all elements.
-//todo: allow render mode on per-object basis.
-	uint lgElemMode = getLGElementMode();
-	for(int i = 0; i < m_scene->num_objects(); ++i){
-		LGObject* pObj = m_scene->get_object(i);
-		pObj->set_element_mode(lgElemMode);
-		pObj->visuals_changed();
-	}
-*/
 
-	m_scene->set_element_draw_mode(m_tbRenderVrts->isChecked(), m_tbRenderEdges->isChecked(),
-								   m_tbRenderFaces->isChecked(), m_tbRenderVols->isChecked());
-	m_scene->update_visuals();
+	_scene->set_element_draw_mode(_tb_render_vrts->isChecked(), _tb_render_edges->isChecked(),
+								   _tb_render_faces->isChecked(), _tb_render_vols->isChecked());
+	_scene->update_visuals();
 }
 
 ////////////////////////////////////////////////////////////////////////
 //	events
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-	if(m_scene->num_objects() == 0)
+	if(_scene->num_objects() == 0)
 		event->accept();
 	else{
-		QMessageBox::StandardButton reply;
-		reply = QMessageBox::question(this, "Quit?", "Quit? Unsaved progress will be lost!",
-									  QMessageBox::Yes | QMessageBox::No);
+		QMessageBox::StandardButton reply = QMessageBox::question(this,
+			"Quit?", "Quit? Unsaved progress will be lost!",
+			QMessageBox::Yes | QMessageBox::No);
+
 		if (reply == QMessageBox::Yes){
 			QMainWindow::closeEvent(event);
 			event->accept();
@@ -1204,8 +1169,7 @@ void MainWindow::dropEvent(QDropEvent* event)
 	if (urls.isEmpty())
 	   return;
 
-	for(QList<QUrl>::iterator iter = urls.begin();
-		iter != urls.end(); ++iter)
+	for(auto iter = urls.begin(); iter != urls.end(); ++iter)
 	{
 		settings().setValue("file-path", QFileInfo((*iter).toLocalFile()).absolutePath());
 		if(!load_grid_from_file((*iter).toLocalFile().toLatin1().constData()))
@@ -1221,14 +1185,14 @@ void MainWindow::dropEvent(QDropEvent* event)
 
 void MainWindow::sceneInspectorClicked(QMouseEvent* event)
 {
-	if(getActiveObject() != m_activeObject){
-		m_activeObject = getActiveObject();
+	if(getActiveObject() != _active_object){
+		_active_object = getActiveObject();
 		emit activeObjectChanged();
 	}
 
 	if(event->button() == Qt::RightButton){
-		if(m_sceneInspectorRClickMenu)
-			m_sceneInspectorRClickMenu->exec(QCursor::pos());
+		if(_scene_inspector_r_click_menu)
+			_scene_inspector_r_click_menu->exec(QCursor::pos());
 	}
 }
 
@@ -1261,47 +1225,47 @@ void MainWindow::quit()
 void MainWindow::
 viewScaleXChanged(double value)
 {
-	vector3 ws = m_pView->camera().world_scale();
+	vector3 ws = _p_view->camera().world_scale();
 	ws.x() = value;
-	m_pView->camera().set_world_scale(ws);
-	m_scene->update_visuals();
+	_p_view->camera().set_world_scale(ws);
+	_scene->update_visuals();
 }
 
 void MainWindow::
 viewScaleYChanged(double value)
 {
-	vector3 ws = m_pView->camera().world_scale();
+	vector3 ws = _p_view->camera().world_scale();
 	ws.y() = value;
-	m_pView->camera().set_world_scale(ws);
-	m_scene->update_visuals();
+	_p_view->camera().set_world_scale(ws);
+	_scene->update_visuals();
 }
 
 void MainWindow::
 viewScaleZChanged(double value)
 {
-	vector3 ws = m_pView->camera().world_scale();
+	vector3 ws = _p_view->camera().world_scale();
 	ws.z() = value;
-	m_pView->camera().set_world_scale(ws);
-	m_scene->update_visuals();
+	_p_view->camera().set_world_scale(ws);
+	_scene->update_visuals();
 }
 
 
 void MainWindow::
 refreshOptions()
 {
-	m_optWidget->populate(&GetOptions(), "options");
+	_opt_widget->populate(&GetOptions(), "options");
 }
 
 void MainWindow::
-optionsChanged ()
+optionsChanged()
 {
-	m_optWidget->retrieve_values(GetOptions());
+	_opt_widget->retrieve_values(GetOptions());
 	saveOptions();
 }
 
 void
 MainWindow::
-saveOptions ()
+saveOptions()
 {
 	string filename = app::UserDataDir().path().toStdString().
 			append("/config.xml");
@@ -1313,7 +1277,7 @@ saveOptions ()
 }
 
 void MainWindow::
-loadOptions ()
+loadOptions()
 {
 	QString userOptsName = app::UserDataDir().path().append("/config.xml");
 	if(!FileExists(userOptsName)){
@@ -1332,53 +1296,50 @@ loadOptions ()
 
 
 void MainWindow::
-populateMenuBar ()
+populateMenuBar()
 {
 	QMenuBar* bar = menuBar();
 	bar->clear();
-	bar->addMenu(m_fileMenu);
+	bar->addMenu(_menu_file);
 
-	for(vector<QMenu*>::iterator i = m_moduleMenus.begin();
-		i != m_moduleMenus.end(); ++i)
+	for(auto i = _module_menus.begin(); i != _module_menus.end(); ++i)
 	{
 		bar->addMenu(*i);
 	}
 
-	bar->addMenu(m_helpMenu);
+	bar->addMenu(_menu_help);
 }
 
 void MainWindow::
-activateModule (IModule* mod)
+activateModule(IModule* mod)
 {
-	using dock_list_t = IModule::dock_list_t;
 
-	if(m_activeModule == mod)
+	if(_active_module == mod)
 		return;
 
-	if(m_activeModule){
+	if(_active_module){
 	//	remove old modules dock widgets
-		for(dock_list_t::iterator i = m_moduleDockWidgets.begin();
-			i != m_moduleDockWidgets.end(); ++i)
+		for(auto i = _module_dock_widgets.begin();
+		    i != _module_dock_widgets.end(); ++i)
 		{
 			removeDockWidget(i->second);
 		}
 
-		m_activeModule->deactivate();
+		_active_module->deactivate();
 	}
 	
-	m_activeModule = mod;
+	_active_module = mod;
 
-	if(m_activeModule){
-		m_activeModule->activate (m_sceneInspector, m_scene);
-		m_sceneInspectorRClickMenu = mod->getSceneInspectorMenu ();
-		m_moduleDockWidgets = mod->getDockWidgets ();
-		m_moduleMenus = mod->getMenus ();
+	if(_active_module){
+		_active_module->activate (_scene_inspector, _scene);
+		_scene_inspector_r_click_menu = mod->getSceneInspectorMenu ();
+		_module_dock_widgets = mod->getDockWidgets ();
+		_module_menus = mod->getMenus ();
 
-		populateMenuBar ();
+		populateMenuBar();
 
 	//	add dock widgets
-		for(dock_list_t::iterator i = m_moduleDockWidgets.begin();
-			i != m_moduleDockWidgets.end(); ++i)
+		for(auto i = _module_dock_widgets.begin(); i != _module_dock_widgets.end(); ++i)
 		{
 			addDockWidget(i->first, i->second);
 		}
@@ -1389,20 +1350,16 @@ activateModule (IModule* mod)
 void MainWindow::
 refreshActionLog(ISceneObject* iobj)
 {
-	LGObject* obj = dynamic_cast<LGObject*>(iobj);
+	auto* obj = dynamic_cast<LGObject*>(iobj);
 	if(obj){
-		m_actionLog->setPlainText(obj->action_log());
-		if(m_actionLogSender){
-			disconnect(m_actionLogSender, SIGNAL(actionLogChanged(const QString&)),
-					   this, SLOT(actionLogChanged(const QString&)));
-			disconnect(m_actionLogSender, SIGNAL(actionLogCleared()),
-					   this, SLOT(actionLogCleared()));
+		_action_log->setPlainText(obj->action_log());
+		if(_action_log_sender){
+			disconnect(_action_log_sender, &LGObject::actionLogChanged, this, &MainWindow::actionLogChanged);
+			disconnect(_action_log_sender, &LGObject::actionLogCleared, this, &MainWindow::actionLogCleared);
 		}
-		m_actionLogSender = obj;
-		connect(obj, SIGNAL(actionLogChanged(const QString&)),
-				this, SLOT(actionLogChanged(const QString&)));
-		connect(obj, SIGNAL(actionLogCleared()),
-				this, SLOT(actionLogCleared()));
+		_action_log_sender = obj;
+		connect(obj, &LGObject::actionLogChanged, this, &MainWindow::actionLogChanged);
+		connect(obj, &LGObject::actionLogCleared, this, &MainWindow::actionLogCleared);
 	}
 }
 
@@ -1410,17 +1367,11 @@ refreshActionLog(ISceneObject* iobj)
 void MainWindow::
 actionLogChanged(const QString& newContent)
 {
-	LGObject* obj = dynamic_cast<LGObject*>(sender());
-	if(obj == m_actionLogSender){
-		// if(newContent.endsWith('\n')){
-		// 	m_actionLog->moveCursor (QTextCursor::End);
-		// 	m_actionLog->insertPlainText (newContent.left(newContent.size() - 1));
-		// 	m_actionLog->moveCursor (QTextCursor::End);
-		// }
-		// else{
-			m_actionLog->moveCursor (QTextCursor::End);
-			m_actionLog->insertPlainText (newContent);
-			m_actionLog->moveCursor (QTextCursor::End);
+	auto obj = dynamic_cast<LGObject*>(sender());
+	if(obj == _action_log_sender){
+			_action_log->moveCursor (QTextCursor::End);
+			_action_log->insertPlainText (newContent);
+			_action_log->moveCursor (QTextCursor::End);
 		// }
 	}
 }
@@ -1428,10 +1379,10 @@ actionLogChanged(const QString& newContent)
 void MainWindow::
 actionLogCleared()
 {
-	m_actionLog->setPlainText("");
+	_action_log->setPlainText("");
 }
 
 const char* MainWindow::log_text()
 {
-	return m_pLogText->toPlainText().toLocal8Bit().constData();
+	return _p_log_text->toPlainText().toLocal8Bit().constData();
 }

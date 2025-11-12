@@ -28,125 +28,85 @@
 #include <QtWidgets>
 #include <vector>
 #include "common/log.h"
-#include "tool_dialog.h"
-#include "tool_manager.h"
-#include "app.h"
-#include "widgets/matrix_widget.h"
-#include "../widgets/double_slider.h"
-#include "../widgets/truncated_double_spin_box.h"
+#include "tool_dialog.hpp"
+#include "tool_manager.hpp"
+#include "app.hpp"
+#include "widgets/matrix_widget.hpp"
+#include "../widgets/double_slider.hpp"
+#include "../widgets/truncated_double_spin_box.hpp"
 
 using namespace std;
 
-ToolWidget::ToolWidget(const QString& name, QWidget* parent,
-					ITool* tool, uint buttons) :
+
+
+ToolWidget::ToolWidget(const QString& name, QWidget* parent, ITool* tool, uint buttons) :
 	QFrame(parent),
-	m_currentFormLayout(nullptr)
-{
+	_current_form_layout(nullptr) {
+	_tool = tool;
 
-	m_tool = tool;
-	//this->setWindowTitle(name);
+	setFrameStyle(StyledPanel | Sunken);
 
-	setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
-
-	QVBoxLayout* baseLayout = new QVBoxLayout(this);
+	auto baseLayout = new QVBoxLayout(this);
 	baseLayout->setSpacing(2);
-	//baseLayout->setSpacing(10);
 
-	QVBoxLayout* vBoxLayout = new QVBoxLayout();
+	auto* vBoxLayout = new QVBoxLayout();
 	vBoxLayout->setSpacing(2);
-	//vBoxLayout->setSpacing(10);
-	m_mainLayout = vBoxLayout;
+
+	_main_layout = vBoxLayout;
 	baseLayout->addLayout(vBoxLayout);
-	m_signalMapper = new QSignalMapper(this);
-	connect(m_signalMapper, SIGNAL(mapped(int)),
-			this, SLOT(buttonClicked(int)));
+
+	//æ connect(m_signalMapper, SIGNAL(mapped(int)), this, &ToolWidget::buttonClicked); // args: int
+
 
 	if(buttons & IDB_APPLY){
-		QPushButton* btn = new QPushButton(tr("Apply"), this);
+		auto btn = new QPushButton(tr("Apply"), this);
 		baseLayout->addWidget(btn, 0, Qt::AlignLeft);
-		m_signalMapper->setMapping(btn, IDB_APPLY);
-		connect(btn, SIGNAL(clicked()), m_signalMapper, SLOT(map()));
+
+		connect(btn, &QPushButton::clicked, this, [this]() {
+			buttonClicked(IDB_APPLY);
+		});
+
+		//connect(m_valueSignalMapper, SIGNAL(mapped(int)),
+		//		this, SIGNAL(valueChanged(int)));
+
 	}
-
-	m_valueSignalMapper = new QSignalMapper(this);
-	connect(m_valueSignalMapper, SIGNAL(mapped(int)),
-			this, SIGNAL(valueChanged(int)));
-
-	// QFrame* sep = new QFrame(this);
-	// sep->setFrameShape(QFrame::HLine);
-	// sep->setFrameShadow(QFrame::Sunken);
-	// baseLayout->addWidget(sep);
-
-/*
-	if(buttons & IDB_PREVIEW){
-		QPushButton* btn = new QPushButton(tr("Preview"), this);
-		vBoxLayout->addWidget(btn, 0, Qt::AlignRight);
-		m_signalMapper->setMapping(btn, IDB_PREVIEW);
-		connect(btn, SIGNAL(clicked()), m_signalMapper, SLOT(map()));
-	}
-
-	if(buttons & IDB_OK){
-		QPushButton* btn = new QPushButton(tr("Ok"), this);
-		vBoxLayout->addWidget(btn, 0, Qt::AlignRight);
-		m_signalMapper->setMapping(btn, IDB_OK);
-		connect(btn, SIGNAL(clicked()), m_signalMapper, SLOT(map()));
-	}
-
-	if(buttons & IDB_CLOSE){
-		QPushButton* btn = new QPushButton(tr("Close"), this);
-		vBoxLayout->addWidget(btn, 0, Qt::AlignRight);
-		m_signalMapper->setMapping(btn, IDB_CLOSE);
-		connect(btn, SIGNAL(clicked()), m_signalMapper, SLOT(map()));
-	}
-
-	if(buttons & IDB_CANCEL){
-		vBoxLayout->addSpacing(1);
-		QPushButton* btn = new QPushButton(tr("Cancel"), this);
-		vBoxLayout->addWidget(btn, 0, Qt::AlignRight);
-		m_signalMapper->setMapping(btn, IDB_CANCEL);
-		connect(btn, SIGNAL(clicked()), m_signalMapper, SLOT(map()));
-	}
-*/
 }
 
 QFormLayout* ToolWidget::current_form_layout()
 {
-	if(!m_currentFormLayout){
-		m_currentFormLayout = new QFormLayout();
-		//m_currentFormLayout->setSpacing(5);
-		m_currentFormLayout->setSpacing(2);
-		//m_currentFormLayout->setHorizontalSpacing(10);
-		m_currentFormLayout->setHorizontalSpacing(2);
-		m_currentFormLayout->setVerticalSpacing(8);
-		m_mainLayout->addLayout(m_currentFormLayout);
-		//m_mainLayout->addSpacing(15);
+	if(!_current_form_layout){
+		_current_form_layout = new QFormLayout();
+		_current_form_layout->setSpacing(2);
+		_current_form_layout->setHorizontalSpacing(2);
+		_current_form_layout->setVerticalSpacing(8);
+		_main_layout->addLayout(_current_form_layout);
 	}
-	return m_currentFormLayout;
+	return _current_form_layout;
 }
 
 void ToolWidget::addWidget(const QString& caption, QWidget* widget)
 {
 	current_form_layout()->addRow(caption, widget);
-	m_widgets.push_back(WidgetEntry(widget, WT_WIDGET));
+	_widgets.emplace_back(widget, WT_WIDGET);
 }
 
 void ToolWidget::addSlider(const QString& caption,
 							double min, double max, double value)
 {
-	DoubleSlider* slider = new DoubleSlider(this);
+	auto* slider = new DoubleSlider(this);
 	slider->setRange(min, max);
 	slider->setValue(value);
 	current_form_layout()->addRow(caption, slider);
-	m_valueSignalMapper->setMapping(slider, (int)m_widgets.size());
-	connect(slider, SIGNAL(valueChanged()), m_valueSignalMapper, SLOT(map()));
-	m_widgets.push_back(WidgetEntry(slider, WT_SLIDER));
+	size_t index = _widgets.size();
+	connect(slider, &DoubleSlider::valueChanged, this, [this, index]() { valueChanged((int)index); }); //ø  // arg: none
+	_widgets.emplace_back(slider, WT_SLIDER);
 }
 
 void ToolWidget::addSpinBox(const QString& caption,
 							double min, double max, double value,
 							double stepSize, int numDecimals)
 {
-	TruncatedDoubleSpinBox* spinner = new TruncatedDoubleSpinBox(this);
+	auto* spinner = new TruncatedDoubleSpinBox(this);
 	spinner->setLocale(QLocale(tr("C")));
 	spinner->setRange(min, max);
 	spinner->setDecimals(numDecimals);
@@ -154,68 +114,66 @@ void ToolWidget::addSpinBox(const QString& caption,
 	spinner->setValue(value);
 	current_form_layout()->addRow(caption, spinner);
 
-	m_valueSignalMapper->setMapping(spinner, (int)m_widgets.size());
-	
-	connect(spinner,
-			SIGNAL(valueChanged(double)),
-			m_valueSignalMapper, SLOT(map()));
+	size_t index = (int)_widgets.size();
+	connect(spinner, &TruncatedDoubleSpinBox::valueChanged, this, [this, index]() { valueChanged((int)index); }); // arg double
 	
 
-	m_widgets.push_back(WidgetEntry(spinner, WT_SPIN_BOX));
+	_widgets.emplace_back(spinner, WT_SPIN_BOX);
 }
 
 void ToolWidget::addComboBox(const QString& caption,
 							const QStringList& entries,
 							int activeEntry)
 {
-	QComboBox* combo = new QComboBox(this);
+	auto* combo = new QComboBox(this);
 	combo->addItems(entries);
 	combo->setCurrentIndex(activeEntry);
 	current_form_layout()->addRow(caption, combo);
-	m_valueSignalMapper->setMapping(combo, (int)m_widgets.size());
-	connect(combo, SIGNAL(currentIndexChanged(int)), m_valueSignalMapper, SLOT(map()));
-	m_widgets.push_back(WidgetEntry(combo, WT_COMBO_BOX));
+	size_t index = _widgets.size();
+	connect(combo, &QComboBox::currentIndexChanged, this, [this, index]() { valueChanged((int)index); });  //ø // arg: int
+	_widgets.emplace_back(combo, WT_COMBO_BOX);
 }
 
 void ToolWidget::addCheckBox(const QString& caption,
 							bool bChecked)
 {
-	QCheckBox* check = new QCheckBox(caption, this);
+	auto* check = new QCheckBox(caption, this);
 	check->setChecked(bChecked);
-	m_currentFormLayout = nullptr;
-	m_mainLayout->addWidget(check);
-	m_valueSignalMapper->setMapping(check, (int)m_widgets.size());
-	connect(check, SIGNAL(stateChanged(int)), m_valueSignalMapper, SLOT(map()));
-	m_widgets.push_back(WidgetEntry(check, WT_CHECK_BOX));
+	_current_form_layout = nullptr;
+	_main_layout->addWidget(check);
+	size_t index = _widgets.size();
+	connect(check, &QCheckBox::stateChanged, this, [this, index]() { valueChanged((int)index); });  //ø // arg: int
+	_widgets.emplace_back(check, WT_CHECK_BOX);
 }
 
 void ToolWidget::addListBox(const QString& caption,
 							QStringList& entries,
 							bool multiSelection)
 {
-	QListWidget* list = new QListWidget(this);
+	auto list = new QListWidget(this);
 	if(multiSelection)
 		list->setSelectionMode(QAbstractItemView::MultiSelection);
 	list->addItems(entries);
 	current_form_layout()->addRow(caption, list);
-	m_widgets.push_back(WidgetEntry(list, WT_LIST_BOX));
+	_widgets.emplace_back(list, WT_LIST_BOX);
 }
 
 void ToolWidget::addTextBox(const QString& caption, const QString& text)
 {
-	QLineEdit* textBox = new QLineEdit(this);
+	auto* textBox = new QLineEdit(this);
 	textBox->setText(text);
 	current_form_layout()->addRow(caption, textBox);
-	m_valueSignalMapper->setMapping(textBox, (int)m_widgets.size());
-	connect(textBox, SIGNAL(textChanged(const QString&)), m_valueSignalMapper, SLOT(map()));
-	m_widgets.push_back(WidgetEntry(textBox, WT_TEXT_BOX));
+
+	size_t index = _widgets.size();
+	connect(textBox, &QLineEdit::textChanged, this, [this, index]() { valueChanged((int)index); }); //ø // arg: const QString&
+	_widgets.emplace_back(textBox, WT_TEXT_BOX);
 }
 
 void ToolWidget::addVector(const QString& caption, int size, double* values)
 {
 	const char* coordLabels[] = {"x", "y", "z", "w"};
 	const char** labels = size <= 4 ? coordLabels : nullptr;
-	MatrixWidget* mat = new MatrixWidget(size, 1, this, labels);
+	auto* mat = new MatrixWidget(size, 1, this, labels);
 
 	if(values){
 		for(int i = 0; i < size; ++i)
@@ -230,26 +188,27 @@ void ToolWidget::addVector(const QString& caption, int size, double* values)
 
 	current_form_layout()->addRow(new QLabel(caption, this));
 	current_form_layout()->addRow(mat);
-	m_valueSignalMapper->setMapping(mat, (int)m_widgets.size());
-	connect(mat, SIGNAL(valueChanged()), m_valueSignalMapper, SLOT(map()));
-	m_widgets.push_back(WidgetEntry(mat, WT_MATRIX));
+	size_t index = _widgets.size();
+	connect(mat, static_cast<void (MatrixWidget::*)()>(&MatrixWidget::valueChanged), this,[this, index]() { valueChanged((int)index); }); //ø  // arg:none
+	_widgets.emplace_back(mat, WT_MATRIX);
 }
 
 void ToolWidget::addMatrix(const QString& caption, int numRows, int numCols)
 {
-	MatrixWidget* mat = new MatrixWidget(numRows, numCols, this);
+	auto* mat = new MatrixWidget(numRows, numCols, this);
 	current_form_layout()->addRow(caption, mat);
-	m_valueSignalMapper->setMapping(mat, (int)m_widgets.size());
-	connect(mat, SIGNAL(valueChanged()), m_valueSignalMapper, SLOT(map()));
-	m_widgets.push_back(WidgetEntry(mat, WT_MATRIX));
+
+	size_t index = _widgets.size();
+	connect(mat, static_cast<void (MatrixWidget::*)()>(&MatrixWidget::valueChanged), this, [this, index]() { valueChanged((int)index); }); //ø  // args: none
+	_widgets.emplace_back(mat, WT_MATRIX);
 }
 
 void ToolWidget::addFileBrowser(const QString& caption, FileWidgetType fwt,
 								const QString& filter)
 {
-	FileWidget* fw = new FileWidget(fwt, filter, this);
+	auto* fw = new FileWidget(fwt, filter, this);
 	current_form_layout()->addRow(caption, fw);
-	m_widgets.push_back(WidgetEntry(fw, WT_FILE_BROWSER));
+	_widgets.emplace_back(fw, WT_FILE_BROWSER);
 }
 
 void ToolWidget::buttonClicked(int buttonID)
@@ -260,31 +219,20 @@ void ToolWidget::buttonClicked(int buttonID)
 		obj = app::createEmptyObject("new mesh", SOT_LG);
 	}
 	
-	if(m_tool && (obj || m_tool->accepts_null_object_ptr())){
+	if(_tool && (obj || _tool->accepts_null_object_ptr())){
 		switch(buttonID){
 		case IDB_OK:
 		case IDB_APPLY:
 			try{
-				m_tool->execute(obj, this);
+				_tool->execute(obj, this);
 			}
 			catch(ug::UGError error){
-				UG_LOG("Execution of tool " << m_tool->get_name() << " failed with the following message:\n");
+				UG_LOG("Execution of tool " << _tool->get_name() << " failed with the following message:\n");
 				UG_LOG("  " << error.get_msg() << std::endl);
 			}
 			break;
 		}
 	}
-/*
-	switch(buttonID){
-		case IDB_OK:
-			accept();
-			break;
-		case IDB_CANCEL:
-		case IDB_CLOSE:
-			reject();
-			break;
-	}
-*/
 }
 
 void ToolWidget::clearLayout(QLayout* layout)
@@ -304,41 +252,41 @@ void ToolWidget::clearLayout(QLayout* layout)
 
 void ToolWidget::clear()
 {
-	clearLayout(m_mainLayout);
-	m_currentFormLayout = nullptr;
-	m_widgets.clear();
+	clearLayout(_main_layout);
+	_current_form_layout = nullptr;
+	_widgets.clear();
 }
 
-template <class TNumber>
+template <typename TNumber>
 TNumber ToolWidget::to_number(int paramIndex, bool* bOKOut)
 {
 	if(bOKOut)
 		*bOKOut = true;
 
-	if(paramIndex < 0 || paramIndex >= (int)m_widgets.size()){
+	if(paramIndex < 0 || paramIndex >= (int)_widgets.size()){
 		UG_LOG("ERROR: bad parameter index in ToolDialog::to_number: " << paramIndex << std::endl);
 		if(bOKOut)
 			*bOKOut = false;
 		return 0;
 	}
 
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	switch(we.m_widgetType){
+	switch(we._widget_type){
 	case WT_SLIDER:{
-			DoubleSlider* slider = dynamic_cast<DoubleSlider*>(we.m_widget);
+			auto* slider = dynamic_cast<DoubleSlider*>(we._widget);
 			return (TNumber)slider->value();
 		}break;
 	case WT_SPIN_BOX:{
-			TruncatedDoubleSpinBox* spinBox = qobject_cast<TruncatedDoubleSpinBox*>(we.m_widget);
+			auto* spinBox = qobject_cast<TruncatedDoubleSpinBox*>(we._widget);
 			return (TNumber)spinBox->value();
 		}break;
 	case WT_COMBO_BOX:{
-			QComboBox* combo = qobject_cast<QComboBox*>(we.m_widget);
+			auto combo = qobject_cast<QComboBox*>(we._widget);
 			return (TNumber)combo->currentIndex();
 		}break;
 	case WT_CHECK_BOX:{
-			QCheckBox* check = qobject_cast<QCheckBox*>(we.m_widget);
+			auto* check = qobject_cast<QCheckBox*>(we._widget);
 			if(check->isChecked())
 				return TNumber(1);
 			return TNumber(0);
@@ -375,10 +323,10 @@ vector<int> ToolWidget::to_index_list(int paramIndex, bool* bOKOut)
 //	then push the associated index into the index-array.
 	vector<int> outVec;
 
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	if(we.m_widgetType == WT_LIST_BOX){
-		QListWidget* list = qobject_cast<QListWidget*>(we.m_widget);
+	if(we._widget_type == WT_LIST_BOX){
+		auto* list = qobject_cast<QListWidget*>(we._widget);
 		for(int i = 0; i < list->count(); ++i){
 			QListWidgetItem* item = list->item(i);
 			if(item->isSelected())
@@ -398,14 +346,14 @@ QString ToolWidget::to_string(int paramIndex, bool* bOKOut)
 	if(bOKOut)
 		*bOKOut = true;
 
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	if(we.m_widgetType == WT_TEXT_BOX){
-		QLineEdit* textBox = qobject_cast<QLineEdit*>(we.m_widget);
+	if(we._widget_type == WT_TEXT_BOX){
+		auto* textBox = qobject_cast<QLineEdit*>(we._widget);
 		return textBox->text();
 	}
-	else if(we.m_widgetType == WT_FILE_BROWSER){
-		FileWidget* fw = qobject_cast<FileWidget*>(we.m_widget);
+	else if(we._widget_type == WT_FILE_BROWSER){
+		auto* fw = qobject_cast<FileWidget*>(we._widget);
 		return fw->filename();
 	}
 	else{
@@ -422,10 +370,10 @@ QStringList ToolWidget::to_string_list(int paramIndex, bool* bOKOut)
 	if(bOKOut)
 		*bOKOut = true;
 
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	if(we.m_widgetType == WT_FILE_BROWSER){
-		FileWidget* fw = qobject_cast<FileWidget*>(we.m_widget);
+	if(we._widget_type == WT_FILE_BROWSER){
+		auto* fw = qobject_cast<FileWidget*>(we._widget);
 		return fw->filenames();
 	}
 	else{
@@ -442,10 +390,10 @@ ug::vector3 ToolWidget::to_vector3(int paramIndex, bool* bOKOut)
 	if(bOKOut)
 		*bOKOut = true;
 
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	if(we.m_widgetType == WT_MATRIX){
-		MatrixWidget* matWidget = qobject_cast<MatrixWidget*>(we.m_widget);
+	if(we._widget_type == WT_MATRIX){
+		auto* matWidget = qobject_cast<MatrixWidget*>(we._widget);
 		ug::vector3 vec;
 
 		for(int i = 0; i < 3; ++i)
@@ -467,10 +415,10 @@ ug::matrix33 ToolWidget::to_matrix33(int paramIndex, bool* bOKOut)
 	if(bOKOut)
 		*bOKOut = true;
 
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	if(we.m_widgetType == WT_MATRIX){
-		MatrixWidget* matWidget = qobject_cast<MatrixWidget*>(we.m_widget);
+	if(we._widget_type == WT_MATRIX){
+		auto* matWidget = qobject_cast<MatrixWidget*>(we._widget);
 		ug::matrix33 mat;
 
 		for(int j = 0; j < 3; ++j){
@@ -495,10 +443,10 @@ ug::matrix44 ToolWidget::to_matrix44(int paramIndex, bool* bOKOut)
 	if(bOKOut)
 		*bOKOut = true;
 
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	if(we.m_widgetType == WT_MATRIX){
-		MatrixWidget* matWidget = qobject_cast<MatrixWidget*>(we.m_widget);
+	if(we._widget_type == WT_MATRIX){
+		auto* matWidget = qobject_cast<MatrixWidget*>(we._widget);
 		ug::matrix44 mat;
 
 		for(int j = 0; j < 4; ++j){
@@ -520,18 +468,18 @@ ug::matrix44 ToolWidget::to_matrix44(int paramIndex, bool* bOKOut)
 
 QWidget* ToolWidget::to_widget(int paramIndex, bool* bOkOut)
 {
-	if(paramIndex < 0 || paramIndex >= (int)m_widgets.size()){
+	if(paramIndex < 0 || paramIndex >= (int)_widgets.size()){
 		UG_LOG("ERROR: bad parameter index in ToolDialog::to_widget: " << paramIndex << std::endl);
 		if(bOkOut)
 			*bOkOut = false;
 		return nullptr;
 	}
 
-	WidgetEntry& we = m_widgets[paramIndex];
-	if(we.m_widgetType == WT_WIDGET){
+	WidgetEntry& we = _widgets[paramIndex];
+	if(we._widget_type == WT_WIDGET){
 		if(bOkOut)
 			*bOkOut = true;
-		return we.m_widget;
+		return we._widget;
 	}
 	if(bOkOut)
 		*bOkOut = false;
@@ -540,20 +488,20 @@ QWidget* ToolWidget::to_widget(int paramIndex, bool* bOkOut)
 
 bool ToolWidget::setNumber(int paramIndex, double val)
 {
-	if(paramIndex < 0 || paramIndex >= (int)m_widgets.size()){
+	if(paramIndex < 0 || paramIndex >= (int)_widgets.size()){
 		UG_LOG("ERROR: bad parameter index in ToolDialog::setNumber: " << paramIndex << std::endl);
 		return false;
 	}
 
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	switch(we.m_widgetType){
+	switch(we._widget_type){
 	case WT_SLIDER:{
-			QSlider* slider = qobject_cast<QSlider*>(we.m_widget);
+			auto* slider = qobject_cast<QSlider*>(we._widget);
 			slider->setValue(val);
 		}break;
 	case WT_SPIN_BOX:{
-			TruncatedDoubleSpinBox* spinBox = qobject_cast<TruncatedDoubleSpinBox*>(we.m_widget);
+			auto* spinBox = qobject_cast<TruncatedDoubleSpinBox*>(we._widget);
 			spinBox->setValue(val);
 		}break;
 	default:
@@ -566,10 +514,10 @@ bool ToolWidget::setNumber(int paramIndex, double val)
 
 bool ToolWidget::setString(int paramIndex, const QString& param)
 {
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	if(we.m_widgetType == WT_TEXT_BOX){
-		QLineEdit* textBox = qobject_cast<QLineEdit*>(we.m_widget);
+	if(we._widget_type == WT_TEXT_BOX){
+		auto* textBox = qobject_cast<QLineEdit*>(we._widget);
 		textBox->setText(param);
 	}
 	else{
@@ -582,10 +530,10 @@ bool ToolWidget::setString(int paramIndex, const QString& param)
 
 bool ToolWidget::setStringList(int paramIndex, const QStringList& stringList)
 {
-	WidgetEntry& we = m_widgets[paramIndex];
+	WidgetEntry& we = _widgets[paramIndex];
 
-	if(we.m_widgetType == WT_LIST_BOX){
-		QListWidget* listBox = qobject_cast<QListWidget*>(we.m_widget);
+	if(we._widget_type == WT_LIST_BOX){
+		auto* listBox = qobject_cast<QListWidget*>(we._widget);
 		listBox->clear();
 		listBox->addItems(stringList);
 	}
@@ -597,9 +545,8 @@ bool ToolWidget::setStringList(int paramIndex, const QStringList& stringList)
 	return true;
 }
 
-
 void ToolWidget::refreshContents()
 {
-	if(m_tool)
-		m_tool->refresh_dialog(this);
+	if(_tool)
+		_tool->refresh_dialog(this);
 }

@@ -23,7 +23,7 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "externalTetgenCommands.h"
+#include "externalTetgenCommands.hpp"
 
 
 

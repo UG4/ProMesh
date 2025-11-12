@@ -25,7 +25,7 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "camera.h"
+#include "camera.hpp"
 
 namespace cam
 {
@@ -37,13 +37,13 @@ CBasicCamera::CBasicCamera()
 
 void CBasicCamera::reset()
 {
-	m_vFrom = vector3(0, 0, 0);
-	m_vTo = vector3(0, 0, 1.f);
-	m_vX = vector3(1.f, 0, 0);
-	m_vY = vector3(0, 1.f, 0);
-	m_vZ = vector3(0, 0, 1.f);
-	m_worldScale = vector3(1, 1, 1);
-	m_fDistance = 5.f;
+	_v_from = Vector3(0, 0, 0);
+	_v_to = Vector3(0, 0, 1.f);
+	_v_x = Vector3(1.f, 0, 0);
+	_v_y = Vector3(0, 1.f, 0);
+	_v_z = Vector3(0, 0, 1.f);
+	_world_scale = Vector3(1, 1, 1);
+	_f_distance = 5.f;
 }
 
 SCameraState CBasicCamera::get_camera_state()
@@ -52,218 +52,218 @@ SCameraState CBasicCamera::get_camera_state()
 
 	get_orientation();
 
-	CameraState.vFrom = m_vFrom;
-	CameraState.vTo = m_vTo;
-	CameraState.fDistance = Vec3Distance(m_vFrom, m_vTo);
-	CameraState.quatOrientation = m_quatOrientation;
+	CameraState.vFrom = _v_from;
+	CameraState.vTo = _v_to;
+	CameraState.fDistance = Vec3Distance(_v_from, _v_to);
+	CameraState.quatOrientation = _quat_orientation;
 
 	return CameraState;
 }
 
 void CBasicCamera::set_camera_state(SCameraState& CameraState)
 {
-	axis_from_quaternion(&m_vX, &m_vY, &m_vZ, &CameraState.quatOrientation);
-	Vec3Normalize(m_vX, m_vX);
-	Vec3Normalize(m_vY, m_vY);
-	Vec3Normalize(m_vZ, m_vZ);
+	axis_from_quaternion(&_v_x, &_v_y, &_v_z, &CameraState.quatOrientation);
+	Vec3Normalize(_v_x, _v_x);
+	Vec3Normalize(_v_y, _v_y);
+	Vec3Normalize(_v_z, _v_z);
 
-	m_quatOrientation = CameraState.quatOrientation;
-	m_vTo = CameraState.vTo;
-	m_vFrom = CameraState.vFrom;
-	m_fDistance = CameraState.fDistance;
+	_quat_orientation = CameraState.quatOrientation;
+	_v_to = CameraState.vTo;
+	_v_from = CameraState.vFrom;
+	_f_distance = CameraState.fDistance;
 
 	get_camera_transform();
 }
 
-void CBasicCamera::set_world_scale(const vector3& ws)
+void CBasicCamera::set_world_scale(const Vector3& ws)
 {
-	m_worldScale = ws;
+	_world_scale = ws;
 	for(int i = 0; i < 3; ++i){
-		if(m_worldScale[i] >= 0 && m_worldScale[i] < SMALL)
-			m_worldScale[i] = SMALL;
-		if(m_worldScale[i] < 0 && m_worldScale[i] > -SMALL)
-			m_worldScale[i] = -SMALL;
+		if(_world_scale[i] >= 0 && _world_scale[i] < SMALL)
+			_world_scale[i] = SMALL;
+		if(_world_scale[i] < 0 && _world_scale[i] > -SMALL)
+			_world_scale[i] = -SMALL;
 	}
 }
 
-const vector3& CBasicCamera::world_scale() const
+const Vector3& CBasicCamera::world_scale() const
 {
-	return m_worldScale;
+	return _world_scale;
 }
 
 void CBasicCamera::move_object_space(float dx, float dy, float dz)
 {
-	vector3 vT, vTmp;
-	Vec3Scale(vT, m_vX, dx);
-	Vec3Scale(vTmp, m_vY, dy);
+	Vector3 vT, vTmp;
+	Vec3Scale(vT, _v_x, dx);
+	Vec3Scale(vTmp, _v_y, dy);
 	Vec3Add(vT, vT, vTmp);
-	Vec3Scale(vTmp, m_vZ, dz);
+	Vec3Scale(vTmp, _v_z, dz);
 	Vec3Add(vT, vT, vTmp);
 
 	for(int i = 0; i < 3; ++i)
-		vT[i] /= m_worldScale[i];
+		vT[i] /= _world_scale[i];
 
-	Vec3Add(m_vFrom, m_vFrom, vT);
-	Vec3Add(m_vTo, m_vTo, vT);
+	Vec3Add(_v_from, _v_from, vT);
+	Vec3Add(_v_to, _v_to, vT);
 }
 
 void CBasicCamera::move_world_space(float dx, float dy, float dz)
 {
-	vector3 vT(dx, dy, dz);
-	Vec3Add(m_vFrom, m_vFrom, vT);
-	Vec3Add(m_vTo, m_vTo, vT);
+	Vector3 vT(dx, dy, dz);
+	Vec3Add(_v_from, _v_from, vT);
+	Vec3Add(_v_to, _v_to, vT);
 }
 
-void CBasicCamera::rotate(CQuaternion& q, vector3* pCenter)
+void CBasicCamera::rotate(CQuaternion& q, Vector3* pCenter)
 {
 	CQuaternion qi = q.inverse();
 
-	CQuaternion v(m_vX.x(), m_vX.y(), m_vX.z(), 0);
+	CQuaternion v(_v_x.x(), _v_x.y(), _v_x.z(), 0);
 	v = q * v * qi;
-	m_vX = vector3(v.x, v.y, v.z);
+	_v_x = Vector3(v.x, v.y, v.z);
 
-	v = CQuaternion(m_vY.x(), m_vY.y(), m_vY.z(), 0);
+	v = CQuaternion(_v_y.x(), _v_y.y(), _v_y.z(), 0);
 	v = (q * v) * qi;
-	m_vY = vector3(v.x, v.y, v.z);
+	_v_y = Vector3(v.x, v.y, v.z);
 
-	v = CQuaternion(m_vZ.x(), m_vZ.y(), m_vZ.z(), 0);
+	v = CQuaternion(_v_z.x(), _v_z.y(), _v_z.z(), 0);
 	v = (q * v) * qi;
-	m_vZ = vector3(v.x, v.y, v.z);
+	_v_z = Vector3(v.x, v.y, v.z);
 
 //	rotate vFrom / vTo
-	v = CQuaternion(m_vFrom.x() - pCenter->x(), m_vFrom.y() - pCenter->y(), m_vFrom.z() - pCenter->z(), 0);
+	v = CQuaternion(_v_from.x() - pCenter->x(), _v_from.y() - pCenter->y(), _v_from.z() - pCenter->z(), 0);
 	v = (q * v) * qi;
-	Vec3Add(m_vFrom, *pCenter, vector3(v.x, v.y, v.z));
+	Vec3Add(_v_from, *pCenter, Vector3(v.x, v.y, v.z));
 
-	v = CQuaternion(m_vTo.x() - pCenter->x(), m_vTo.y() - pCenter->y(), m_vTo.z() - pCenter->z(), 0);
+	v = CQuaternion(_v_to.x() - pCenter->x(), _v_to.y() - pCenter->y(), _v_to.z() - pCenter->z(), 0);
 	v = (q * v) * qi;
-	Vec3Add(m_vTo, *pCenter, vector3(v.x, v.y, v.z));
+	Vec3Add(_v_to, *pCenter, Vector3(v.x, v.y, v.z));
 }
 
-void CBasicCamera::rotate_object_space_x(float drads, vector3* pCenter)
+void CBasicCamera::rotate_object_space_x(float drads, Vector3* pCenter)
 {
 	CQuaternion q;
-	q.set_values(drads, m_vX);
+	q.set_values(drads, _v_x);
 	q.normalize();
 
 	CQuaternion qi = q.inverse();
 
-	CQuaternion v(m_vY.x(), m_vY.y(), m_vY.z(), 0);
+	CQuaternion v(_v_y.x(), _v_y.y(), _v_y.z(), 0);
 	v = (q * v) * qi;
-	m_vY = vector3(v.x, v.y, v.z);
+	_v_y = Vector3(v.x, v.y, v.z);
 
-	v = CQuaternion(m_vZ.x(), m_vZ.y(), m_vZ.z(), 0);
+	v = CQuaternion(_v_z.x(), _v_z.y(), _v_z.z(), 0);
 	v = (q * v) * qi;
-	m_vZ = vector3(v.x, v.y, v.z);
+	_v_z = Vector3(v.x, v.y, v.z);
 
 //	rotate vFrom / vTo
-	v = CQuaternion(m_vFrom.x() - pCenter->x(), m_vFrom.y() - pCenter->y(), m_vFrom.z() - pCenter->z(), 0);
+	v = CQuaternion(_v_from.x() - pCenter->x(), _v_from.y() - pCenter->y(), _v_from.z() - pCenter->z(), 0);
 	v = (q * v) * qi;
-	Vec3Add(m_vFrom, *pCenter, vector3(v.x, v.y, v.z));
+	Vec3Add(_v_from, *pCenter, Vector3(v.x, v.y, v.z));
 
-	v = CQuaternion(m_vTo.x() - pCenter->x(), m_vTo.y() - pCenter->y(), m_vTo.z() - pCenter->z(), 0);
+	v = CQuaternion(_v_to.x() - pCenter->x(), _v_to.y() - pCenter->y(), _v_to.z() - pCenter->z(), 0);
 	v = (q * v) * qi;
-	Vec3Add(m_vTo, *pCenter, vector3(v.x, v.y, v.z));
+	Vec3Add(_v_to, *pCenter, Vector3(v.x, v.y, v.z));
 
 }
 
-void CBasicCamera::rotate_object_space_y(float drads, vector3* pCenter)
+void CBasicCamera::rotate_object_space_y(float drads, Vector3* pCenter)
 {
 	CQuaternion q;
-	q.set_values(drads, m_vY);
+	q.set_values(drads, _v_y);
 	q.normalize();
 
 	CQuaternion qi = q.inverse();
 
-	CQuaternion v(m_vX.x(), m_vX.y(), m_vX.z(), 0);
+	CQuaternion v(_v_x.x(), _v_x.y(), _v_x.z(), 0);
 	v = q * v * qi;
-	m_vX = vector3(v.x, v.y, v.z);
+	_v_x = Vector3(v.x, v.y, v.z);
 
-	v = CQuaternion(m_vZ.x(), m_vZ.y(), m_vZ.z(), 0);
+	v = CQuaternion(_v_z.x(), _v_z.y(), _v_z.z(), 0);
 	v = q * v * qi;
-	m_vZ = vector3(v.x, v.y, v.z);
+	_v_z = Vector3(v.x, v.y, v.z);
 
 //	rotate vFrom / vTo
-	v = CQuaternion(m_vFrom.x() - pCenter->x(), m_vFrom.y() - pCenter->y(), m_vFrom.z() - pCenter->z(), 0);
+	v = CQuaternion(_v_from.x() - pCenter->x(), _v_from.y() - pCenter->y(), _v_from.z() - pCenter->z(), 0);
 	v = (q * v) * qi;
-	Vec3Add(m_vFrom, *pCenter, vector3(v.x, v.y, v.z));
+	Vec3Add(_v_from, *pCenter, Vector3(v.x, v.y, v.z));
 
-	v = CQuaternion(m_vTo.x() - pCenter->x(), m_vTo.y() - pCenter->y(), m_vTo.z() - pCenter->z(), 0);
+	v = CQuaternion(_v_to.x() - pCenter->x(), _v_to.y() - pCenter->y(), _v_to.z() - pCenter->z(), 0);
 	v = (q * v) * qi;
-	Vec3Add(m_vTo, *pCenter, vector3(v.x, v.y, v.z));
+	Vec3Add(_v_to, *pCenter, Vector3(v.x, v.y, v.z));
 
 }
 
-void CBasicCamera::rotate_object_space_z(float drads, vector3* pCenter)
+void CBasicCamera::rotate_object_space_z(float drads, Vector3* pCenter)
 {
 	CQuaternion q;
-	q.set_values(drads, m_vZ);
+	q.set_values(drads, _v_z);
 	q.normalize();
 	CQuaternion qi = q.inverse();
 
-	CQuaternion v(m_vX.x(), m_vX.y(), m_vX.z(), 0);
+	CQuaternion v(_v_x.x(), _v_x.y(), _v_x.z(), 0);
 	v = q * v * qi;
-	m_vX = vector3(v.x, v.y, v.z);
+	_v_x = Vector3(v.x, v.y, v.z);
 
-	v = CQuaternion(m_vY.x(), m_vY.y(), m_vY.z(), 0);
+	v = CQuaternion(_v_y.x(), _v_y.y(), _v_y.z(), 0);
 	v = q * v * qi;
-	m_vY = vector3(v.x, v.y, v.z);
+	_v_y = Vector3(v.x, v.y, v.z);
 
 //	rotate vFrom / vTo
-	v = CQuaternion(m_vFrom.x() - pCenter->x(), m_vFrom.y() - pCenter->y(), m_vFrom.z() - pCenter->z(), 0);
+	v = CQuaternion(_v_from.x() - pCenter->x(), _v_from.y() - pCenter->y(), _v_from.z() - pCenter->z(), 0);
 	v = (q * v) * qi;
-	Vec3Add(m_vFrom, *pCenter, vector3(v.x, v.y, v.z));
+	Vec3Add(_v_from, *pCenter, Vector3(v.x, v.y, v.z));
 
-	v = CQuaternion(m_vTo.x() - pCenter->x(), m_vTo.y() - pCenter->y(), m_vTo.z() - pCenter->z(), 0);
+	v = CQuaternion(_v_to.x() - pCenter->x(), _v_to.y() - pCenter->y(), _v_to.z() - pCenter->z(), 0);
 	v = (q * v) * qi;
-	Vec3Add(m_vTo, *pCenter, vector3(v.x, v.y, v.z));
+	Vec3Add(_v_to, *pCenter, Vector3(v.x, v.y, v.z));
 
 }
 
-void CBasicCamera::scale_from_to(float scale, const vector3* pCenter)
+void CBasicCamera::scale_from_to(float scale, const Vector3* pCenter)
 {
-	vector3 v;
-	Vec3Subtract(v, m_vFrom, *pCenter);
+	Vector3 v;
+	Vec3Subtract(v, _v_from, *pCenter);
 	Vec3Scale(v, v, scale);
-	Vec3Add(m_vFrom, *pCenter, v);
+	Vec3Add(_v_from, *pCenter, v);
 
-	Vec3Subtract(v, m_vTo, *pCenter);
+	Vec3Subtract(v, _v_to, *pCenter);
 	Vec3Scale(v, v, scale);
-	Vec3Add(m_vTo, *pCenter, v);
-	m_fDistance = Vec3Distance(m_vFrom, m_vTo);
+	Vec3Add(_v_to, *pCenter, v);
+	_f_distance = Vec3Distance(_v_from, _v_to);
 }
 
-matrix44* CBasicCamera::get_camera_transform()
+Matrix44* CBasicCamera::get_camera_transform()
 {
-	Vec3Normalize(m_vX, m_vX);
-	Vec3Normalize(m_vY, m_vY);
-	Vec3Normalize(m_vZ, m_vZ);
+	Vec3Normalize(_v_x, _v_x);
+	Vec3Normalize(_v_y, _v_y);
+	Vec3Normalize(_v_z, _v_z);
 
-	matrix44 matRot(m_vX.x(), m_vY.x(), m_vZ.x(), 0,
-					m_vX.y(), m_vY.y(), m_vZ.y(), 0,
-					m_vX.z(), m_vY.z(), m_vZ.z(), 0,
+	Matrix44 matRot(_v_x.x(), _v_y.x(), _v_z.x(), 0,
+					_v_x.y(), _v_y.y(), _v_z.y(), 0,
+					_v_x.z(), _v_y.z(), _v_z.z(), 0,
 					0, 0, 0, 1.f);
 
-	matrix44 matTrans;
-	MatTranslation(matTrans, -m_vFrom.x(), -m_vFrom.y(), -m_vFrom.z());
+	Matrix44 matTrans;
+	MatTranslation(matTrans, -_v_from.x(), -_v_from.y(), -_v_from.z());
 
-	matrix44 matTmp;
+	Matrix44 matTmp;
 	MatMultiply(matTmp, matRot, matTrans);
 
-	matrix44 matScale(	m_worldScale.x(),	0,	0,	0,
-	                  	0,	m_worldScale.y(),	0,	0,
-	                  	0,	0,	m_worldScale.z(),	0,
+	Matrix44 matScale(	_world_scale.x(),	0,	0,	0,
+	                  	0,	_world_scale.y(),	0,	0,
+	                  	0,	0,	_world_scale.z(),	0,
 	                  	0,	0,	0,	1);
 
-	MatMultiply(m_matTransform, matScale, matTmp);
-	return &m_matTransform;
+	MatMultiply(_mat_transform, matScale, matTmp);
+	return &_mat_transform;
 }
 
 CQuaternion* CBasicCamera::get_orientation()
 {
 	get_camera_transform();
-	quaternion_from_matrix(&m_quatOrientation, &m_matTransform);
-	return &m_quatOrientation;
+	quaternion_from_matrix(&_quat_orientation, &_mat_transform);
+	return &_quat_orientation;
 }
 /*
 SCameraState calculate_camera_state(SCameraState& OldState, vector3* vFrom, vector3* vTo)
@@ -311,11 +311,11 @@ SCameraState calculate_camera_state(SCameraState& OldState, vector3* vFrom, vect
 	return cs;
 }*/
 
-SCameraState CBasicCamera::calculate_camera_state(SCameraState& OldState, vector3* vFrom, vector3* vTo)
+SCameraState CBasicCamera::calculate_camera_state(SCameraState& OldState, Vector3* vFrom, Vector3* vTo)
 {//	calculates the rotation-transformation.
 	SCameraState cs;
 
-	vector3 dirOld, dirNew;
+	Vector3 dirOld, dirNew;
 	Vec3Subtract(dirOld, OldState.vTo, OldState.vFrom);
 	Vec3Subtract(dirNew, *vTo, *vFrom);
 
@@ -323,7 +323,7 @@ SCameraState CBasicCamera::calculate_camera_state(SCameraState& OldState, vector
 	Vec3Normalize(dirNew, dirNew);
 
 	float fDot = Vec3Dot(dirOld, dirNew);
-	vector3 vPart;
+	Vector3 vPart;
 	Vec3Cross(vPart, dirOld, dirNew);
 
 	CQuaternion q1(vPart.x(), vPart.y(), vPart.z(), fDot);
@@ -353,9 +353,9 @@ SCameraState CBasicCamera::calculate_camera_state(SCameraState& OldState, vector
 */
 	cs.vTo = *vTo;
 	cs.vFrom = *vFrom;
-	vector3 tto;
+	Vector3 tto;
 	for(int i = 0; i < 3; ++i)
-		tto[i] = (*vTo)[i] * m_worldScale[i];
+		tto[i] = (*vTo)[i] * _world_scale[i];
 	cs.fDistance = Vec3Distance(tto, *vFrom);
 	cs.quatOrientation = OldState.quatOrientation * q1;
 	cs.quatOrientation.normalize();
@@ -369,7 +369,7 @@ SCameraState CBasicCamera::interpolate_camera_states(SCameraState& state1, SCame
 	float w1 = 1.f - IA;
 	float w2 = IA;
 
-	vector3 vTmp;
+	Vector3 vTmp;
 	Vec3Scale(cs.vFrom, state1.vFrom, w1);
 	Vec3Scale(vTmp, state2.vFrom, w2);
 	Vec3Add(cs.vFrom, cs.vFrom, vTmp);

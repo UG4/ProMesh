@@ -29,7 +29,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
-#include "file_util.h"
+#include "file_util.hpp"
 #include "common/error.h"
 #include "common/log.h"
 

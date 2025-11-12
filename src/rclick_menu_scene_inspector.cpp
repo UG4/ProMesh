@@ -26,9 +26,9 @@
  */
 
 #include <QtWidgets>
-#include "rclick_menu_scene_inspector.h"
-#include "app.h"
-#include "tools/tool_dialog.h"
+#include "rclick_menu_scene_inspector.hpp"
+#include "app.hpp"
+#include "tools/tool_dialog.hpp"
 #include "tools/subset_tools.h"
 #include "tools/selection_tools.h"
 
@@ -36,61 +36,60 @@ using namespace std;
 using namespace ug;
 
 RClickMenu_SceneInspector::
-RClickMenu_SceneInspector(SceneInspector * sceneInspector) :
-			QWidget(sceneInspector), m_sceneInspector(sceneInspector)
+RClickMenu_SceneInspector(SceneInspector * scene_inspector) :
+			QWidget(scene_inspector), _scene_inspector(scene_inspector)
 {
-	m_menu = new QMenu(this);
+	_menu = new QMenu(this);
 
 //	populate the menu
-	m_actAssignSubset = new QAction(tr("Assign To Subset"), this);
-	connect(m_actAssignSubset, SIGNAL(triggered()), this, SLOT(assignSubset()));
-	m_menu->addAction(m_actAssignSubset);
+	_action_assign_subset = new QAction(tr("Assign To Subset"), this);
+	connect(_action_assign_subset, &QAction::triggered, this, &RClickMenu_SceneInspector::assignSubset);
+	_menu->addAction(_action_assign_subset);
 
-	m_actAssignNewSubset = new QAction(tr("Assign To New Subset"), this);
-	connect(m_actAssignNewSubset, SIGNAL(triggered()), this, SLOT(assignNewSubset()));
-	m_menu->addAction(m_actAssignNewSubset);
+	_action_assign_new_subset = new QAction(tr("Assign To New Subset"), this);
+	connect(_action_assign_new_subset, &QAction::triggered, this, &RClickMenu_SceneInspector::assignNewSubset);
+	_menu->addAction(_action_assign_new_subset);
 
-	m_actRename = new QAction(tr("Rename"), this);
-	connect(m_actRename, SIGNAL(triggered()), this, SLOT(rename()));
-	m_menu->addAction(m_actRename);
+	_action_rename = new QAction(tr("Rename"), this);
+	connect(_action_rename, &QAction::triggered, this, &RClickMenu_SceneInspector::rename);
+	_menu->addAction(_action_rename);
 
-	m_actSelectSubset = new QAction(tr("Select Subset"), this);
-	connect(m_actSelectSubset, SIGNAL(triggered()), this, SLOT(selectSubset()));
-	m_menu->addAction(m_actSelectSubset);
+	_action_select_subset = new QAction(tr("Select Subset"), this);
+	connect(_action_select_subset, &QAction::triggered, this, &RClickMenu_SceneInspector::selectSubset);
+	_menu->addAction(_action_select_subset);
 	
-	m_actShowAllSubsets = new QAction(tr("Show All Subsets"), this);
-	connect(m_actShowAllSubsets, SIGNAL(triggered()), this, SLOT(showAllSubsets()));
-	m_menu->addAction(m_actShowAllSubsets);
+	_action_show_all_subsets = new QAction(tr("Show All Subsets"), this);
+	connect(_action_show_all_subsets, &QAction::triggered, this, &RClickMenu_SceneInspector::showAllSubsets);
+	_menu->addAction(_action_show_all_subsets);
 
-	m_actHideAllSubsets = new QAction(tr("Hide All Subsets"), this);
-	connect(m_actHideAllSubsets, SIGNAL(triggered()), this, SLOT(hideAllSubsets()));
-	m_menu->addAction(m_actHideAllSubsets);
+	_action_hide_all_subsets = new QAction(tr("Hide All Subsets"), this);
+	connect(_action_hide_all_subsets, &QAction::triggered, this, &RClickMenu_SceneInspector::hideAllSubsets);
+	_menu->addAction(_action_hide_all_subsets);
 
-	m_actToggleAllSubsetVisibilities = new QAction(tr("Toggle All Subset Visibilities"), this);
-	connect(m_actToggleAllSubsetVisibilities, SIGNAL(triggered()), this, SLOT(toggleAllSubsetVisibilities()));
-	m_menu->addAction(m_actToggleAllSubsetVisibilities);
+	_action_toggle_all_subset_visibilities = new QAction(tr("Toggle All Subset Visibilities"), this);
+	connect(_action_toggle_all_subset_visibilities, &QAction::triggered, this, &RClickMenu_SceneInspector::toggleAllSubsetVisibilities);
+	_menu->addAction(_action_toggle_all_subset_visibilities);
 
-	m_actPrintSubsetContents = new QAction(tr("Print Subset Contents"), this);
-	connect(m_actPrintSubsetContents, SIGNAL(triggered()), this, SLOT(printSubsetContents()));
-	m_menu->addAction(m_actPrintSubsetContents);
+	_action_print_subset_contents = new QAction(tr("Print Subset Contents"), this);
+	connect(_action_print_subset_contents, &QAction::triggered, this, &RClickMenu_SceneInspector::printSubsetContents);
+	_menu->addAction(_action_print_subset_contents);
 
-	m_actReload = new QAction(tr("Reload"), this);
-	connect(m_actReload, SIGNAL(triggered()), this, SLOT(reload()));
-	m_menu->addAction(m_actReload);
+	_action_reload = new QAction(tr("Reload"), this);
+	connect(_action_reload, &QAction::triggered, this, &RClickMenu_SceneInspector::reload);
+	_menu->addAction(_action_reload);
 
-//	m_actHideOtherSubsets = new QAction(tr("Hide Other Subsets"), this);
 }
 
 void RClickMenu_SceneInspector::
 exec(const QPoint& p){
-	m_menu->exec(p);
+	_menu->exec(p);
 }
 
 void RClickMenu_SceneInspector::assignSubset()
 {
 	LGObject* obj = app::getActiveObject();
 	if(obj){
-		int si = m_sceneInspector->getActiveSubsetIndex();
+		int si = _scene_inspector->getActiveSubsetIndex();
 		if(si != -1){
 			obj->write_selection_to_action_log();
 			obj->log_action (QString("AssignSubset (mesh, %1, true, true, true, true)\n").
@@ -113,8 +112,8 @@ void RClickMenu_SceneInspector::assignNewSubset()
 
 		obj->geometry_changed();
 
-		int activeObjectIndex = m_sceneInspector->getActiveObjectIndex();
-		m_sceneInspector->setActiveSubset(activeObjectIndex, si);
+		int activeObjectIndex = _scene_inspector->getActiveObjectIndex();
+		_scene_inspector->setActiveSubset(activeObjectIndex, si);
 		rename();
 	}
 }
@@ -134,42 +133,42 @@ void RClickMenu_SceneInspector::rename()
 		layout->addWidget(widget);
 
 		string curName = obj->name();
-		int si = m_sceneInspector->getActiveSubsetIndex();
+		int si = _scene_inspector->getActiveSubsetIndex();
 		if(si != -1)
 			curName = obj->get_subset_name(si);
 		
 		widget->addTextBox("name:", curName.c_str());
 		*/
 		string curName = obj->name();
-		int si = m_sceneInspector->getActiveSubsetIndex();
+		int si = _scene_inspector->getActiveSubsetIndex();
 		if(si != -1)
 			curName = obj->get_subset_name(si);
 
-		QDialog* dlg = new QDialog(this);
+		auto* dlg = new QDialog(this);
 		dlg->setWindowTitle(tr("rename"));
-		QVBoxLayout* layout = new QVBoxLayout(dlg);
+		auto* layout = new QVBoxLayout(dlg);
 		dlg->setLayout(layout);
 
-		QLineEdit* text = new QLineEdit(dlg);
+		auto* text = new QLineEdit(dlg);
 		layout->addWidget(text);
 		text->setText(QString::fromUtf8(curName.c_str()));
 		text->selectAll();
 
-		QHBoxLayout* hlayout = new QHBoxLayout();
+		auto* hlayout = new QHBoxLayout();
 		layout->addLayout(hlayout);
 
 		hlayout->addStretch();
 
-		QPushButton* btnCancel = new QPushButton(dlg);
+		auto* btnCancel = new QPushButton(dlg);
 		btnCancel->setText(tr("Cancel"));
 		hlayout->addWidget(btnCancel);
-		connect(btnCancel, SIGNAL(clicked()), dlg, SLOT(reject()));
+		connect(btnCancel, &QPushButton::clicked, dlg, &QDialog::reject);
 
-		QPushButton* btnOk = new QPushButton(dlg);
+		auto* btnOk = new QPushButton(dlg);
 		btnOk->setText(tr("Ok"));
 		hlayout->addWidget(btnOk);
 		btnOk->setDefault(true);
-		connect(btnOk, SIGNAL(clicked()), dlg, SLOT(accept()));
+		connect(btnOk, &QPushButton::clicked, dlg, &QDialog::accept);
 
 		if(dlg->exec()){
 			curName = text->text().toLocal8Bit().constData();
@@ -181,7 +180,7 @@ void RClickMenu_SceneInspector::rename()
 			else
 				obj->set_name(curName.c_str());
 			obj->set_save_required(true);
-			m_sceneInspector->refreshView();
+			_scene_inspector->refreshView();
 		}
 		delete dlg;
 	}
@@ -191,7 +190,7 @@ void RClickMenu_SceneInspector::selectSubset()
 {
 	LGObject* obj = app::getActiveObject();
 	if(obj){
-		int si = m_sceneInspector->getActiveSubsetIndex();
+		int si = _scene_inspector->getActiveSubsetIndex();
 		if(si != -1){
 			obj->write_selection_to_action_log();
 			obj->log_action (QString("SelectSubset (mesh, %1, true, true, true, true)\n").
@@ -204,21 +203,21 @@ void RClickMenu_SceneInspector::selectSubset()
 
 void RClickMenu_SceneInspector::
 showAllSubsets(){
-	ISceneObject* obj = m_sceneInspector->getActiveObject();
+	ISceneObject* obj = _scene_inspector->getActiveObject();
 	if(obj){
 		for(int i = 0; i < obj->num_subsets(); ++i){
 			obj->set_subset_visibility(i, true);
 		}
 		obj->visuals_changed();
-		m_sceneInspector->refreshView();
+		_scene_inspector->refreshView();
 	}
 }
 
 void RClickMenu_SceneInspector::
 printSubsetContents()
 {
-	LGObject* obj = dynamic_cast<LGObject*>(m_sceneInspector->getActiveObject());
-	int si = m_sceneInspector->getActiveSubsetIndex();
+	auto* obj = dynamic_cast<LGObject*>(_scene_inspector->getActiveObject());
+	int si = _scene_inspector->getActiveSubsetIndex();
 	if(obj && (si != -1)){
 		PrintElementNumbers(obj->subset_handler().get_grid_objects_in_subset(si));
 	}
@@ -226,25 +225,25 @@ printSubsetContents()
 
 void RClickMenu_SceneInspector::
 hideAllSubsets(){
-	ISceneObject* obj = m_sceneInspector->getActiveObject();
+	ISceneObject* obj = _scene_inspector->getActiveObject();
 	if(obj){
 		for(int i = 0; i < obj->num_subsets(); ++i){
 			obj->set_subset_visibility(i, false);
 		}
 		obj->visuals_changed();
-		m_sceneInspector->refreshView();
+		_scene_inspector->refreshView();
 	}
 }
 
 void RClickMenu_SceneInspector::
 toggleAllSubsetVisibilities(){
-	ISceneObject* obj = m_sceneInspector->getActiveObject();
+	ISceneObject* obj = _scene_inspector->getActiveObject();
 	if(obj){
 		for(int i = 0; i < obj->num_subsets(); ++i){
 			obj->set_subset_visibility(i, !obj->subset_is_visible(i));
 		}
 		obj->visuals_changed();
-		m_sceneInspector->refreshView();
+		_scene_inspector->refreshView();
 	}
 }
 

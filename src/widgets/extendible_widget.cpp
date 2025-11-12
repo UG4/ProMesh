@@ -29,92 +29,89 @@
 #include <QHBoxLayout>
 #include <QToolButton>
 #include <QLabel>
-#include "extendible_widget.h"
+#include "extendible_widget.hpp"
 
 
 ExtendibleWidget::ExtendibleWidget(QWidget* parent) :
 	QFrame(parent),
-	m_widget(nullptr)
+	_widget(nullptr)
 {
-	QVBoxLayout* mainLayout = new QVBoxLayout(this);
-	m_vLayout = new QVBoxLayout();
-	QHBoxLayout* hLayout = new QHBoxLayout();
+	auto* mainLayout = new QVBoxLayout(this);
+	_v_layout = new QVBoxLayout();
+	auto* hLayout = new QHBoxLayout();
 
 	mainLayout->setSpacing(0);
 	mainLayout->setContentsMargins(0, 0, 10, 0);
 	hLayout->setSpacing(0);
 	hLayout->setContentsMargins(0, 0, 0, 0);
-	m_vLayout->setContentsMargins(10, 0, 0, 0);
+	_v_layout->setContentsMargins(10, 0, 0, 0);
 
 	this->setLayout(mainLayout);
 	mainLayout->addLayout(hLayout);
-	mainLayout->addLayout(m_vLayout);
+	mainLayout->addLayout(_v_layout);
 
-	m_toolButton = new QToolButton(this);
-	m_toolButton->setCheckable(true);
+	_toolButton = new QToolButton(this);
+	_toolButton->setCheckable(true);
 	// m_toolButton->setArrowType(Qt::RightArrow);
-	hLayout->addWidget(m_toolButton);
+	hLayout->addWidget(_toolButton);
 
-	ExtendibleWidgetHeader* header = new ExtendibleWidgetHeader(this);
-	connect(header, SIGNAL(clicked()), this, SLOT(toggle()));
-	connect(header, SIGNAL(double_clicked()), this, SLOT(toggle()));
+	auto* header = new ExtendibleWidgetHeader(this);
+	connect(header, &ExtendibleWidgetHeader::clicked, this, &ExtendibleWidget::toggle);
+	connect(header, &ExtendibleWidgetHeader::double_clicked, this, &ExtendibleWidget::toggle);
 
-	m_header = header;
-	hLayout->addWidget(m_header);
+	_header = header;
+	hLayout->addWidget(_header);
 
-	connect(m_toolButton, SIGNAL(toggled(bool)), this, SLOT(setChecked(bool)));
+	connect(_toolButton, &QToolButton::toggled, this, &ExtendibleWidget::setChecked);
 }
 
-ExtendibleWidget::~ExtendibleWidget()
-{
 
-}
 
 
 void ExtendibleWidget::setText(const QString& text)
 {
-	m_header->setText(text);
+	_header->setText(text);
 }
 
 void ExtendibleWidget::setInfoText(const QString& toolTip)
 {
-	m_header->setToolTip(toolTip);
+	_header->setToolTip(toolTip);
 	this->setToolTip(toolTip);
 }
 
 void ExtendibleWidget::setWidget(QWidget* widget)
 {
-	if(m_widget){
-		m_vLayout->removeWidget(m_widget);
+	if(_widget){
+		_v_layout->removeWidget(_widget);
 	}
-	m_widget = widget;
-	m_vLayout->addWidget(m_widget);
-	if(m_toolButton->isChecked())
-		m_widget->show();
+	_widget = widget;
+	_v_layout->addWidget(_widget);
+	if(_toolButton->isChecked())
+		_widget->show();
 	else
-		m_widget->hide();
+		_widget->hide();
 }
 
 void ExtendibleWidget::setChecked(bool checked)
 {
-	if(m_toolButton->isChecked() != checked){
-		m_toolButton->setChecked(checked);
+	if(_toolButton->isChecked() != checked){
+		_toolButton->setChecked(checked);
 		return;
 	}
 
 	if(checked){
 		// m_toolButton->setArrowType(Qt::DownArrow);
-		if(m_widget)
-			m_widget->show();
+		if(_widget)
+			_widget->show();
 	}
 	else{
 		// m_toolButton->setArrowType(Qt::RightArrow);
-		if(m_widget)
-			m_widget->hide();
+		if(_widget)
+			_widget->hide();
 	}
 }
 
 void ExtendibleWidget::toggle()
 {
-	setChecked(!m_toolButton->isChecked());
+	setChecked(!_toolButton->isChecked());
 }

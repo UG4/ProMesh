@@ -26,41 +26,39 @@
  */
 
 #include <QtWidgets>
-#include "clip_plane_widget.h"
-#include "scene/lg_scene.h"
+#include "clip_plane_widget.hpp"
+#include "scene/lg_scene.hpp"
 
 using namespace ug;
 
 ClipPlaneWidget::ClipPlaneWidget(QWidget* parent) : QWidget(parent)
 {
-	m_scene = nullptr;
-	QVBoxLayout* vLayout = new QVBoxLayout;
+	_scene = nullptr;
+	auto* vLayout = new QVBoxLayout;
 
 //	set up the layouts, checkboxes and sliders for each plane
 	for(int i = 0; i < 3; ++i)
 	{
-		m_checkBox[i] = new QCheckBox;
-		m_checkBox[i]->setChecked(false);
-		m_slider[i] = new QSlider(Qt::Horizontal);
-		m_slider[i]->setRange(0, 102);
-		m_slider[i]->setValue(51);
+		_check_box[i] = new QCheckBox;
+		_check_box[i]->setChecked(false);
+		_slider[i] = new QSlider(Qt::Horizontal);
+		_slider[i]->setRange(0, 102);
+		_slider[i]->setValue(51);
 
 	//	connect to signals and slots
-		connect(m_checkBox[i], SIGNAL(stateChanged(int)),
-				this, SLOT(stateChanged(int)));
-		connect(m_slider[i], SIGNAL(valueChanged(int)),
-				this, SLOT(valueChanged(int)));
+		connect(_check_box[i], &QCheckBox::stateChanged, this, &ClipPlaneWidget::stateChanged); // param: int
+		connect(_slider[i], &QSlider::valueChanged, this, &ClipPlaneWidget::valueChanged); // int
 
-		QHBoxLayout* hLayout = new QHBoxLayout;
-		hLayout->addWidget(m_checkBox[i]);
-		hLayout->addWidget(m_slider[i]);
+		auto* hLayout = new QHBoxLayout;
+		hLayout->addWidget(_check_box[i]);
+		hLayout->addWidget(_slider[i]);
 
 		vLayout->addLayout(hLayout);
 	}
 
-	m_checkBox[0]->setText(tr("xz"));
-	m_checkBox[1]->setText(tr("xy"));
-	m_checkBox[2]->setText(tr("yz"));
+	_check_box[0]->setText(tr("xz"));
+	_check_box[1]->setText(tr("xy"));
+	_check_box[2]->setText(tr("yz"));
 
 	setLayout(vLayout);
 
@@ -78,7 +76,7 @@ void ClipPlaneWidget::setClipPlane(int index, float ia)
 {
 //	the bounding box of the scene
 	ug::vector3 vMin, vMax;
-	m_scene->get_bounding_box(vMin, vMax);
+	_scene->get_bounding_box(vMin, vMax);
 
 //	position of the plane (moving on the diagonal)
 	vector3 vPlanePos;
@@ -87,78 +85,77 @@ void ClipPlaneWidget::setClipPlane(int index, float ia)
 	switch(index)
 	{
 		case 0:	//xz
-			m_scene->setClipPlane(0, Plane(vPlanePos, vector3(0, -1, 0)));
+			_scene->setClipPlane(0, Plane(vPlanePos, vector3(0, -1, 0)));
 			break;
 		case 1:	//xy
-			m_scene->setClipPlane(1, Plane(vPlanePos, vector3(0, 0, 1)));
+			_scene->setClipPlane(1, Plane(vPlanePos, vector3(0, 0, 1)));
 			break;
 		case 2:	//yz
-			m_scene->setClipPlane(2, Plane(vPlanePos, vector3(-1, 0, 0)));
+			_scene->setClipPlane(2, Plane(vPlanePos, vector3(-1, 0, 0)));
 			break;
 	}
 }
 
 void ClipPlaneWidget::setScene(LGScene* scene)
 {
-	m_scene = scene;
+	_scene = scene;
 	updateClipPlanes();
-	connect(m_scene, SIGNAL(geometry_changed()),
-			this, SLOT(updateClipPlanes()));
+	connect(_scene, &LGScene::geometry_changed, this, &ClipPlaneWidget::updateClipPlanes);
 }
 
 void ClipPlaneWidget::updateClipPlanes()
 {
-	if(!m_scene)
+	if(!_scene)
 		return;
 
 	for(int i = 0; i < 3; ++i)
-		setClipPlane(i, (float)(m_slider[i]->value()-1) / 100.f);
+		setClipPlane(i, static_cast<float>(_slider[i]->value() - 1) / 100.f);
 
 	bool gotOne = false;
 
 	for(int i = 0; i < 3; ++i)
-		gotOne |= m_scene->clipPlaneIsEnabled(i);
+		gotOne |= _scene->clipPlaneIsEnabled(i);
 
 	if(gotOne)
-		m_scene->update_visuals();
+		_scene->update_visuals();
 }
 
 void ClipPlaneWidget::valueChanged(int newValue)
 {
-	if(!m_scene)
+	if(!_scene)
 		return;
 
-	QSlider* slider = qobject_cast<QSlider*>(sender());
+	auto slider = qobject_cast<QSlider*>(sender());
 //	get the slider index
 	int sliderIndex = 0;
 	for(; sliderIndex < 3; ++sliderIndex)
 	{
-		if(slider == m_slider[sliderIndex])
+		if(slider == _slider[sliderIndex])
 			break;
 	}
 
 //	the interpolation amount
-	float ia = (float)(newValue-1) / 100.f;
+	float ia = static_cast<float>(newValue - 1) / 100.f;
 
 //	set clip plane position
 	setClipPlane(sliderIndex, ia);
 
 //	update visuals
-	if(m_scene->clipPlaneIsEnabled(sliderIndex))
-		m_scene->update_visuals();
+	if(_scene->clipPlaneIsEnabled(sliderIndex))
+		_scene->update_visuals();
 }
 
 void ClipPlaneWidget::stateChanged(int newState)
 {
-	if(!m_scene)
+	if(!_scene)
 		return;
 
-	QCheckBox* checkBox = qobject_cast<QCheckBox*>(sender());
+	auto* checkBox = qobject_cast<QCheckBox*>(sender());
 //	get the slider index
 	int cbIndex = 0;
 	for(; cbIndex < 3; ++cbIndex)
 	{
-		if(checkBox == m_checkBox[cbIndex])
+		if(checkBox == _check_box[cbIndex])
 			break;
 	}
 
@@ -167,14 +164,14 @@ void ClipPlaneWidget::stateChanged(int newState)
 		switch(newState)
 		{
 			case 0:
-				m_scene->enableClipPlane(cbIndex, false);
+				_scene->enableClipPlane(cbIndex, false);
 				break;
 			case 2:
-				m_scene->enableClipPlane(cbIndex, true);
+				_scene->enableClipPlane(cbIndex, true);
 				break;
 		}
 
-		m_scene->update_visuals();
+		_scene->update_visuals();
 	}
 }
 

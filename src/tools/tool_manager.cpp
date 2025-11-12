@@ -28,12 +28,12 @@
 #include <QtWidgets>
 #include <vector>
 #include <string>
-#include "app.h"
-#include "tool_manager.h"
+#include "app.hpp"
+#include "tool_manager.hpp"
 #include "common/util/string_util.h"
-#include "widgets/tool_browser_widget.h"
-#include "widgets/widget_container.h"
-#include "widgets/extendible_widget.h"
+#include "widgets/tool_browser_widget.hpp"
+#include "widgets/widget_container.hpp"
+#include "widgets/extendible_widget.hpp"
 
 using namespace std;
 using namespace ug;
@@ -51,66 +51,66 @@ enum UserRolls{
 ToolManager::ToolManager(QWidget* parent) :
 	QObject(parent)
 {
-	m_parentWidget = parent;
+	_parent_widget = parent;
 }
 
 ToolManager::~ToolManager()
 {
-	for(size_t i = 0; i < m_registeredTools.size(); ++i)
-		delete m_registeredTools[i].m_tool;
+	for(size_t i = 0; i < _registered_tools.size(); ++i)
+		delete _registered_tools[i]._tool;
 }
 
 void ToolManager::register_tool(ITool* tool, int shortcutKey,
 								uint shortcutModifierKeys)
 {
-	m_registeredTools.push_back(ToolEntry(tool, shortcutKey, shortcutModifierKeys));
+	_registered_tools.emplace_back(tool, shortcutKey, shortcutModifierKeys);
 }
 
 void ToolManager::remove_tool(ITool* tool)
 {
-	for(size_t i = 0; i < m_registeredTools.size(); ++i){
-		if(m_registeredTools[i].m_tool == tool){
-			m_registeredTools.erase(m_registeredTools.begin() + i);
+	for(size_t i = 0; i < _registered_tools.size(); ++i){
+		if(_registered_tools[i]._tool == tool){
+			_registered_tools.erase(_registered_tools.begin() + i);
 		}
 	}
 }
 
 void ToolManager::set_group_icon(const std::string& grpName, const char* iconName)
 {
-	m_groupIconMap[grpName] = QIcon(iconName);
+	_group_icon_map[grpName] = QIcon(iconName);
 	add_known_group(grpName);
 }
 
 QIcon ToolManager::group_icon(const std::string& grpName) const
 {
-	GroupIconMap::const_iterator i = m_groupIconMap.find(grpName);
-	if(i != m_groupIconMap.end()){
+	auto i = _group_icon_map.find(grpName);
+	if(i != _group_icon_map.end()){
 		return i->second;
 	}
-	return m_defaultIcon;
+	return _default_icon;
 }
 
 void ToolManager::add_known_group(const std::string& grpName)
 {
-	for(size_t i = 0; i < m_knownGroups.size(); ++i){
-		if(m_knownGroups[i] == grpName)
+	for(size_t i = 0; i < _known_groups.size(); ++i){
+		if(_known_groups[i] == grpName)
 			return;
 	}
-	m_knownGroups.push_back(grpName);
+	_known_groups.push_back(grpName);
 }
 
 void ToolManager::launchTool(int toolID)
 {
 	PROFILE_FUNC();
-	if(toolID >= 0 && toolID < (int)m_registeredTools.size()){
-		ITool* tool = m_registeredTools[toolID].m_tool;
+	if(toolID >= 0 && toolID < (int)_registered_tools.size()){
+		ITool* tool = _registered_tools[toolID]._tool;
 
-		QWidget* widget = tool->get_dialog(m_parentWidget);
+		QWidget* widget = tool->get_dialog(_parent_widget);
 
 		if(widget){
-			QDialog* dlg = new QDialog(m_parentWidget);
+			auto dlg = new QDialog(_parent_widget);
 			dlg->setWindowTitle(tool->get_name());
-			QVBoxLayout* layout = new QVBoxLayout(dlg);
+			auto* layout = new QVBoxLayout(dlg);
 			dlg->setLayout(layout);
 			layout->addWidget(widget);
 			dlg->show();
@@ -145,11 +145,11 @@ void ToolManager::execute_shortcut(int key, uint modifiers)
 	if(!key)
 		return;
 
-	for(size_t i = 0; i < m_registeredTools.size(); ++i){
-		if((m_registeredTools[i].m_shortcutKey == key)
-		   && (m_registeredTools[i].m_shortcutModifiers == modifiers))
+	for(size_t i = 0; i < _registered_tools.size(); ++i){
+		if((_registered_tools[i]._shortcut_key == key)
+		   && (_registered_tools[i]._shortcut_modifiers == modifiers))
 		{
-			launchTool((int)i);
+			launchTool(static_cast<int>(i));
 			break;
 		}
 	}

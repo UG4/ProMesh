@@ -26,20 +26,20 @@
  */
 
 #include <QtWidgets>
-#include "delegates.h"
+#include "delegates.hpp"
 
 VisibilityDelegate::VisibilityDelegate(int myColumn,
 					QObject* parent) : QStyledItemDelegate(parent)
 {
-	m_column = myColumn;
-	m_imageVisible.load(":images/visible_16.png");
-	m_imageInvisible.load(":images/invisible_16.png");
+	_column = myColumn;
+	_image_visible.load(":images/visible_16.png");
+	_image_invisible.load(":images/invisible_16.png");
 }
 
 QSize VisibilityDelegate::sizeHint(const QStyleOptionViewItem & option,
 					   const QModelIndex & index ) const
 {
-	if(index.column() == m_column)
+	if(index.column() == _column)
 		return QSize(16, 16);
 	return QSize();
 }
@@ -48,7 +48,7 @@ void VisibilityDelegate::paint(QPainter* painter,
 				   const QStyleOptionViewItem& option,
 				   const QModelIndex& index) const
 {
-	if(index.column() == m_column)
+	if(index.column() == _column)
 	{
 	//	calculate the center
 		int cX = (option.rect.left() + option.rect.right()) / 2;
@@ -57,10 +57,10 @@ void VisibilityDelegate::paint(QPainter* painter,
 		bool visible = index.model()->data(index, SIDR_VISIBLE).toBool();
 		if(visible)
 			painter->drawImage(QRect(cX - 8, cY - 8, 16, 16),
-							   m_imageVisible);
+							   _image_visible);
 		else
 			painter->drawImage(QRect(cX - 8, cY - 8, 16, 16),
-							   m_imageInvisible);
+							   _image_invisible);
 	}
 	else
 		QStyledItemDelegate::paint(painter, option, index);
@@ -78,14 +78,14 @@ QWidget* VisibilityDelegate::createEditor(QWidget* parent,
 ColorDelegate::ColorDelegate(int myColumn, int myRole,
 					QObject* parent) : QStyledItemDelegate(parent)
 {
-	m_column = myColumn;
-	m_role = myRole;
+	_column = myColumn;
+	_role = myRole;
 }
 
 QSize ColorDelegate::sizeHint(const QStyleOptionViewItem & option,
 					   const QModelIndex & index ) const
 {
-	if(index.column() == m_column)
+	if(index.column() == _column)
 		return QSize(16, 16);
 	return QSize();
 }
@@ -94,14 +94,14 @@ void ColorDelegate::paint(QPainter* painter,
 				   const QStyleOptionViewItem& option,
 				   const QModelIndex& index) const
 {
-	if(index.column() == m_column)
+	if(index.column() == _column)
 	{
 	//	calculate the center
 		int cX = (option.rect.left() + option.rect.right()) / 2;
 		int cY = (option.rect.bottom() + option.rect.top()) / 2;
 
 		bool ok = false;
-		uint col = index.model()->data(index, m_role).toUInt(&ok);
+		uint col = index.model()->data(index, _role).toUInt(&ok);
 		if(ok)
 		{
 			painter->setBrush(QBrush(col, Qt::SolidPattern));
@@ -118,12 +118,11 @@ QWidget* ColorDelegate::createEditor(QWidget* parent,
 							  const QModelIndex& index) const
 {
 	bool ok = false;
-	uint col = index.model()->data(index, m_role).toUInt(&ok);
+	uint col = index.model()->data(index, _role).toUInt(&ok);
 	if(ok)
 	{
-		QColorDialog* editor = new QColorDialog(col, parent);
-		connect(editor, SIGNAL(colorSelected(QColor)),
-				this, SLOT(updateColorAndQuitEditor(QColor)));
+		auto* editor = new QColorDialog(col, parent);
+		connect(editor, &QColorDialog::colorSelected, this, &ColorDelegate::updateColorAndQuitEditor);
 
 		return editor;
 	}
@@ -139,13 +138,13 @@ void ColorDelegate::setModelData(QWidget* editor,
 						  QAbstractItemModel* model,
 						  const QModelIndex & index) const
 {
-	QColorDialog* colEdit = qobject_cast<QColorDialog*>(editor);
-	model->setData(index, QVariant((uint)colEdit->currentColor().rgb()), m_role);
+	auto* colEdit = qobject_cast<QColorDialog*>(editor);
+	model->setData(index, QVariant(colEdit->currentColor().rgb()), _role);
 }
 
 void ColorDelegate::updateColorAndQuitEditor(const QColor & color)
 {
-	QColorDialog* editor = qobject_cast<QColorDialog*>(sender());
+	auto* editor = qobject_cast<QColorDialog*>(sender());
 	emit commitData(editor);
 	emit closeEditor(editor);
 }

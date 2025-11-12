@@ -1,3 +1,4 @@
+øunused
 /*
  * Copyright (c) 2008-2015:  G-CSC, Goethe University Frankfurt
  * Copyright (c) 2006-2008:  Steinbeis Forschungszentrum (STZ Ölbronn)
@@ -38,7 +39,7 @@ QHelpBrowser(QWidget* parent) :
 	m_webView = new QWebView(this);
 	m_webView->page()->setLinkDelegationPolicy(QWebPage::DelegateExternalLinks);
 	//m_webView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
-	connect(m_webView, SIGNAL(linkClicked(const QUrl&)), this, SLOT(onLinkClicked(const QUrl&)));
+	connect(m_webView, QWebView::linkClicked, this, &QHelpBrowser::onLinkClicked);
 
 	QBoxLayout* layout = new QVBoxLayout(this);
 	layout->addWidget(m_webView);

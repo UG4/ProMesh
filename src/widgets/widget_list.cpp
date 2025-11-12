@@ -30,44 +30,40 @@
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QFrame>
-#include "widget_container.h"
-#include "widget_list.h"
+#include "widget_container.hpp"
+#include "widget_list.hpp"
 
 
 WidgetList::WidgetList(QWidget* parent) : QWidget(parent)
 {
-	m_scrollArea = new QScrollArea(this);
+	_scroll_area = new QScrollArea(this);
 	//m_scrollArea->setBackgroundRole(QPalette::Dark);
 
-	QVBoxLayout* layout = new QVBoxLayout(this);
-	layout->addWidget(m_scrollArea);
+	auto* layout = new QVBoxLayout(this);
+	layout->addWidget(_scroll_area);
 	layout->setSpacing(0);
 	layout->setContentsMargins(0, 0, 0, 0);
 	this->setLayout(layout);
 
 //	This widget will contain the widgetContainer and a spacer
-	QWidget* spacerWidget = new QWidget(m_scrollArea);
-	QVBoxLayout* spacerLayout = new QVBoxLayout(spacerWidget);
+	auto* spacerWidget = new QWidget(_scroll_area);
+	auto* spacerLayout = new QVBoxLayout(spacerWidget);
 	spacerLayout->setSpacing(0);
 	spacerLayout->setContentsMargins(0, 0, 0, 0);
 	spacerWidget->setLayout(spacerLayout);
 
-	m_widgetContainer = new WidgetContainer(spacerWidget);
-	spacerLayout->addWidget(m_widgetContainer);
+	_widget_container = new WidgetContainer(spacerWidget);
+	spacerLayout->addWidget(_widget_container);
 
 	spacerLayout->addStretch();
 
-	m_scrollArea->setWidget(spacerWidget);
-	m_scrollArea->setWidgetResizable(true);
+	_scroll_area->setWidget(spacerWidget);
+	_scroll_area->setWidgetResizable(true);
 }
 
-WidgetList::~WidgetList()
-{
-
-}
 
 void WidgetList::addWidget(QWidget* widget, Qt::Alignment alignment)
 {
-	m_widgetContainer->addWidget(widget, alignment);
+	_widget_container->addWidget(widget, alignment);
 }
 

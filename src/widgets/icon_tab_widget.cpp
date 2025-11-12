@@ -25,31 +25,29 @@
  * GNU Lesser General Public License for more details.
  */
  
-#include "icon_tab_widget.h"
+#include "icon_tab_widget.hpp"
+
+#include <iostream>
 #include <QVBoxLayout>
 #include <QToolBar>
 #include <QToolButton>
 #include <QStackedWidget>
-#include <QSignalMapper>
 
 
 IconTabWidget::IconTabWidget(QWidget* parent) : QWidget(parent)
 {
-	m_toolBar = new QToolBar(this);
-	m_toolBar->setIconSize(QSize(24, 24));
+	_tool_bar = new QToolBar(this);
+	_tool_bar->setIconSize(QSize(24, 24));
 
-	m_stackedWidget = new QStackedWidget(this);
+	_stacked_widget = new QStackedWidget(this);
 
-	QVBoxLayout* layout = new QVBoxLayout();
-	layout->addWidget(m_toolBar);
-	layout->addWidget(m_stackedWidget);
+	auto* layout = new QVBoxLayout();
+	layout->addWidget(_tool_bar);
+	layout->addWidget(_stacked_widget);
 	layout->setSpacing(0);
 	layout->setContentsMargins(0, 0, 0, 0);
 	this->setLayout(layout);
 
-//	the signal mapper is used to connect the tool-buttons with the stacked widgets
-	m_signalMapper = new QSignalMapper(this);
-	connect(m_signalMapper, SIGNAL(mapped(int)), m_stackedWidget, SLOT(setCurrentIndex(int)));
 }
 
 IconTabWidget::~IconTabWidget()
@@ -57,33 +55,40 @@ IconTabWidget::~IconTabWidget()
 
 }
 
+void IconTabWidget::ic_button_click() {
+	std::cout << "IconTabWidget::ic_button_click" << std::endl;
+}
+
 void IconTabWidget::addPage(QWidget* page, const QIcon& icon, const QString& tooltip)
 {
-	QToolButton* toolBtn = new QToolButton(m_toolBar);
+	auto* toolBtn = new QToolButton(_tool_bar);
 	toolBtn->setIcon(icon);
 	toolBtn->setCheckable(true);
 	toolBtn->setAutoExclusive(true);
 	toolBtn->setToolTip(tooltip);
 
-	m_signalMapper->setMapping(toolBtn, m_stackedWidget->count());
-	connect(toolBtn, SIGNAL(clicked()), m_signalMapper, SLOT(map()));
 
-	m_toolBar->addWidget(toolBtn);
-	m_stackedWidget->addWidget(page);
+	int index = _stacked_widget->count();
+	connect(toolBtn, &QToolButton::clicked, this, [this, index]() {
+		_stacked_widget->setCurrentIndex(index);
+	});
+
+	_tool_bar->addWidget(toolBtn);
+	_stacked_widget->addWidget(page);
 
 //	if this is the first page, we'll select it
-	if(m_stackedWidget->count() == 1){
+	if(_stacked_widget->count() == 1){
 		toolBtn->setChecked(true);
-		m_stackedWidget->setCurrentIndex(0);
+		_stacked_widget->setCurrentIndex(0);
 	}
 }
 
 int IconTabWidget::count()
 {
-	return m_stackedWidget->count();
+	return _stacked_widget->count();
 }
 
 QWidget* IconTabWidget::widget(int pageIndex)
 {
-	return m_stackedWidget->widget(pageIndex);
+	return _stacked_widget->widget(pageIndex);
 }

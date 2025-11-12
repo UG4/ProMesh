@@ -27,10 +27,10 @@
 
 #include <iostream>
 #include <QtWidgets>
-#include "scene/scene_interface.h"
-#include "scene_inspector.h"
-#include "scene_item_model.h"
-#include "delegates.h"
+#include "scene/scene_interface.hpp"
+#include "scene_inspector.hpp"
+#include "scene_item_model.hpp"
+#include "delegates.hpp"
 
 using namespace std;
 
@@ -56,17 +56,6 @@ SceneInspector::SceneInspector(QWidget* parent) : QTreeView(parent)
 	this->resizeColumnToContents(1);
 	this->resizeColumnToContents(2);
 
-//	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-	//setExpandsOnDoubleClick(false);
-	//setEditTriggers(QAbstractItemView::DoubleClicked);
-/*
-//	set up layout
-	QVBoxLayout* layout = new QVBoxLayout;
-	layout->addWidget(m_treeView);
-
-	setLayout(layout);
-*/
 }
 
 SceneInspector::~SceneInspector()
@@ -77,13 +66,13 @@ SceneInspector::~SceneInspector()
 void SceneInspector::setScene(IScene* scene)
 {
 	m_model->setScene(scene);
-	connect(scene, SIGNAL(visuals_updated()), this, SLOT(refreshView()));
+	connect(scene, &IScene::visuals_updated, this, &SceneInspector::refreshView);
 }
 
 void SceneInspector::mousePressEvent(QMouseEvent * event)
 {
-	const int oldActiveObjectIndex = getActiveObjectIndex();
-	const int oldActiveSubsetIndex = getActiveSubsetIndex();
+	const int old_active_object_index = getActiveObjectIndex();
+	const int old_active_subset_index = getActiveSubsetIndex();
 
 	QModelIndex index = indexAt(event->pos());
 	if(index.isValid()){
@@ -97,16 +86,17 @@ void SceneInspector::mousePressEvent(QMouseEvent * event)
 			}
 		}
 	}
-	QTreeView::mousePressEvent(event);
-	const int newActiveObjectIndex = getActiveObjectIndex();
-	const int newActiveSubsetIndex = getActiveSubsetIndex();
 
-	if(newActiveObjectIndex != oldActiveObjectIndex){
+	QTreeView::mousePressEvent(event);
+	const int new_active_object_index = getActiveObjectIndex();
+	const int new_active_subset_index = getActiveSubsetIndex();
+
+	if(new_active_object_index != old_active_object_index){
 		emit objectChanged(getActiveObject());
-		emit subsetChanged(getActiveObject(), newActiveSubsetIndex);
+		emit subsetChanged(getActiveObject(), new_active_subset_index);
 	}
-	else if(newActiveSubsetIndex != oldActiveSubsetIndex)
-		emit subsetChanged(getActiveObject(), newActiveSubsetIndex);
+	else if(new_active_subset_index != old_active_subset_index)
+		emit subsetChanged(getActiveObject(), new_active_subset_index);
 }
 
 void SceneInspector::mouseReleaseEvent(QMouseEvent* event)
@@ -164,7 +154,18 @@ void SceneInspector::setActiveSubset(int objIndex, int subsetIndex)
 void SceneInspector::refreshView()
 {
 	m_model->refreshSubsets();
-	dataChanged(QModelIndex(), QModelIndex());
+	auto top_left = QModelIndex();
+	auto bottom_right = QModelIndex();
+	//if (index.isValid()) {
+	//	emit dataChanged(index, index, {Qt::DisplayRole});
+	//} else {
+		// fallback: refresh everything
+	m_model->refresh_all();
+
+	//}
+
+	//dataChanged(top_left, bottom_right);
+
 	emit subsetChanged(getActiveObject(), getActiveSubsetIndex());
 }
 

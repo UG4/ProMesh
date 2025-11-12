@@ -26,21 +26,20 @@
  */
 
 #include <vector>
-#include "app.h"
-#include "standard_tools.h"
-#include "tools_util.h"
-#include "heightfields/interpolated_heightfield.h"
+#include "app.hpp"
+#include "standard_tools.hpp"
+#include "tools_util.hpp"
+#include "heightfields/interpolated_heightfield.hpp"
 #include "tools/coordinate_transform_tools.h"
 #include "tooltips.h"
 
 using namespace ug;
 using namespace std;
 
-class ToolTransform : public ITool
-{
+class ToolTransform : public ITool {
 public:
-	void execute(LGObject* obj, QWidget* widget){
-	ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+	void execute(LGObject* obj, QWidget* widget) override {
+	auto* dlg = dynamic_cast<ToolWidget*>(widget);
 		bool local = true;
 		bool applyToSelection = true;
 
@@ -95,12 +94,12 @@ public:
 		obj->geometry_changed();
 	}
 
-	const char* get_name()		{return "Transform";}
-	const char* get_tooltip()	{return TOOLTIP_TRANSFORM;}
-	const char* get_group()		{return "Coordinate Transform";}
+	const char* get_name() override {return "Transform";}
+	const char* get_tooltip() override {return TOOLTIP_TRANSFORM;}
+	const char* get_group() override {return "Coordinate Transform";}
 
-	ToolWidget* get_dialog(QWidget* parent){
-		ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
+	ToolWidget* get_dialog(QWidget* parent) override {
+		auto *dlg = new ToolWidget(get_name(), parent, this,
 								IDB_APPLY | IDB_OK | IDB_CLOSE);
 		QStringList entries;
 		entries.push_back(tr("selection center"));
@@ -117,13 +116,12 @@ public:
 	}
 };
 
-class ToolApplyHeightfield : public ITool
-{
+class ToolApplyHeightfield : public ITool {
 public:
-	void execute(LGObject* obj, QWidget* widget){
+	void execute(LGObject* obj, QWidget* widget) override {
 		using namespace ug;
 
-		ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+		auto dlg = dynamic_cast<ToolWidget*>(widget);
 
 		QString filename;
 		if(dlg){
@@ -134,7 +132,7 @@ public:
 			InterpolatedHeightfield interpHf;
 			IHeightfield* hf = &interpHf;
 
-			LGObject* obj = app::getActiveObject();
+			auto obj = app::getActiveObject();
 			if(!obj)
 				return;
 
@@ -163,12 +161,12 @@ public:
 
 	}
 
-	const char* get_name()		{return "Apply Heightfield";}
-	const char* get_tooltip()	{return TOOLTIP_APPLY_HEIGHT_FIELD;}
-	const char* get_group()		{return "Coordinate Transform | Heightfields";}
+	const char* get_name() override {return "Apply Heightfield";}
+	const char* get_tooltip() override {return TOOLTIP_APPLY_HEIGHT_FIELD;}
+	const char* get_group() override {return "Coordinate Transform | Heightfields";}
 
-	QWidget* get_dialog(QWidget* parent){
-		ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
+	QWidget* get_dialog(QWidget* parent) override {
+		auto *dlg = new ToolWidget(get_name(), parent, this,
 								IDB_APPLY | IDB_OK | IDB_CLOSE);
 		dlg->addFileBrowser(tr("heightfield:"), FWT_OPEN, "*.*");
 		return dlg;
@@ -176,29 +174,27 @@ public:
 };
 
 
-class ToolStoreVertexCoordinates : public ITool
-{
+class ToolStoreVertexCoordinates : public ITool {
 public:
-	void execute(LGObject* obj, QWidget*){
+	void execute(LGObject* obj, QWidget*) override {
 		obj->buffer_current_vertex_coordinates();
 	}
 
-	const char* get_name()		{return "Store Vertex Coordinates";}
-	const char* get_tooltip()	{return "Stores current vertex coordinates to the coordinate-buffer. Use 'Restore Vertex Coordinates' to restore them.";}
-	const char* get_group()		{return "Coordinate Transform | Coordinate Buffer";}
+	const char* get_name() override {return "Store Vertex Coordinates";}
+	const char* get_tooltip() override {return "Stores current vertex coordinates to the coordinate-buffer. Use 'Restore Vertex Coordinates' to restore them.";}
+	const char* get_group() override {return "Coordinate Transform | Coordinate Buffer";}
 };
 
 
-class ToolRestoreVertexCoordinates : public ITool
-{
+class ToolRestoreVertexCoordinates : public ITool {
 public:
-	void execute(LGObject* obj, QWidget*){
+	void execute(LGObject* obj, QWidget*) override {
 		obj->restore_vertex_coordinates_from_buffer();
 	}
 
-	const char* get_name()		{return "Restore Vertex Coordinates";}
-	const char* get_tooltip()	{return "Restores vertex coordinates from the coordinate-buffer. Use 'Store Vertex Coordinates' to store them.";}
-	const char* get_group()		{return "Coordinate Transform | Coordinate Buffer";}
+	const char* get_name() override {return "Restore Vertex Coordinates";}
+	const char* get_tooltip() override {return "Restores vertex coordinates from the coordinate-buffer. Use 'Store Vertex Coordinates' to store them.";}
+	const char* get_group() override {return "Coordinate Transform | Coordinate Buffer";}
 };
 
 

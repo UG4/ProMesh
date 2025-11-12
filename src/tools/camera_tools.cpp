@@ -27,8 +27,8 @@
 
 #include <string>
 #include "promesh_plugin.h"
-#include "app.h"
-#include "standard_tools.h"
+#include "app.hpp"
+#include "standard_tools.hpp"
 #include "tooltips.h"
 
 using namespace std;
@@ -36,52 +36,49 @@ using namespace ug;
 using namespace ug::promesh;
 using namespace ug::bridge;
 
-class ToolCenterObject : public ITool
-{
+class ToolCenterObject : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget* widget){
-			ug::Sphere3 s = obj->get_bounding_sphere();
+		void execute(LGObject* obj, QWidget* widget) override {
+			Sphere3 s = obj->get_bounding_sphere();
 
 			app::getMainWindow()->getView3D()->fly_to(
-								cam::vector3(s.get_center().x(),
+								cam::Vector3(s.get_center().x(),
 											s.get_center().y(),
 											s.get_center().z()),
 								s.get_radius() * 4.f + 0.001);
 		}
 
-		const char* get_name()		{return "Center Object";}
-		const char* get_tooltip()	{return TOOLTIP_CENTER_OBJECT;}
-		const char* get_group()		{return "Camera";}
+		const char* get_name() override {return "Center Object";}
+		const char* get_tooltip() override {return TOOLTIP_CENTER_OBJECT;}
+		const char* get_group() override {return "Camera";}
 };
 
-class ToolCenterSelection : public ITool
-{
+class ToolCenterSelection : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget* widget){
-			ug::Selector& sel = obj->selector();
-			ug::Grid::VertexAttachmentAccessor<ug::APosition> aaPos(obj->grid(), ug::aPosition);
+		void execute(LGObject* obj, QWidget* widget) override {
+			Selector& sel = obj->selector();
+			Grid::VertexAttachmentAccessor aaPos(obj->grid(), ug::aPosition);
 
 			View3D* view = app::getMainWindow()->getView3D();
 			cam::SCameraState oldCam = view->camera().get_camera_state();
 
-			ug::vector3 center;
+			vector3 center;
 
 		//	calculate and focus the center
-			if(ug::CalculateCenter(center, sel, aaPos)){
-				view->fly_to(cam::vector3(center.x(), center.y(),center.z()),
+			if(CalculateCenter(center, sel, aaPos)){
+				view->fly_to(cam::Vector3(center.x(), center.y(),center.z()),
 							 oldCam.fDistance);
 			}
 		}
 
-		const char* get_name()		{return "Center Selection";}
-		const char* get_tooltip()	{return TOOLTIP_CENTER_SELECTION;}
-		const char* get_group()		{return "Camera";}
+		const char* get_name() override {return "Center Selection";}
+		const char* get_tooltip() override {return TOOLTIP_CENTER_SELECTION;}
+		const char* get_group() override {return "Camera";}
 };
 
-class ToolTopView : public ITool
-{
+class ToolTopView : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget* widget){
+		void execute(LGObject* obj, QWidget* widget) override {
 			View3D* view = app::getMainWindow()->getView3D();
 			cam::SCameraState oldCam = view->camera().get_camera_state();
 		//	construct a new state
@@ -96,71 +93,23 @@ class ToolTopView : public ITool
 			view->update();
 		}
 
-		const char* get_name()		{return "Top View";}
-		const char* get_tooltip()	{return TOOLTIP_TOP_VIEW;}
-		const char* get_group()		{return "Camera";}
-};
-/*
-class ToolFrontView : public ITool
-{
-	public:
-		void execute(LGObject* obj, QWidget* widget){
-			View3D* view = app::getMainWindow()->getView3D();
-			cam::SCameraState oldCam = view->camera().get_camera_state();
-		//	construct a new state
-			cam::SCameraState newCam;
-			newCam.fDistance = oldCam.fDistance;
-			newCam.vTo = oldCam.vTo;
-			newCam.vFrom = newCam.vTo;
-			newCam.vFrom.y() -= newCam.fDistance;
-			newCam.quatOrientation.set_values(0, 1, 0, 0);
-
-			view->camera().set_camera_state(newCam);
-			view->update();
-		}
-
-		const char* get_name()		{return "Front View";}
-		const char* get_tooltip()	{return TOOLTIP_FRONT_VIEW;}
-		const char* get_group()		{return "Camera";}
+		const char* get_name() override {return "Top View";}
+		const char* get_tooltip() override {return TOOLTIP_TOP_VIEW;}
+		const char* get_group() override {return "Camera";}
 };
 
-class ToolSideView : public ITool
+void FlyTo(Mesh* msh, const vector3& to)
 {
-	public:
-		void execute(LGObject* obj, QWidget* widget){
-			View3D* view = app::getMainWindow()->getView3D();
-			cam::SCameraState oldCam = view->camera().get_camera_state();
-		//	construct a new state
-			cam::SCameraState newCam;
-			newCam.fDistance = oldCam.fDistance;
-			newCam.vTo = oldCam.vTo;
-			newCam.vFrom = newCam.vTo;
-			newCam.vFrom.x() -= newCam.fDistance;
-			newCam.quatOrientation.set_values(1, 0, 0, 0);
-
-			view->camera().set_camera_state(newCam);
-			view->update();
-		}
-
-		const char* get_name()		{return "Side View";}
-		const char* get_tooltip()	{return TOOLTIP_SIDE_VIEW;}
-		const char* get_group()		{return "Camera";}
-};
-*/
-
-void FlyTo (Mesh* msh, const vector3& to)
-{
-	app::getMainWindow()->getView3D()->fly_to (to);
+	app::getMainWindow()->getView3D()->fly_to(to);
 }
 
 
-class ToolHideSelectedElements : public ITool
-{
+class ToolHideSelectedElements : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 			using namespace ug;
 			LGScene* scene = app::getActiveScene();
-			ug::Selector& sel = obj->selector();
+			Selector& sel = obj->selector();
 			scene->hide_elements(obj, sel.begin<Vertex>(), sel.end<Vertex>());
 			scene->hide_elements(obj, sel.begin<Edge>(), sel.end<Edge>());
 			scene->hide_elements(obj, sel.begin<Face>(), sel.end<Face>());
@@ -168,24 +117,23 @@ class ToolHideSelectedElements : public ITool
 			obj->visuals_changed();
 		}
 
-		const char* get_name()		{return "Hide Selected Elements";}
-		const char* get_tooltip()	{return TOOLTIP_HIDE_SELECTED_ELEMENTS;}
-		const char* get_group()		{return "Camera";}
+		const char* get_name() override {return "Hide Selected Elements";}
+		const char* get_tooltip() override {return TOOLTIP_HIDE_SELECTED_ELEMENTS;}
+		const char* get_group() override {return "Camera";}
 };
 
 
-class ToolUnhideElements : public ITool
-{
+class ToolUnhideElements : public ITool {
 	public:
-		void execute(LGObject* obj, QWidget*){
+		void execute(LGObject* obj, QWidget*) override {
 			LGScene* scene = app::getActiveScene();
 			scene->unhide_elements(obj);
 			obj->visuals_changed();
 		}
 
-		const char* get_name()		{return "Unhide Elements";}
-		const char* get_tooltip()	{return TOOLTIP_UNHIDE_ELEMENTS;}
-		const char* get_group()		{return "Camera";}
+		const char* get_name() override {return "Unhide Elements";}
+		const char* get_tooltip() override {return TOOLTIP_UNHIDE_ELEMENTS;}
+		const char* get_group() override {return "Camera";}
 };
 
 
@@ -194,8 +142,6 @@ void RegisterCameraTools(ToolManager* toolMgr)
 	toolMgr->register_tool(new ToolCenterObject);
 	toolMgr->register_tool(new ToolCenterSelection);
 	toolMgr->register_tool(new ToolTopView);
-	//toolMgr->register_tool(new ToolFrontView);
-	//toolMgr->register_tool(new ToolSideView);
 	toolMgr->register_tool(new ToolHideSelectedElements);
 	toolMgr->register_tool(new ToolUnhideElements);
 

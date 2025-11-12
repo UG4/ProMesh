@@ -1,0 +1,179 @@
+/*
+ * Copyright (c) 2008-2015:  G-CSC, Goethe University Frankfurt
+ * Copyright (c) 2006-2008:  Steinbeis Forschungszentrum (STZ Ölbronn)
+ * Copyright (c) 2006-2015:  Sebastian Reiter
+ * Author: Sebastian Reiter
+ *
+ * This file is part of ProMesh.
+ * 
+ * ProMesh is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License version 3 (as published by the
+ * Free Software Foundation) with the following additional attribution
+ * requirements (according to LGPL/GPL v3 §7):
+ * 
+ * (1) The following notice must be displayed in the Appropriate Legal Notices
+ * of covered and combined works: "Based on ProMesh (www.promesh3d.com)".
+ * 
+ * (2) The following bibliography is recommended for citation and must be
+ * preserved in all covered files:
+ * "Reiter, S. and Wittum, G. ProMesh -- a flexible interactive meshing software
+ *   for unstructured hybrid grids in 1, 2, and 3 dimensions. In preparation."
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ */
+
+#ifndef INPUT_DIALOG_H
+#define INPUT_DIALOG_H
+
+#include <QFrame>
+#include <vector>
+#include "common/math/ugmath.h"
+#include "widgets/file_widget.hpp"
+
+
+class QFormLayout;
+class QVBoxLayout;
+class ITool;
+
+enum InputDialogButtons
+{
+	IDB_NONE = 0,
+	IDB_OK = 1,
+	IDB_CANCEL = 1 << 1,
+	IDB_APPLY = 1 << 2,
+	IDB_PREVIEW = 1 << 3,
+	IDB_CLOSE = 1 << 4
+};
+
+class ToolWidget : public QFrame {
+	Q_OBJECT
+	
+	public:
+
+		ToolWidget(const QString& name, QWidget* parent,
+	           ITool* tool, uint buttons);
+					
+		void addWidget(const QString& caption, QWidget* widget);
+
+	/**	retrieve value with to_int.*/
+		void addSlider(const QString& caption,
+						double min, double max, double value);
+
+	/**	retrieve value with to_double.*/
+		void addSpinBox(const QString& caption,
+						double min, double max, double value,
+						double stepSize, int numDecimals);
+
+	/**	retrieve index with to_int. retrieve text with to_string.*/
+		void addComboBox(const QString& caption,
+						const QStringList& entries,
+						int activeEntry);
+
+	/**	retrieve value with to_bool. false: unchecked, true: checked.*/
+		void addCheckBox(const QString& caption,
+						bool bChecked);
+
+		void addListBox(const QString& caption,
+						QStringList& entries,
+						bool multiSelection = true);
+
+		void addTextBox(const QString& caption, const QString& text);
+
+		void addVector(const QString& caption, int size, double* values = nullptr);
+
+		void addMatrix(const QString& caption, int numRows, int numCols);
+
+		void addFileBrowser(const QString& caption, FileWidgetType fwt,
+							const QString& filter);
+
+/*
+		void addVector3(const QString& caption,
+						double x, double y, double z);
+*/
+		bool to_bool(int paramIndex, bool* bOKOut = nullptr);
+		int to_int(int paramIndex, bool* bOKOut = nullptr);
+		double to_double(int paramIndex, bool* bOKOut = nullptr);
+	///	use this method to retreive the selected entries in a list box.
+		std::vector<int> to_index_list(int paramIndex, bool* bOKOut = nullptr);
+		QString to_string(int paramIndex, bool* bOKOut = nullptr);
+		QStringList to_string_list(int paramIndex, bool* bOKOut = nullptr);
+		ug::vector3 to_vector3(int paramIndex, bool* bOKOut = nullptr);
+		ug::matrix33 to_matrix33(int paramIndex, bool* bOKOut = nullptr);
+		ug::matrix44 to_matrix44(int paramIndex, bool* bOKOut = nullptr);
+		QWidget* to_widget(int paramIndex, bool* bOkOut = nullptr);
+
+/*
+		void to_vector3(double& xOut, double& yOut, double& zOut,
+						bool* bOKOut = nullptr);
+*/
+		bool setNumber(int paramIndex, double val);
+		bool setString(int paramIndex, const QString& param);
+		bool setStringList(int paramIndex, const QStringList& stringList);
+
+		void clear();
+	
+	signals:
+		void valueChanged (int index);
+
+	protected:
+	///	convertes the value of the i-th input element to a number.
+	/**	inices start from 0. Elements are indexed in the order they
+	 *	have been added. Please note that not all parameters can
+	 *	be converted to a number. To check if conversion was successful
+	 *	you may specify the optional parameter bOKOut (make sure that
+	 *	the pointer points to a valid boolean).*/
+		template <typename TNumber>
+		TNumber to_number(int paramIndex, bool* bOKOut = nullptr);
+
+	 /// returns the current form layout and creates a new if none is available.
+	 	 QFormLayout* current_form_layout();
+
+	 	 void clearLayout(QLayout* layout);
+	 	 
+	public slots:
+	///	when called, this method calls the associated tool to refresh the tool-widgets contents.
+	/**	Connect this slot with care, to avoid unforseen performance problems.*/
+		void refreshContents();
+
+	protected slots:
+		void buttonClicked(int buttonID);
+
+	protected:
+		enum WidgetTypes{
+			WT_UNKNOWN = 0,
+			WT_SLIDER,
+			WT_SPIN_BOX,
+			WT_COMBO_BOX,
+			WT_CHECK_BOX,
+			WT_VECTOR3,
+			WT_LIST_BOX,
+			WT_TEXT_BOX,
+			WT_MATRIX,
+			WT_FILE_BROWSER,
+			WT_WIDGET
+		};
+
+		struct WidgetEntry{
+			WidgetEntry(QWidget* widget, int widgetType) :
+				_widget(widget),
+				_widget_type(widgetType)	{}
+
+			QWidget*	_widget;
+			int			_widget_type;
+		};
+
+		using WidgetEntryVec = std::vector<WidgetEntry>;
+
+	protected:
+		QVBoxLayout*	_main_layout;
+		QFormLayout*	_current_form_layout;
+		ITool*			_tool;
+
+		WidgetEntryVec	_widgets;
+
+};
+
+#endif

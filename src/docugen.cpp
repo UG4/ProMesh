@@ -34,9 +34,11 @@
 #include "common/util/plugin_util.h"
 #include "common/util/string_util.h"
 #include "common/util/file_util.h"
-#include "../../plugins/ProMesh/mesh.h"
-#include "tools/standard_tools.h"
-#include "docugen.h"
+
+#include "../../plugins/ProMesh/mesh.h" // todo hardcoded relative path
+
+#include "tools/standard_tools.hpp"
+#include "docugen.hpp"
 
 using namespace std;
 using namespace ug;
@@ -44,8 +46,7 @@ using namespace ug::bridge;
 using namespace ug::promesh;
 
 static
-void DefineGroup(ostream& out, const char* id, const char* name, const char* desc,
-				 const char* parentGroup = nullptr);
+void DefineGroup(ostream& out, const char* id, const char* name, const char* desc, const char* parentGroup = nullptr);
 static void DefineType(ostream& out, const char* type, const char* desc, const char* group);
 static void WriteClass(ostream& out, Registry& reg, const char* name, const char* forceGroup = nullptr);
 static void WriteClass(ostream& out, Registry& reg, const IExportedClass* cls, const char* forceGroup = nullptr);
@@ -54,12 +55,10 @@ static void WriteFunction(ostream& out, Registry& reg, const ExportedFunction* f
 static void WriteGroupMembers(ostream& out, Registry& reg, const char* id);
 static void WriteGroupID(ostream& out, const char* id);
 static void WriteGroupID(ostream& out, const string& id);
-static void WriteFunctionSignature(ostream& out, const ExportedFunctionBase* func,
-							const char* prefix = "", bool isConst = false);
+static void WriteFunctionSignature(ostream& out, const ExportedFunctionBase* func, const char* prefix = "", bool isConst = false);
 static string ParamToString(const ParameterInfo& info, int i);
 static string NameToVarName(const string& str);
 static string GroupNameToID(const string& str);
-
 static void GenerateResourceFile(const string& filename, const string& searchPath, const string& targetPath);
 
 #define mkpath(s)	(AdjustPathSeparators(mkstr(s)))
@@ -152,8 +151,8 @@ int RunDocugen()
 	cout << "promesh-root-path: " << pmPath << endl;
 
 	try{
-		groups				= map<string, bool>();
-		originalGroupNames	= map<string, string>();
+		groups = map<string, bool>();
+		originalGroupNames = map<string, string>();
 
 		// InitBridge();
 		// if(!LoadPlugins(PathProvider::get_path(PLUGIN_PATH).c_str(), "", GetUGRegistry()))
@@ -257,7 +256,7 @@ int RunDocugen()
 	//	iterate over all groups and log undefined ones. Add a dummy definition for
 	//	each such group and associated undefined parent groups.
 		bool groupsMissing = false;
-		for(map<string, bool>::iterator i = groups.begin(); i != groups.end(); ++i){
+		for(auto i = groups.begin(); i != groups.end(); ++i){
 			if(i->second == false){
 				string fullGrpId = i->first;
 				string fullGrpName = originalGroupNames[fullGrpId];
@@ -268,7 +267,7 @@ int RunDocugen()
 						   << " (with group-id: " << fullGrpId << ")" << endl);
 
 					string grpName, parentGrpName;
-					size_t pos = fullGrpName.find_last_of("/");
+					size_t pos = fullGrpName.find_last_of('/');
 					if(pos == string::npos)
 						grpName = fullGrpName;
 					else{
@@ -602,18 +601,6 @@ string ParamToString(const ParameterInfo& info, int i)
 		case Variant::VT_CONST_SMART_POINTER:
 			res.append("const ").append(info.class_name(i)).append("*");
 			break;
-		// case Variant::VT_POINTER:
-		// 	res.append(info.class_name(i)).append("*");
-		// 	break;
-		// case Variant::VT_CONST_POINTER:
-		// 	res.append("const ").append(info.class_name(i)).append("*");
-		// 	break;
-		// case Variant::VT_SMART_POINTER:
-		// 	res.append("SmartPtr<").append(info.class_name(i)).append(">");
-		// 	break;
-		// case Variant::VT_CONST_SMART_POINTER:
-		// 	res.append("ConstSmartPtr<").append(info.class_name(i)).append(">");
-		// 	break;
 	}
 	if(isVector) res.append(" >");
 	return res;

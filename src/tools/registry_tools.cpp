@@ -30,7 +30,7 @@
 #include "common/util/stringify.h"
 #include "common/util/string_util.h"
 #include "bridge/bridge.h"
-#include "standard_tools.h"
+#include "standard_tools.hpp"
 
 using namespace std;
 using namespace ug;
@@ -38,7 +38,7 @@ using namespace ug::promesh;
 using namespace ug::bridge;
 
 
-template <class T>
+template <typename T>
 static T ToNumber(const std::string& str){
 	std::istringstream istr(str.c_str());
 	istr.imbue(std::locale("C"));
@@ -65,11 +65,11 @@ static MathVector<dim> ToVector(const std::string& str){
 }
 
 
-class RegistryTool : public ITool{
+class RegistryTool : public ITool {
 	public:
 		RegistryTool(std::string name, const ExportedFunction* func) :
-			m_name(name),
-			m_func(func)
+			_name(name),
+			_func(func)
 		{
 			string grp = func->group();
 			size_t pos = grp.find("ug4/");
@@ -79,7 +79,7 @@ class RegistryTool : public ITool{
 			if(pos != string::npos)
 				grp.erase(pos, 8);
 
-			m_group = ReplaceAll(grp, "/", "|");
+			_group = ReplaceAll(grp, "/", "|");
 		}
 
 		virtual void execute(LGObject* obj,
@@ -91,15 +91,15 @@ class RegistryTool : public ITool{
 
 		//	log signature
 			QString actionLog = "--> ";
-			actionLog.append(m_group.c_str())
+			actionLog.append(_group.c_str())
 					 .append("|")
-					 .append(m_func->name().c_str())
+					 .append(_func->name().c_str())
 					 .append(" (");
 
-			for(size_t iparam = 0; iparam < m_func->num_parameter(); ++iparam){
+			for(size_t iparam = 0; iparam < _func->num_parameter(); ++iparam){
 				if(iparam > 0)
 					actionLog.append(", ");
-				actionLog.append(m_func->parameter_name(iparam).c_str());
+				actionLog.append(_func->parameter_name(iparam).c_str());
 			}
 			actionLog.append(")\n");
 
@@ -109,12 +109,12 @@ class RegistryTool : public ITool{
 			
 			vector<ConstSmartPtr<void> > tmpSmartPtrs;
 
-			actionLog.append(m_func->name().c_str()).append(" (");
+			actionLog.append(_func->name().c_str()).append(" (");
 			actionLog.append("mesh");
 
-			ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+			auto* dlg = dynamic_cast<ToolWidget*>(widget);
 			if(dlg){
-				const ParameterInfo& params = m_func->params_in();
+				const ParameterInfo& params = _func->params_in();
 				for(int iparam = 1; iparam < params.size(); ++iparam){
 					actionLog.append(", ");
 					int toolParam = iparam - 1;
@@ -168,7 +168,7 @@ class RegistryTool : public ITool{
 								if(params.type(iparam) == Variant::VT_POINTER ||
 								   params.type(iparam) == Variant::VT_CONST_POINTER)
 								{
-									tmpSmartPtrs.push_back(pv);
+									tmpSmartPtrs.emplace_back(pv);
 									paramsIn.push(pv.get());
 								}
 								else
@@ -194,10 +194,10 @@ class RegistryTool : public ITool{
 			actionLog.append(")\n");
 
 		//	execute function
-			m_func->execute(paramsIn, paramsOut);
+			_func->execute(paramsIn, paramsOut);
 
 			if(paramsOut.size() > 0){
-				UG_LOG(m_name);
+				UG_LOG(_name);
 				if(paramsIn.size() > 1){
 					UG_LOG(" (");
 					for(int i = 1; i < paramsIn.size(); ++i){
@@ -210,7 +210,7 @@ class RegistryTool : public ITool{
 				}
 				UG_LOG(": ");
 
-				const ParameterInfo& retInfo = m_func->params_out();
+				const ParameterInfo& retInfo = _func->params_out();
 				for(int i = 0; i < paramsOut.size(); ++i){
 					const Variant& v = paramsOut.get(i);
 					if(v.type() == Variant::VT_POINTER
@@ -240,28 +240,26 @@ class RegistryTool : public ITool{
 			obj->geometry_changed();
 		}
 
-		virtual const char* get_name()	
-		{
-			return m_name.c_str();
+		const char* get_name() override {
+			return _name.c_str();
 		}
 
-		virtual const char* get_tooltip()	{return m_func->tooltip().c_str();}
-		virtual const char* get_group()		{return m_group.c_str();}
-		virtual const char* get_shortcut()	{return "";}
+		const char* get_tooltip() override {return _func->tooltip().c_str();}
+		const char* get_group() override {return _group.c_str();}
+		const char* get_shortcut() override {return "";}
 
-		virtual bool accepts_null_object_ptr()	{return false;}
+		bool accepts_null_object_ptr() override {return false;}
 
-		virtual QWidget* get_dialog(QWidget* parent)
-		{
+		QWidget* get_dialog(QWidget* parent) override {
 
-			if(m_func->num_parameter() <= 1){
+			if(_func->num_parameter() <= 1){
 				return nullptr;
 			}
 
-			ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
-											IDB_APPLY | IDB_OK | IDB_CLOSE);
+			auto dlg = new ToolWidget(get_name(), parent, this,
+			                          IDB_APPLY | IDB_OK | IDB_CLOSE);
 
-			const ParameterInfo& params = m_func->params_in();
+			const ParameterInfo& params = _func->params_in();
 			bool paramError = false;
 			
 			vector<string> tokens;
@@ -272,12 +270,12 @@ class RegistryTool : public ITool{
 
 			for(int iparam = 1; iparam < params.size(); ++iparam){
 				string paramName = Stringify() << "param-" << iparam;
-				if(!m_func->parameter_name(iparam).empty())
-					paramName = m_func->parameter_name(iparam);
+				if(!_func->parameter_name(iparam).empty())
+					paramName = _func->parameter_name(iparam);
 
 				style = "";
 				options.clear();
-				const std::vector<std::string>& paramInfos = m_func->parameter_info_vec(iparam);
+				const std::vector<std::string>& paramInfos = _func->parameter_info_vec(iparam);
 				if(paramInfos.size() >= 2)
 					style = paramInfos[1];
 				if(paramInfos.size() >= 3){
@@ -470,13 +468,13 @@ class RegistryTool : public ITool{
 
 				if(paramError){
 					UG_LOG("Unsupported parameter " << iparam << " in registry tool "
-						   << m_name << ": " << params.class_name(iparam) << endl);
+						   << _name << ": " << params.class_name(iparam) << endl);
 					break;
 				}
 
 				if(annotationErrors){
 					UG_LOG("Annotation errors occurred in registry tool "
-							<< m_name << endl);
+							<< _name << endl);
 					break;
 				}
 			}
@@ -490,22 +488,22 @@ class RegistryTool : public ITool{
 		}
 
 	private:
-		std::string					m_name;
-		std::string					m_group;
-		const ExportedFunction* 	m_func;
+		std::string					_name;
+		std::string					_group;
+		const ExportedFunction* 	_func;
 };
 
 
 void RegisterTool(ToolManager* toolMgr,
 				  Registry& reg,
-				  std::string toolName,
-				  std::string funcName,
+				  std::string tool_name,
+				  std::string func_name,
 				  int key = 0,
 				  uint shortcutModifierKeys = SMK_NONE)
 {
 	for(size_t ifct = 0; ifct < reg.num_functions(); ++ifct){
 		ExportedFunction& f = reg.get_function(ifct);
-		if(f.name() == funcName){
+		if(f.name() == func_name){
 		//	find an overload whose first argument is Mesh
 			for(size_t iol = 0; iol < reg.num_overloads(ifct); ++iol){
 				ExportedFunction& o = reg.get_overload(ifct, iol);
@@ -516,7 +514,7 @@ void RegisterTool(ToolManager* toolMgr,
 					continue;
 
 			//	o has to be added
-				RegistryTool* tool = new RegistryTool(toolName, &o);
+				auto* tool = new RegistryTool(tool_name, &o);
 				toolMgr->register_tool(tool, key, shortcutModifierKeys);
 			}
 		}
@@ -526,13 +524,12 @@ void RegisterTool(ToolManager* toolMgr,
 
 void RegisterRegistryTools(ToolManager* toolMgr)
 {
-	using func_iter_t = ProMeshRegistry::func_iter_t;
 
 	ProMeshRegistry& reg = GetProMeshRegistry();
 
 	string toolName;
 
-	for(func_iter_t i_func = reg.functions_begin();
+	for(auto i_func = reg.functions_begin();
 		i_func != reg.functions_end(); ++i_func)
 	{
 		const detail::ProMeshFunction& pf = *i_func;
@@ -552,7 +549,7 @@ void RegisterRegistryTools(ToolManager* toolMgr)
 		toolName.reserve(funcName.size() + 10);
 
 		bool lastWasUpper = true;
-		for(string::const_iterator i = funcName.begin(); i != funcName.end(); ++i)
+		for(auto i = funcName.begin(); i != funcName.end(); ++i)
 		{
 			if(isupper(*i)){
 				if(i != funcName.begin()){
@@ -575,7 +572,7 @@ void RegisterRegistryTools(ToolManager* toolMgr)
 			toolName.push_back(*i);
 		}
 
-		RegistryTool* tool = new RegistryTool(toolName, &o);
+		auto* tool = new RegistryTool(toolName, &o);
 		toolMgr->register_tool(
 						tool,
 						pf.shortcut_key(),

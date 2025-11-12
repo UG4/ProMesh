@@ -34,11 +34,11 @@
 #include <cstdlib>
 #include <sstream>
 
-#include "script_tools.h"
-#include "standard_tools.h"
+#include "script_tools.hpp"
+#include "standard_tools.hpp"
 #include "common/error.h"
 #include "common/util/string_util.h"
-#include "../app.h"
+#include "../app.hpp"
 #include "../../plugins/LuaShell/lua_shell.h"
 #include "bindings/lua/lua_util.h"
 #include "common/error.h"
@@ -49,7 +49,7 @@ using namespace std;
 class ScriptTool;
 static vector<ScriptTool*>	g_scriptTools;
 
-template <class T>
+template <typename T>
 static T ToNumber(const std::string& str){
 	std::istringstream istr(str.c_str());
 	istr.imbue(std::locale("C"));
@@ -61,47 +61,47 @@ static T ToNumber(const std::string& str){
 
 ScriptTool::
 ScriptTool(string path, string group, SPLuaShell luaShell) :
-	m_scriptName(path),
-	m_scriptPath(path),
-	m_group(group),
-	m_luaShell(luaShell)
+	_script_name(path),
+	_script_path(path),
+	_group(group),
+	_lua_shell(luaShell)
 {
 }
 
 void ScriptTool::
 execute(LGObject* obj, QWidget* widget)
 {
-	ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+	auto* dlg = dynamic_cast<ToolWidget*>(widget);
 	if(dlg){
-		for(size_t i = 0; i < m_scriptDecls.inputs.size(); ++i){
-			ScriptParameter& param = m_scriptDecls.inputs[i];
-			if((param.typeName == "double") || (param.typeName == "float")){
-				m_luaShell->set(param.varName.c_str(), dlg->to_double((int)i));
+		for(size_t i = 0; i < _script_decls._inputs.size(); ++i){
+			ScriptParameter& param = _script_decls._inputs[i];
+			if((param._type_name == "double") || (param._type_name == "float")){
+				_lua_shell->set(param._var_name.c_str(), dlg->to_double((int)i));
 			}
-			else if((param.typeName == "int") || (param.typeName == "integer")){
-				m_luaShell->set(param.varName.c_str(), dlg->to_int((int)i));
+			else if((param._type_name == "int") || (param._type_name == "integer")){
+				_lua_shell->set(param._var_name.c_str(), dlg->to_int((int)i));
 			}
-			else if((param.typeName == "bool") || (param.typeName == "boolean")){
-				m_luaShell->set(param.varName.c_str(), dlg->to_bool((int)i));
+			else if((param._type_name == "bool") || (param._type_name == "boolean")){
+				_lua_shell->set(param._var_name.c_str(), dlg->to_bool((int)i));
 			}
-			else if(param.typeName == "string"){
-				m_luaShell->set(param.varName.c_str(), dlg->to_string((int)i).toLocal8Bit().constData());
+			else if(param._type_name == "string"){
+				_lua_shell->set(param._var_name.c_str(), dlg->to_string((int)i).toLocal8Bit().constData());
 			}
 			else{
-				UG_THROW("type " << param.typeName << " currently unsupported by script interpreter.");
+				UG_THROW("type " << param._type_name << " currently unsupported by script interpreter.");
 			}
 		}
 	}
 
 	try{
-		m_luaShell->set("mesh", static_cast<ug::promesh::Mesh*>(obj), "Mesh");
-		m_luaShell->run(m_scriptContent.constData());
+		_lua_shell->set("mesh", static_cast<ug::promesh::Mesh*>(obj), "Mesh");
+		_lua_shell->run(_script_content.constData());
 	}
 	catch(ug::script::LuaError& err) {
 		ug::PathProvider::clear_current_path_stack();
 		if(err.show_msg()){
 			if(!err.get_msg().empty()){
-				UG_LOG("error in script " << m_scriptName << "(file: " << m_scriptPath << "):\n");
+				UG_LOG("error in script " << _script_name << "(file: " << _script_path << "):\n");
 				for(size_t i=0;i<err.num_msg();++i)
 					UG_LOG(err.get_msg(i)<<endl);
 			}
@@ -115,7 +115,7 @@ const char* ScriptTool::
 get_name()	
 {
 	parse_script_decls(false);
-	return m_scriptDecls.name.c_str();
+	return _script_decls._name.c_str();
 }
 
 const char* ScriptTool::
@@ -124,7 +124,7 @@ get_tooltip()
 
 const char* ScriptTool::
 get_group()
-{return m_group.c_str();}
+{return _group.c_str();}
 
 const char* ScriptTool::
 get_shortcut()
@@ -139,18 +139,14 @@ get_dialog(QWidget* parent)
 {
 	parse_script_decls(true);
 	
-	vector<ScriptParameter>& inputs = m_scriptDecls.inputs;
+	vector<ScriptParameter>& inputs = _script_decls._inputs;
 
 	if(inputs.empty())
 		return nullptr;
 
-	ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
-									IDB_APPLY | IDB_OK | IDB_CLOSE);
+	auto *dlg = new ToolWidget(get_name(), parent, this, IDB_APPLY | IDB_OK | IDB_CLOSE);
 
 	refresh_dialog(dlg);
-
-	// MainWindow* mw = app::getMainWindow();
-	// connect(mw, SIGNAL(refreshToolDialogs()), dlg, SLOT(refreshContents()));
 
 	return dlg;
 }
@@ -163,74 +159,74 @@ dialog_changed(QWidget* dlg)		{return true;}
 void ScriptTool::
 refresh_dialog(QWidget* dialog)
 {
-	ToolWidget* dlg = dynamic_cast<ToolWidget*>(dialog);
+	auto* dlg = dynamic_cast<ToolWidget*>(dialog);
 	if(!dlg)
 		return;
 
 	parse_script_decls(true);
 	dlg->clear();
 	
-	vector<ScriptParameter>& inputs = m_scriptDecls.inputs;
+	vector<ScriptParameter>& inputs = _script_decls._inputs;
 
 	if(inputs.empty())
 		return;
 
 	for(size_t iinput = 0; iinput < inputs.size(); ++iinput){
 		ScriptParameter& param = inputs[iinput];
-		if((param.typeName == "double") || (param.typeName == "float")){
-			dlg->addSpinBox (QString(param.argName.c_str()),
-			                 param.min.to_double(),
-			                 param.max.to_double(),
-			                 param.val.to_double(),
-			                 param.step.to_double(),
-			                 param.digits.to_double());
+		if((param._type_name == "double") || (param._type_name == "float")){
+			dlg->addSpinBox (QString(param._arg_name.c_str()),
+			                 param._min.to_double(),
+			                 param._max.to_double(),
+			                 param._val.to_double(),
+			                 param._step.to_double(),
+			                 param._digits.to_double());
 		}
 
-		else if((param.typeName == "int") || (param.typeName == "integer")){
-			dlg->addSpinBox (QString(param.argName.c_str()),
-			                 param.min.to_int(),
-							 param.max.to_int(),
-							 param.val.to_int(),
-							 param.step.to_int(),
+		else if((param._type_name == "int") || (param._type_name == "integer")){
+			dlg->addSpinBox (QString(param._arg_name.c_str()),
+			                 param._min.to_int(),
+							 param._max.to_int(),
+							 param._val.to_int(),
+							 param._step.to_int(),
 							 0);
 		}
 
-		else if((param.typeName == "bool") || (param.typeName == "boolean")){
-			dlg->addCheckBox(QString(param.argName.c_str()), param.val.to_bool());
+		else if((param._type_name == "bool") || (param._type_name == "boolean")){
+			dlg->addCheckBox(QString(param._arg_name.c_str()), param._val.to_bool());
 		}
 
-		else if(param.typeName == "string"){
-			dlg->addTextBox(QString(param.argName.c_str()),
-			                QString(param.val.to_c_string()));
+		else if(param._type_name == "string"){
+			dlg->addTextBox(QString(param._arg_name.c_str()),
+			                QString(param._val.to_c_string()));
 		}
 	}
 }
 
 void ScriptTool::
 parse_script_decls(bool force){
-	if(force || m_scriptDecls.name.empty()){
-		QFile file(QString(m_scriptPath.c_str()));
+	if(force || _script_decls._name.empty()){
+		QFile file(QString(_script_path.c_str()));
 		if(!file.open(QIODevice::ReadOnly | QIODevice::Text)){
-			m_scriptContent = QByteArray();
-			m_scriptDecls = ScriptDeclarations();
-			UG_LOG("ERROR: Failed to read script " << m_scriptPath << endl);
+			_script_content = QByteArray();
+			_script_decls = ScriptDeclarations();
+			UG_LOG("ERROR: Failed to read script " << _script_path << endl);
 		}
 		else{
-			m_scriptContent = file.readAll();
+			_script_content = file.readAll();
 			file.close();
-			ParseScriptDeclarations(m_scriptDecls,
-			                        m_scriptContent.constData());
+			ParseScriptDeclarations(_script_decls,
+			                        _script_content.constData());
 		}
-		if(m_scriptDecls.name.empty())
-			m_scriptDecls.name = m_scriptName;
+		if(_script_decls._name.empty())
+			_script_decls._name = _script_name;
 	}
 }
 
 string ScriptTool::
-path()			{return m_scriptPath;}
+path()			{return _script_path;}
 
 SPLuaShell ScriptTool::
-lua_shell()	{return m_luaShell;}
+lua_shell()	{return _lua_shell;}
 
 
 
@@ -273,7 +269,7 @@ void ParseDirAndCreateTools(ToolManager* toolMgr, QDir dir, string group,
 				continue;
 		}
 
-		ScriptTool* tool = new ScriptTool(absPath, group, luaShell);
+		auto* tool = new ScriptTool(absPath, group, luaShell);
 
 		toolMgr->register_tool(tool);
 		g_scriptTools.push_back(tool);

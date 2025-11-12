@@ -31,42 +31,30 @@
 #include <clocale>
 #include <cstring>
 #include <QFileOpenEvent>
-#include "app.h"
-#include "arg_tool.h"
-#include "docugen.h"
-#include "scripting.h"
-#include "tools/standard_tools.h"
+#include "app.hpp"
+#include "arg_tool.hpp"
+#include "docugen.hpp"
+#include "scripting.hpp"
+#include "tools/standard_tools.hpp"
 #include "bridge/bridge.h"
 #include "common/util/path_provider.h"
 #include "common/util/plugin_util.h"
-#include "options/options.h"
-#include "util/file_util.h"
+#include "options/options.hpp"
+#include "util/file_util.hpp"
 //TESTING
 #include <QDialog>
 #include <QVBoxLayout>
-// #include "widgets/tooldlg_oarchive.h"
-// #include "widgets/tooldlg_iarchive.h"
-// #include "sera_test.h"
-// #include <boost/archive/xml_oarchive.hpp>
-// #include "widgets/property_widget.h"
-// #include "common/error.h"
-// #include "common/log.h"
-// #include "lib_grid/algorithms/refinement/refinement_projectors_old/cylinder_projector.h"
-// #include "lib_grid/algorithms/refinement/projectors/cylinder_projector.h"
-// #include "lib_grid/boost_class_serialization_exports.h"
 
 using namespace std;
 
-class MyApplication : public QApplication
-{
+class MyApplication : public QApplication {
 	public:
 		MyApplication(int & argc, char ** argv) :
 			QApplication(argc, argv), m_pMainWindow(nullptr)	{}
 
-		virtual bool	event ( QEvent * e )
-		{
+		bool event ( QEvent * e ) override {
 			if(e->type() == QEvent::FileOpen){
-				QFileOpenEvent* foe = dynamic_cast<QFileOpenEvent*>(e);
+				auto* foe = dynamic_cast<QFileOpenEvent*>(e);
 				if(foe){
 					QString str = foe->file();
 					if(m_pMainWindow){
@@ -100,19 +88,11 @@ static void WriteToFileInUserDataDir(const char* filename, const QString& conten
 
 int main(int argc, char *argv[])
 {
-	// {
-	// 	QSurfaceFormat surfaceFormat = QSurfaceFormat::defaultFormat();
-	// 	surfaceFormat.setDepthBufferSize (24);
-	// 	surfaceFormat.setStencilBufferSize (8);
-	//     surfaceFormat.setMajorVersion (2);
-	//     surfaceFormat.setMinorVersion (0);
-	//     surfaceFormat.setSamples (0);
-	//     QSurfaceFormat::setDefaultFormat (surfaceFormat);
-	// }
+	QApplication::setAttribute(Qt::AA_UseDesktopOpenGL);
 
 	MyApplication myApp(argc, argv);
-	myApp.setQuitOnLastWindowClosed(true);
-	myApp.setAttribute (Qt::AA_UseDesktopOpenGL);
+	MyApplication::setQuitOnLastWindowClosed(true);
+	//MyApplication::setAttribute (Qt::AA_UseDesktopOpenGL);
 	
 	QCoreApplication::setOrganizationName("ProMesh");
     QCoreApplication::setOrganizationDomain("promesh3d.com");
@@ -152,8 +132,8 @@ int main(int argc, char *argv[])
 		}
 
 	    if(!scriptName.empty()){
-	    	const bool undoEnabled = GetOptions().undo.enabled;
-	    	GetOptions().undo.enabled = false;
+	    	const bool undoEnabled = GetOptions()._undo._enabled;
+	    	GetOptions()._undo._enabled = false;
 	    	int retVal = 0;
 	    	try{
 	    		try{
@@ -172,7 +152,7 @@ int main(int argc, char *argv[])
 					UG_THROW("initialization failed");
 				}
 
-		    	LGObject* obj = new LGObject();
+		    	auto* obj = new LGObject();
 		    	if(!inFile.empty()){
 		    		cout << "loading mesh from '" << inFile.c_str() << "'\n";
 		    		UG_COND_THROW(!LoadLGObjectFromFile(obj, inFile.c_str(), false),
@@ -206,13 +186,13 @@ int main(int argc, char *argv[])
 		    	cout << "An error occurred during execution\n";
 		    	retVal = 1;
 		    }
-		    GetOptions().undo.enabled = undoEnabled;
+		    GetOptions()._undo._enabled = undoEnabled;
 		    cout << "Script execution done. Finishing...\n";
 	    	return retVal;
 	    }
 	}
 
-    cout.sync_with_stdio(true);
+    std::ostream::sync_with_stdio(true);
 
 
 	QString qss = GetFileContent(":/styles/promesh_style.css");
@@ -221,17 +201,17 @@ int main(int argc, char *argv[])
 	// QString varsStr = GetFileContent("C:\\Users\\sreiter\\projects\\ProMesh\\ProMesh\\styles\\dark_theme_variables.txt");
 	// QString qss = GetFileContent("/home/sreiter/projects/ProMesh/ProMesh/styles/promesh_style.css");
 	// QString varsStr = GetFileContent("/home/sreiter/projects/ProMesh/ProMesh/styles/dark_theme_variables.txt");
-	QStringList varsList = varsStr.split(QRegularExpression("[\r\n]"),QString::SkipEmptyParts);
+	QStringList varsList = varsStr.split(QRegularExpression("[\r\n]"),Qt::SkipEmptyParts);
 	QRegularExpression regVar("\\s*(@\\w+)\\s*(.+)");
 	QMap<QString, QString> varMap;
-	for(QStringList::Iterator iter = varsList.begin(); iter != varsList.end(); ++iter){
+	for(auto iter = varsList.begin(); iter != varsList.end(); ++iter){
 		QRegularExpressionMatch match = regVar.match(*iter);
 		if(match.hasMatch()){
 			varMap[match.captured(1)] = match.captured(2);
 		}
 	}
 	
-	QMapIterator<QString, QString> mapIter(varMap);
+	QMapIterator mapIter(varMap);
 	mapIter.toBack();
 	while(mapIter.hasPrevious()){
 		mapIter.previous();
@@ -240,23 +220,12 @@ int main(int argc, char *argv[])
 
 	myApp.setStyleSheet(qss);
 
-/*
-	if(!QGLFormat::hasOpenGL())
-	{
-		cerr << "System has no openGL support!" << endl;
-		return 1;
-	}
-*/
-	//UG_SET_DEBUG_LEVEL(LIB_GRID, 2);
-//	ug::script::Initialize();
-//	ug::script::InitLibGridScript(ug::script::GetLuaState());
-
 	MainWindow* pMainWindow = app::getMainWindow();
 
 	pMainWindow->init();
 
 	myApp.setMainWindow(pMainWindow);
-	pMainWindow->setWindowTitle(QString("ProMesh ").append(app::GetVersionString()).append("   (www.promesh3d.com)"));
+	pMainWindow->setWindowTitle(QString("ProMesh").append(app::GetVersionString()).append(""));
 
 	pMainWindow->show();
 
@@ -296,5 +265,5 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	return myApp.exec();
+	return MyApplication::exec();
 }

@@ -24,35 +24,29 @@
  */
 
 #include <QScrollArea>
-#include "property_widget.h"
+#include "property_widget.hpp"
 
 PropertyWidget::
 PropertyWidget(QWidget* parent) :
 	QFrame(parent),
-	m_content(nullptr)
+	_content(nullptr)
 {
-	m_scrollArea = new QScrollArea(this);
+	_scroll_area = new QScrollArea(this);
 	//m_scrollArea->setBackgroundRole(QPalette::Dark);
 
-	QVBoxLayout* layout = new QVBoxLayout(this);
-	layout->addWidget(m_scrollArea);
+	auto* layout = new QVBoxLayout(this);
+	layout->addWidget(_scroll_area);
 	layout->setSpacing(0);
 	layout->setContentsMargins(0, 0, 0, 0);
 	this->setLayout(layout);
 
 //	This widget will contain the widgetContainer and a spacer
-	m_spacerWidget = new QWidget(m_scrollArea);
-	m_spacerLayout = new QVBoxLayout(m_spacerWidget);
-	m_spacerLayout->setSpacing(0);
-	m_spacerLayout->setContentsMargins(0, 0, 0, 0);
-	m_spacerWidget->setLayout(m_spacerLayout);
+	_spacer_widget = new QWidget(_scroll_area);
+	_spacer_layout = new QVBoxLayout(_spacer_widget);
+	_spacer_layout->setSpacing(0);
+	_spacer_layout->setContentsMargins(0, 0, 0, 0);
+	_spacer_widget->setLayout(_spacer_layout);
 
-	m_scrollArea->setWidget(m_spacerWidget);
-	m_scrollArea->setWidgetResizable(true);
-}
-
-PropertyWidget::
-~PropertyWidget()
-{
-
+	_scroll_area->setWidget(_spacer_widget);
+	_scroll_area->setWidgetResizable(true);
 }
