@@ -29,7 +29,7 @@
 PropertyWidget::
 PropertyWidget(QWidget* parent) :
 	QFrame(parent),
-	m_content(NULL)
+	m_content(nullptr)
 {
 	m_scrollArea = new QScrollArea(this);
 	//m_scrollArea->setBackgroundRole(QPalette::Dark);

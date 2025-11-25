@@ -283,7 +283,7 @@ private:
 
 	QWidget*		m_base;
 	std::stack<WidgetLayer>	m_widgetLayers;
-	const char*		m_curName;	///< can be NULL due to intermediate objects
+	const char*		m_curName;	///< can be nullptr due to intermediate objects
 	std::string		m_prefix;
 };
 

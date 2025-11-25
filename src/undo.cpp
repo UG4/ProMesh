@@ -74,10 +74,10 @@ const char* UndoHistory::
 undo()
 {
 	if(!m_bInitialized)
-		return NULL;
+		return nullptr;
 
 	if(m_undoFiles.empty())
-		return NULL;
+		return nullptr;
 
 //	push the current file to the redo stack
 	if(!m_currentFile.empty())
@@ -93,10 +93,10 @@ const char* UndoHistory::
 redo()
 {
 	if(!m_bInitialized)
-		return NULL;
+		return nullptr;
 
 	if(m_redoFiles.empty())
-		return NULL;
+		return nullptr;
 
 //	push the current file to the back of the undo files.
 	if(!m_currentFile.empty())
@@ -115,7 +115,7 @@ const char* UndoHistory::
 create_history_entry()
 {
 	if(!m_bInitialized)
-		return NULL;
+		return nullptr;
 
 //	clear the redo stack
 	if(!m_redoFiles.empty()){

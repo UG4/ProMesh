@@ -56,7 +56,7 @@ MatrixWidget(
 	QWidget(parent),
 	m_numRows(numRows),
 	m_numCols(numCols),
-	m_lineEdit(NULL),
+	m_lineEdit(nullptr),
 	m_bRefreshingCoords(false)
 {
 //	create a grid layout
@@ -153,7 +153,7 @@ TruncatedDoubleSpinBox* MatrixWidget::get_spin_box(int row, int col) const
 	if(row >= 0 && row < m_numRows && col >= 0 && col < m_numCols){
 		return m_spinBoxes[col * m_numRows + row];
 	}
-	return NULL;
+	return nullptr;
 }
 
 void MatrixWidget::

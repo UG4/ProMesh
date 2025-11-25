@@ -46,7 +46,7 @@ View3D::View3D(QWidget *parent) :
 
 	m_bDrawSelRect = false;
 
-	m_pRenderer = NULL;
+	m_pRenderer = nullptr;
 	setFormat(QGLFormat(QGL::DoubleBuffer | QGL::DepthBuffer));
 
 	glViewport(0, 0, m_viewWidth, m_viewHeight);

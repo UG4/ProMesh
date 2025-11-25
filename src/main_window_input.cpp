@@ -549,7 +549,7 @@ insertVertexAtScreenCoord(number x, number y)
 
 	//	check if a vertex is close
 		const number snapDistSq = sq(GetOptions().drawPath.snapDistance);
-		Vertex* vrt = NULL;
+		Vertex* vrt = nullptr;
 		Grid& g = o->grid();
 
 		LGObject::position_accessor_t& aaPos = o->position_accessor();

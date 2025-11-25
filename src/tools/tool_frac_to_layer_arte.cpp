@@ -35,7 +35,7 @@ FracToLayerWidgetArte(const QString& name, QWidget* parent,
 //	UG_LOG("construct FAA" << std::endl);
 
 	m_tool = tool;
-	m_object = NULL;
+	m_object = nullptr;
 	QString title = name;
 	title.append(": ");
 
@@ -277,7 +277,7 @@ applyClicked()
 //{
 //	m_entries.clear();
 //	m_listWidget->clear();
-//	m_object = NULL;
+//	m_object = nullptr;
 //}
 //
 //void FracToLayerWidget::

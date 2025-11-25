@@ -43,7 +43,7 @@ class MatrixWidget : public QWidget
 		MatrixWidget(	int numRows,
 						int numCols,
 						QWidget* parent,
-						const char** colLabels = NULL,
+						const char** colLabels = nullptr,
 						bool stretchValues = false);
 
 		virtual ~MatrixWidget();
