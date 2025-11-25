@@ -35,6 +35,7 @@ void RegisterStandardTools(ToolManager* toolMgr);
 void RegisterCameraTools(ToolManager* toolMgr);
 
 void PreRegisterGridGenerationTools(ToolManager* toolMgr);
+void PreRegisterTextInsertionTools(ToolManager* toolMgr);
 void PostRegisterGridGenerationTools(ToolManager* toolMgr);
 
 void RegisterCoordinateTransformTools(ToolManager* toolMgr);

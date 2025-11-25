@@ -58,6 +58,7 @@ void RegisterStandardTools(ToolManager* toolMgr)
 
 	toolMgr->set_group_icon("Camera", ":images/tool_camera.png");
 	toolMgr->set_group_icon("Grid Generation", ":images/tool_geometry_generation.png");
+	toolMgr->set_group_icon("Text Insertion", ":images/tool_text_insertion2.png");
 	toolMgr->set_group_icon("Coordinate Transform", ":images/tool_transform.png");
 	toolMgr->set_group_icon("Selection", ":images/tool_selection.png");
 	toolMgr->set_group_icon("Subsets", ":images/tool_subsets.png");
@@ -68,6 +69,7 @@ void RegisterStandardTools(ToolManager* toolMgr)
 //	camera
 	RegisterCameraTools(toolMgr);
 	PreRegisterGridGenerationTools(toolMgr);
+	PreRegisterTextInsertionTools(toolMgr);
 	RegisterInfoTools(toolMgr);
 
 	RegisterTetgenTools();

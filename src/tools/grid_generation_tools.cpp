@@ -619,7 +619,7 @@ class IdentifierVtuROI : public ITool
 
 		const char* get_name()		{return "Identify vtu ROI";}
 		const char* get_tooltip()	{return "identification of ROI name";}
-		const char* get_group()		{return "Grid Generation";}
+		const char* get_group()		{return "Text Insertion";}
 		bool accepts_null_object_ptr()	{return true;}
 
 		QWidget* get_dialog(QWidget* parent){
@@ -655,9 +655,9 @@ class TetgenExternalCall : public ITool
 
 	}
 
-	const char* get_name()		{return "Tetgen Call Command";}
+	const char* get_name()		{return "External Tetgen Call Command";}
 	const char* get_tooltip()	{return "Set the command for tetgen";}
-	const char* get_group()		{return "Grid Generation";}
+	const char* get_group()		{return "Text Insertion";}
 	bool accepts_null_object_ptr()	{return true;}
 
 	QWidget* get_dialog(QWidget* parent)
@@ -673,6 +673,48 @@ class TetgenExternalCall : public ITool
 	}
 };
 
+class TetgenInternalCallParams : public ITool
+{
+	public:
+
+	void execute(LGObject* obj, QWidget* widget)
+	{
+		using namespace std;
+		using namespace ug;
+
+		ToolWidget* dlg = dynamic_cast<ToolWidget*>(widget);
+
+		//	get parameters
+		QString tetgenParamCall = externalCommands::globVarTetgenInternalCallParams;
+
+		if(dlg)
+		{
+			tetgenParamCall = dlg->to_string(0);
+			externalCommands::globVarTetgenInternalCallParams = tetgenParamCall;
+		}
+
+		UG_LOG("Set for internal tetgen call the parameters: " << externalCommands::globVarTetgenInternalCallParams.toLocal8Bit().constData() << std::endl);
+
+	}
+
+	const char* get_name()		{return "Internal Tetgen Call Params";}
+	const char* get_tooltip()	{return "Set the parameters for tetgen";}
+	const char* get_group()		{return "Text Insertion";}
+	bool accepts_null_object_ptr()	{return true;}
+
+	QWidget* get_dialog(QWidget* parent)
+	{
+		ToolWidget *dlg = new ToolWidget(get_name(), parent, this,
+											IDB_APPLY | IDB_OK | IDB_CLOSE);
+
+		QString tetgenParams = externalCommands::globVarTetgenInternalCallParams;
+
+		//	The name
+		dlg->addTextBox(tr("TetgenParams:"), tetgenParams );
+		return dlg;
+	}
+};
+
 
 void PreRegisterGridGenerationTools(ToolManager* toolMgr)
 {
@@ -681,9 +723,20 @@ void PreRegisterGridGenerationTools(ToolManager* toolMgr)
 	toolMgr->register_tool(new ToolNewMeshFromSelection);
 	toolMgr->register_tool(new ToolMergeMeshes);
 
+//	toolMgr->register_tool(new IdentifierVtuROI);
+//
+//	toolMgr->register_tool(new TetgenExternalCall);
+//
+//	toolMgr->register_tool(new TetgenInternalCallParams);
+}
+
+void PreRegisterTextInsertionTools(ToolManager* toolMgr)
+{
 	toolMgr->register_tool(new IdentifierVtuROI);
 
 	toolMgr->register_tool(new TetgenExternalCall);
+
+	toolMgr->register_tool(new TetgenInternalCallParams);
 }
 
 void PostRegisterGridGenerationTools(ToolManager* toolMgr)

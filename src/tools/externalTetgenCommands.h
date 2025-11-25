@@ -35,6 +35,8 @@ namespace externalCommands
 
 extern QString globVarTetgenCall;
 
+extern QString globVarTetgenInternalCallParams;
+
 };
 
 
