@@ -30,7 +30,8 @@
 namespace externalCommands
 {
 
-QString globVarTetgenCall = "/home/user/bin/tetgen -pq2/5Q ";
+//QString globVarTetgenCall = "/home/user/bin/tetgen -pq2/5Q ";
+QString globVarTetgenCall = "/home/user/bin/tetgen";
 
 QString globVarTetgenInternalCallParams = " -pq2/5Q ";
 

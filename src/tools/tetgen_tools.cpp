@@ -236,16 +236,41 @@ void TetrahedralizeExExternal (	Mesh* mesh,
 	QString call;
 	QString args;
 
-	QStringList callArgs = externalCommands::globVarTetgenCall.split(' ');
+//	QStringList callArgs = externalCommands::globVarTetgenCall.split(' ');
+//
+//	call = callArgs.at(0);
 
-	call = callArgs.at(0);
+	QStringList callList = externalCommands::globVarTetgenCall.split(' ');
+	call = callList.at(0);
+
+	if( callList.size() > 1 )
+	{
+		int ind = 0;
+
+		for( auto i = callList.begin(), end = callList.end(); i != end; i++ )
+		{
+			UG_LOG("CALL LIST STRANGE " << ind << " -> " << callList.at(ind).toUtf8().constData() << std::endl);
+			ind++;
+		}
+	}
+
+
+	QStringList callArgs = externalCommands::globVarTetgenInternalCallParams.split(' ');
 
 	args.append(" ");
 
-	for( auto i = callArgs.begin()+1, end = callArgs.end(); i != end; i++ )
+	for( auto i = callArgs.begin(), end = callArgs.end(); i != end; i++ )
 	{
 		args.append(*i);
 	}
+
+
+//	args.append(" ");
+//
+//	for( auto i = callArgs.begin()+1, end = callArgs.end(); i != end; i++ )
+//	{
+//		args.append(*i);
+//	}
 
 	args.append(" ").append(outFileName);
 
@@ -423,13 +448,36 @@ void RetetrahedralizeExExternal (Mesh* mesh,
 
 	QString call;
 
-	QStringList callArgs = externalCommands::globVarTetgenCall.split(' ');
+//	QStringList callArgs = externalCommands::globVarTetgenCall.split(' ');
+//
+//	call = callArgs.at(0);
+//
+//	args.append(" ");
+//
+//	for( auto i = callArgs.begin()+1, end = callArgs.end(); i != end; i++ )
+//	{
+//		args.append(*i);
+//	}
 
-	call = callArgs.at(0);
+	QStringList callList = externalCommands::globVarTetgenCall.split(' ');
+	call = callList.at(0);
+
+	if( callList.size() > 1 )
+	{
+		int ind = 0;
+
+		for( auto i = callList.begin(), end = callList.end(); i != end; i++ )
+		{
+			UG_LOG("CALL LIST STRANGE " << ind << " -> " << callList.at(ind).toUtf8().constData() << std::endl);
+			ind++;
+		}
+	}
+
+	QStringList callArgs = externalCommands::globVarTetgenInternalCallParams.split(' ');
 
 	args.append(" ");
 
-	for( auto i = callArgs.begin()+1, end = callArgs.end(); i != end; i++ )
+	for( auto i = callArgs.begin(), end = callArgs.end(); i != end; i++ )
 	{
 		args.append(*i);
 	}
