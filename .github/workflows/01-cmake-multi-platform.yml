@@ -111,16 +111,30 @@ jobs:
         path: ug4-git/externals/EigenForUG4
         ref: feature-eigen34
         
-    - name: (2.6) Install UG4/tool_tetgen.git
+#    - name: (2.6) Install UG4/tool_tetgen.git
+#      uses: actions/checkout@v4
+#      with:
+#        repository: UG4/tool_tetgen.git
+#        path: ug4-git/tools/tetgen
+#        ref: master
+
+# install original tetgen from github 
+    - name: (2.6) Install TetGen/TetGen.git
       uses: actions/checkout@v4
       with:
-        repository: UG4/tool_tetgen.git
+        repository: TetGen/TetGen.git
         path: ug4-git/tools/tetgen
-        ref: master
-        
+        ref: main
+
+#    - name: (3) Build UG4 & tetgen
+#      run: |
+#        cmake -B ug4-git/build -S ug4-git/ugcore -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON -DDIM=3
+#        cmake --build ug4-git/build --config ${{ matrix.build_type }}
+
+# Build UG4 with original github tetgen, need to switch on Tetgens executable cmake parameter
     - name: (3) Build UG4 & tetgen
       run: |
-        cmake -B ug4-git/build -S ug4-git/ugcore -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON -DDIM=3
+        cmake -B ug4-git/build -S ug4-git/ugcore -DTARGET=libgrid -DSTATIC_BUILD=ON -DCMAKE_BUILD_TYPE=Release -DProMesh=ON -DLuaShell=ON -DPARALLEL=OFF -Dtetgen=ON -DDIM=3 -DBUILD_EXECUTABLE=ON
         cmake --build ug4-git/build --config ${{ matrix.build_type }} 
       
     #- name: (2b) Build UG4/tool_tetgen.git
