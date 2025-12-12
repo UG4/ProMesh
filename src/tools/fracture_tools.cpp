@@ -38,7 +38,6 @@
 
 
 using namespace std;
-using namespace ug;
 
 class ToolExpandLayers2d : public ITool
 {
@@ -96,7 +95,7 @@ public:
 
 //		UG_LOG("Expand" << std::endl);
 
-		ExpandFractures2dArte(grid, sh, dlg->entries(), dlg->diamondsUseTriangles(),
+		arte::ExpandFractures2dArte(grid, sh, dlg->entries(), dlg->diamondsUseTriangles(),
 						  dlg->establishDiamonds());
 
 	//	done
@@ -138,7 +137,7 @@ public:
 
 //		UG_LOG("Expand" << std::endl);
 
-		ExpandFractures3dArte(grid, sh, dlg->entries(), dlg->diamondsUseTriangles(),
+		arte::ExpandFractures3dArte(grid, sh, dlg->entries(), dlg->diamondsUseTriangles(),
 						  dlg->establishDiamonds());
 
 	//	done
