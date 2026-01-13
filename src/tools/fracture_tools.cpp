@@ -31,6 +31,7 @@
 #include "standard_tools.h"
 #include "tool_frac_to_layer.h"
 #include "tool_frac_to_layer_arte.h"
+#include "tool_frac_to_layer_arte3D.h"
 #include "tooltips.h"
 
 #include "lib_grid/algorithms/extrusion/expand_layers_arte.h"
@@ -125,7 +126,7 @@ public:
 
 //		UG_LOG("Test execute" << std::endl);
 
-		FracToLayerWidgetArte* dlg = dynamic_cast<FracToLayerWidgetArte*>(widget);
+		FracToLayerWidgetArte3D* dlg = dynamic_cast<FracToLayerWidgetArte3D*>(widget);
 
 		if(dlg->numEntries() == 0){
 			UG_LOG("No entries selected. Aborting 'Expand Layers 2d'.\n");
@@ -137,7 +138,7 @@ public:
 
 //		UG_LOG("Expand" << std::endl);
 
-		arte::ExpandFractures3dArte(grid, sh, dlg->entries(), dlg->diamondsUseTriangles(),
+		arte::ExpandFractures3dArte(grid, sh, dlg->entries(), dlg->diamondsOnlyPreform(),
 						  dlg->establishDiamonds());
 
 	//	done
@@ -150,9 +151,7 @@ public:
 
 	QWidget* get_dialog(QWidget* parent)
 	{
-//		UG_LOG("Get dialog" << std::endl);
-		return new FracToLayerWidgetArte(get_name(), parent, this);
-//		return new FracToLayerWidget(get_name(), parent, this);
+		return new FracToLayerWidgetArte3D(get_name(), parent, this);
 	}
 };
 

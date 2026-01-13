@@ -66,6 +66,7 @@ set(ProMeshSRC	src/app.cpp
 				src/tools/tool_dialog.cpp
 				src/tools/tool_frac_to_layer.cpp
 				src/tools/tool_frac_to_layer_arte.cpp
+				src/tools/tool_frac_to_layer_arte3D.cpp
 				src/tools/tool_manager.cpp
 				src/util/file_util.cpp
 				src/util/qstring_util.cpp
